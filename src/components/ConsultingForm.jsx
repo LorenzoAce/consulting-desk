@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import jsPDF from 'jspdf';
-import { Eraser, FileDown, PenTool, Type, Plus, X, Upload } from 'lucide-react';
+import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save } from 'lucide-react';
 
-const ConsultingForm = () => {
+const ConsultingForm = ({ initialData }) => {
   const [signatureType, setSignatureType] = useState('type'); // 'draw' | 'type'
   const [logo, setLogo] = useState(null);
   const [logoDimensions, setLogoDimensions] = useState(null);
@@ -21,6 +21,7 @@ const ConsultingForm = () => {
     mainInterest: 'SCOMMESSE',
     requests: '',
     notes: '',
+    assignedConsultant: '',
     operatorName: ''
   });
 
@@ -30,6 +31,38 @@ const ConsultingForm = () => {
   const [newUtilityPartner, setNewUtilityPartner] = useState('');
 
   const sigCanvas = useRef({});
+
+  // Load initial data if provided
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        businessName: initialData.business_name || '',
+        fullName: initialData.full_name || '',
+        address: initialData.address || '',
+        province: initialData.province || '',
+        phone: initialData.phone || '',
+        email: initialData.email || '',
+        source: initialData.source || 'TELEFONO',
+        availability: initialData.availability || 'MEDIA',
+        bettingActive: initialData.betting_active || 'NO',
+        utilitiesActive: initialData.utilities_active || 'NO',
+        mainInterest: initialData.main_interest || 'SCOMMESSE',
+        requests: initialData.requests || '',
+        notes: initialData.notes || '',
+        operatorName: initialData.operator_name || ''
+      });
+      
+      setBettingPartners(initialData.betting_partners || []);
+      setUtilityPartners(initialData.utility_partners || []);
+      
+      if (initialData.signature_type) {
+        setSignatureType(initialData.signature_type);
+      }
+      
+      // Note: We cannot easily restore the drawn signature to the canvas
+      // But we can restore the typed signature
+    }
+  }, [initialData]);
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -237,7 +270,25 @@ const ConsultingForm = () => {
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     
+    // Check space for Signature Section
+    if (y + 50 > 280) {
+      doc.addPage();
+      y = 20;
+    }
+
+    // Assigned Consultant Field (New)
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Consulente Assegnato:', leftCol, y);
+    doc.setFont('helvetica', 'normal');
+    const consultantText = formData.assignedConsultant || '_________________________';
+    doc.text(consultantText, leftCol + 45, y);
+    
+    y += 20;
+
     // Left: Firma Operatore
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
     doc.text('Firma Operatore', leftCol, y);
     
     // Right: Firma Consulente
@@ -276,6 +327,43 @@ const ConsultingForm = () => {
     doc.text(`Generato il: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} - CONSULTING DESK`, 105, pageHeight - 10, { align: 'center' });
 
     doc.save(`scheda_${formData.fullName.replace(/\s+/g, '_') || 'cliente'}.pdf`);
+  };
+
+  const handleSave = async () => {
+    try {
+      let signatureData = '';
+      if (signatureType === 'draw' && !sigCanvas.current.isEmpty()) {
+        signatureData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+      } else if (signatureType === 'type') {
+        signatureData = formData.operatorName;
+      }
+
+      const payload = {
+        ...formData,
+        bettingPartners,
+        utilityPartners,
+        signatureType,
+        signatureData
+      };
+
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/cards`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        alert('Scheda salvata correttamente nell\'archivio!');
+      } else {
+        alert('Errore durante il salvataggio della scheda.');
+      }
+    } catch (error) {
+      console.error('Error saving card:', error);
+      alert('Errore di connessione al server. Assicurati che il backend sia avviato.');
+    }
   };
 
   return (
@@ -562,6 +650,21 @@ const ConsultingForm = () => {
           </div>
         </section>
 
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Assegnazione</h2>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Consulente Assegnato</label>
+            <input
+              type="text"
+              name="assignedConsultant"
+              value={formData.assignedConsultant}
+              onChange={handleChange}
+              placeholder="Nome del consulente a cui viene assegnata la scheda"
+              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+            />
+          </div>
+        </section>
+
         {/* Firma */}
         <section>
           <div className="flex justify-between items-center border-b dark:border-gray-700 pb-2 mb-4">
@@ -626,10 +729,17 @@ const ConsultingForm = () => {
         </section>
 
         {/* Action */}
-        <div className="pt-6">
+        <div className="pt-6 flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={handleSave}
+            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+          >
+            <Save className="h-5 w-5" />
+            Salva in Archivio
+          </button>
           <button
             onClick={generatePDF}
-            className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             <FileDown className="h-5 w-5" />
             Genera PDF

@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS consulting_cards (
+  id SERIAL PRIMARY KEY,
+  business_name TEXT,
+  full_name TEXT,
+  address TEXT,
+  province TEXT,
+  phone TEXT,
+  email TEXT,
+  source TEXT,
+  availability TEXT,
+  main_interest TEXT,
+  betting_active TEXT,
+  utilities_active TEXT,
+  betting_partners JSONB,
+  utility_partners JSONB,
+  requests TEXT,
+  notes TEXT,
+  operator_name TEXT,
+  signature_type TEXT,
+  signature_data TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

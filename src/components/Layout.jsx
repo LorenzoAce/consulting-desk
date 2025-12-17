@@ -1,11 +1,12 @@
 import React from 'react';
-import { User, FolderArchive, Settings, LogOut, Moon, Sun } from 'lucide-react';
+import { User, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle } from 'lucide-react';
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = ({ currentView, onNavigate }) => {
   const menuItems = [
-    { icon: User, label: 'Profilo', active: false },
-    { icon: FolderArchive, label: 'Archivio Schede', active: false },
-    { icon: Settings, label: 'Impostazioni', active: false },
+    { icon: PlusCircle, label: 'Nuova Scheda', id: 'form' },
+    { icon: User, label: 'Profilo', id: 'profile' },
+    { icon: FolderArchive, label: 'Archivio Schede', id: 'archive' },
+    { icon: Settings, label: 'Impostazioni', id: 'settings' },
   ];
 
   return (
@@ -14,9 +15,10 @@ const Sidebar = ({ isOpen }) => {
         <nav className="flex-1 space-y-1 px-2">
           {menuItems.map((item) => (
             <button
-              key={item.label}
+              key={item.id}
+              onClick={() => onNavigate(item.id)}
               className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
-                item.active
+                currentView === item.id
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                   : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
@@ -31,12 +33,15 @@ const Sidebar = ({ isOpen }) => {
   );
 };
 
-const Header = ({ darkMode, toggleDarkMode }) => {
+const Header = ({ darkMode, toggleDarkMode, onNavigate }) => {
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-20 px-4 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between h-full">
         {/* Logo and Brand */}
-        <div className="flex items-center gap-3">
+        <div 
+          className="flex items-center gap-3 cursor-pointer" 
+          onClick={() => onNavigate('form')}
+        >
           <img src="/logo.png" alt="Consulting Desk Logo" className="h-10 w-auto object-contain" />
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide leading-none">
@@ -44,6 +49,7 @@ const Header = ({ darkMode, toggleDarkMode }) => {
             </h1>
           </div>
         </div>
+
 
         {/* Right Actions */}
         <div className="flex items-center gap-4">
@@ -67,11 +73,11 @@ const Header = ({ darkMode, toggleDarkMode }) => {
   );
 };
 
-const Layout = ({ children, darkMode, toggleDarkMode }) => {
+const Layout = ({ children, darkMode, toggleDarkMode, currentView, onNavigate }) => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-      <Sidebar />
+      <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} onNavigate={onNavigate} />
+      <Sidebar currentView={currentView} onNavigate={onNavigate} />
       
       <main className="pt-16 md:pl-64 min-h-screen transition-all duration-200">
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
