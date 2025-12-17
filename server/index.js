@@ -6,7 +6,11 @@ const { pool } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins for now to fix connection issues
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 signatures
 
 // Test connection
