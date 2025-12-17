@@ -60,13 +60,6 @@ const Header = ({ darkMode, toggleDarkMode, onNavigate }) => {
           >
             {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </button>
-          
-          <button
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            <LogOut className="h-5 w-5" />
-            <span className="hidden sm:inline">Logout</span>
-          </button>
         </div>
       </div>
     </header>
