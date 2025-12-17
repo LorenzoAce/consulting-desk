@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle } from 'lucide-react';
+import { User, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle, Building } from 'lucide-react';
 
 const Sidebar = ({ currentView, onNavigate }) => {
   const menuItems = [
@@ -42,7 +42,9 @@ const Header = ({ darkMode, toggleDarkMode, onNavigate }) => {
           className="flex items-center gap-3 cursor-pointer" 
           onClick={() => onNavigate('form')}
         >
-          <img src="/logo.png" alt="Consulting Desk Logo" className="h-10 w-auto object-contain" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+            <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide leading-none">
               CONSULTING DESK
