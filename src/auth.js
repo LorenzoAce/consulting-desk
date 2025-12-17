@@ -7,6 +7,9 @@ if (!authUrl) {
   console.error("VITE_NEON_AUTH_URL is missing! Please check your .env file or Vercel environment variables.");
 }
 
+// Log for debugging (will be visible in browser console)
+console.log("Neon Auth URL configured:", authUrl || "FALLBACK_TO_PLACEHOLDER");
+
 export const authClient = createAuthClient(authUrl || "https://placeholder-url-to-prevent-crash.com", {
   adapter: BetterAuthReactAdapter(),
 });
