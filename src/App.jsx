@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NeonAuthUIProvider, AuthView, useAuth } from '@neondatabase/neon-js/auth/react/ui';
+import { NeonAuthUIProvider, AuthView, useAuthData } from '@neondatabase/neon-js/auth/react/ui';
 import { authClient } from './auth';
 import ConsultingForm from './components/ConsultingForm';
 import Archive from './components/Archive';
@@ -9,7 +9,7 @@ function AppContent() {
   const [darkMode, setDarkMode] = useState(false);
   const [currentView, setCurrentView] = useState('form'); // 'form', 'archive', 'profile', 'settings'
   const [selectedCard, setSelectedCard] = useState(null);
-  const { session } = useAuth();
+  const { session } = useAuthData();
 
   useEffect(() => {
     if (darkMode) {
