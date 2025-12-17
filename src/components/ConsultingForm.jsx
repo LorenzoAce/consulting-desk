@@ -332,9 +332,11 @@ const ConsultingForm = ({ initialData }) => {
   const handleSave = async () => {
     try {
       let signatureData = '';
-      if (signatureType === 'draw' && !sigCanvas.current.isEmpty()) {
-        signatureData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-      } else if (signatureType === 'type') {
+      if (signatureType === 'draw') {
+        if (!sigCanvas.current.isEmpty()) {
+          signatureData = sigCanvas.current.toDataURL();
+        }
+      } else {
         signatureData = formData.operatorName;
       }
 
@@ -356,13 +358,14 @@ const ConsultingForm = ({ initialData }) => {
       });
 
       if (response.ok) {
-        alert('Scheda salvata correttamente nell\'archivio!');
+        alert('Scheda salvata con successo!');
+        // Optional: clear form or redirect
       } else {
-        alert('Errore durante il salvataggio della scheda.');
+        alert('Errore durante il salvataggio della scheda');
       }
     } catch (error) {
       console.error('Error saving card:', error);
-      alert('Errore di connessione al server. Assicurati che il backend sia avviato.');
+      alert('Errore di connessione al server');
     }
   };
 
