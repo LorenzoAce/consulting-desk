@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: '*', // Allow all origins for now to fix connection issues
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '50mb' })); // Increased limit for base64 signatures
@@ -99,6 +99,67 @@ app.post('/api/cards', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to save card' });
+  } finally {
+    client.release();
+  }
+});
+
+// Update a consulting card
+app.put('/api/cards/:id', async (req, res) => {
+  const { id } = req.params;
+  const client = await pool.connect();
+  try {
+    const {
+      businessName,
+      fullName,
+      address,
+      city,
+      province,
+      phone,
+      email,
+      source,
+      availability,
+      mainInterest,
+      bettingActive,
+      utilitiesActive,
+      bettingPartners,
+      utilityPartners,
+      requests,
+      notes,
+      assignedConsultant,
+      operatorName,
+      signatureType,
+      signatureData
+    } = req.body;
+
+    const query = `
+      UPDATE consulting_cards SET
+        business_name = $1, full_name = $2, address = $3, city = $4, province = $5, phone = $6, email = $7, source = $8,
+        availability = $9, main_interest = $10, betting_active = $11, utilities_active = $12,
+        betting_partners = $13, utility_partners = $14, requests = $15, notes = $16, assigned_consultant = $17, operator_name = $18,
+        signature_type = $19, signature_data = $20, updated_at = NOW()
+      WHERE id = $21
+      RETURNING *;
+    `;
+
+    const values = [
+      businessName, fullName, address, city, province, phone, email, source,
+      availability, mainInterest, bettingActive, utilitiesActive,
+      JSON.stringify(bettingPartners), JSON.stringify(utilityPartners),
+      requests, notes, assignedConsultant, operatorName, signatureType, signatureData,
+      id
+    ];
+
+    const result = await client.query(query, values);
+    
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update card' });
   } finally {
     client.release();
   }

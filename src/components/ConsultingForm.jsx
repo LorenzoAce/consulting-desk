@@ -514,8 +514,13 @@ const ConsultingForm = ({ initialData }) => {
       };
 
       const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
-      const response = await fetch(`${apiUrl}/api/cards`, {
-        method: 'POST',
+      
+      const isUpdate = initialData && initialData.id;
+      const url = isUpdate ? `${apiUrl}/api/cards/${initialData.id}` : `${apiUrl}/api/cards`;
+      const method = isUpdate ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -523,7 +528,7 @@ const ConsultingForm = ({ initialData }) => {
       });
 
       if (response.ok) {
-        alert('Scheda salvata con successo!');
+        alert(isUpdate ? 'Scheda aggiornata con successo!' : 'Scheda salvata con successo!');
         
         if (!initialData) {
             setFormData({
