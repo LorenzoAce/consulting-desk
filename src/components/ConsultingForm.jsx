@@ -311,14 +311,15 @@ const ConsultingForm = ({ initialData }) => {
     y += 15;
 
     drawField('Indirizzo', formData.address, leftCol, y);
-    drawField('Provincia', formData.province, rightCol, y);
+    drawField('Comune', formData.city, rightCol, y);
     y += 15;
 
-    drawField('Telefono', formData.phone, leftCol, y);
-    drawField('Email', formData.email, rightCol, y);
+    drawField('Provincia', formData.province, leftCol, y);
+    drawField('Telefono', formData.phone, rightCol, y);
     y += 15;
 
-    drawField('Fonte Acquisizione', formData.source, leftCol, y);
+    drawField('Email', formData.email, leftCol, y);
+    drawField('Fonte Acquisizione', formData.source, rightCol, y);
     y += 20;
 
     // Section 2: Dettagli Servizio
