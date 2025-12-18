@@ -42,12 +42,19 @@ function App() {
     }
   };
 
+  const handleNavigate = (viewId) => {
+    if (viewId === 'form') {
+      setSelectedCard(null);
+    }
+    setCurrentView(viewId);
+  };
+
   return (
     <Layout 
       darkMode={darkMode} 
       toggleDarkMode={toggleDarkMode}
       currentView={currentView}
-      onNavigate={setCurrentView}
+      onNavigate={handleNavigate}
     >
       {renderView()}
     </Layout>

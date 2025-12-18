@@ -11,6 +11,7 @@ const ConsultingForm = ({ initialData }) => {
     businessName: '',
     fullName: '',
     address: '',
+    city: '',
     province: '',
     phone: '',
     email: '',
@@ -39,6 +40,7 @@ const ConsultingForm = ({ initialData }) => {
         businessName: initialData.business_name || '',
         fullName: initialData.full_name || '',
         address: initialData.address || '',
+        city: initialData.city || '',
         province: initialData.province || '',
         phone: initialData.phone || '',
         email: initialData.email || '',
@@ -444,6 +446,16 @@ const ConsultingForm = ({ initialData }) => {
                 type="text"
                 name="address"
                 value={formData.address}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Comune</label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />

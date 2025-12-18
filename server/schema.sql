@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS consulting_cards (
   business_name TEXT,
   full_name TEXT,
   address TEXT,
+  city TEXT,
   province TEXT,
   phone TEXT,
   email TEXT,

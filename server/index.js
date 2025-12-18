@@ -32,6 +32,7 @@ app.post('/api/cards', async (req, res) => {
       businessName,
       fullName,
       address,
+      city,
       province,
       phone,
       email,
@@ -52,16 +53,16 @@ app.post('/api/cards', async (req, res) => {
 
     const query = `
       INSERT INTO consulting_cards (
-        business_name, full_name, address, province, phone, email, source,
+        business_name, full_name, address, city, province, phone, email, source,
         availability, main_interest, betting_active, utilities_active,
         betting_partners, utility_partners, requests, notes, assigned_consultant, operator_name,
         signature_type, signature_data
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
       RETURNING *;
     `;
 
     const values = [
-      businessName, fullName, address, province, phone, email, source,
+      businessName, fullName, address, city, province, phone, email, source,
       availability, mainInterest, bettingActive, utilitiesActive,
       JSON.stringify(bettingPartners), JSON.stringify(utilityPartners),
       requests, notes, assignedConsultant, operatorName, signatureType, signatureData
