@@ -158,8 +158,8 @@ app.put('/api/cards/:id', async (req, res) => {
     
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to update card' });
+    console.error('Error updating card:', err);
+    res.status(500).json({ error: 'Failed to update card', details: err.message });
   } finally {
     client.release();
   }

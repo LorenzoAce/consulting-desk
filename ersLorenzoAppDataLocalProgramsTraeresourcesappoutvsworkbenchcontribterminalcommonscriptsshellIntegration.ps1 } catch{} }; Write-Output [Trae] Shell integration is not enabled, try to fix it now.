@@ -1,0 +1,47 @@
+warning: in the working copy of 'src/components/Archive.jsx', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/components/Archive.jsx b/src/components/Archive.jsx[m
+[1mindex 9551c36..d26906d 100644[m
+[1m--- a/src/components/Archive.jsx[m
+[1m+++ b/src/components/Archive.jsx[m
+[36m@@ -35,7 +35,7 @@[m [mconst Archive = ({ onLoadCard }) => {[m
+ [m
+   useEffect(() => {[m
+     if (cards.length > 0) {[m
+[31m-      const getUnique = (key) => [...new Set(cards.map(c => c[key]?.trim()).filter(Boolean))].sort();[m
+[32m+[m[32m      const getUnique = (key) => [...new Set(cards.map(c => c[key]).filter(Boolean))].sort();[m
+       setUniqueValues({[m
+         city: getUnique('city'),[m
+         province: getUnique('province'),[m
+[36m@@ -338,11 +338,11 @@[m [mconst Archive = ({ onLoadCard }) => {[m
+             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">[m
+               <thead className="bg-gray-50 dark:bg-gray-900">[m
+                 <tr>[m
+[32m+[m[32m                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>[m
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ragione Sociale</th>[m
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Referente</th>[m
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comune</th>[m
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Provincia</th>[m
+[31m-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Indirizzo</th>[m
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interesse</th>[m
+                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulente</th>[m
+                   <th scope="col" className="relative px-6 py-3"><span className="sr-only">Azioni</span></th>[m
+[36m@@ -357,6 +357,9 @@[m [mconst Archive = ({ onLoadCard }) => {[m
+                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">[m
+                       {card.business_name}[m
+                     </td>[m
+[32m+[m[32m                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">[m
+[32m+[m[32m                      {card.address}[m
+[32m+[m[32m                    </td>[m
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">[m
+                       {card.full_name}[m
+                     </td>[m
+[36m@@ -365,9 +368,6 @@[m [mconst Archive = ({ onLoadCard }) => {[m
+                     </td>[m
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">[m
+                       {card.province}[m
+[31m-                    </td>[m
+[31m-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">[m
+[31m-                      {card.address}[m
+                     </td>[m
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">[m
+                       {card.main_interest}[m

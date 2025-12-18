@@ -556,7 +556,9 @@ const ConsultingForm = ({ initialData }) => {
               }
         }
       } else {
-        alert('Errore durante il salvataggio della scheda');
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        alert(`Errore durante il salvataggio della scheda: ${errorData.details || errorData.error || 'Errore sconosciuto'}`);
       }
     } catch (error) {
       console.error('Error saving card:', error);
