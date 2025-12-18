@@ -331,23 +331,68 @@ const ConsultingForm = ({ initialData }) => {
     doc.save(`scheda_${formData.fullName.replace(/\s+/g, '_') || 'cliente'}.pdf`);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    handleSave();
+  };
+
   const handleSave = async () => {
+    // Check for duplicates before saving
     try {
-      let signatureData = '';
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const checkResponse = await fetch(`${apiUrl}/api/cards/check-duplicate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessName: formData.businessName,
+          email: formData.email,
+          phone: formData.phone,
+          id: initialData ? initialData.id : null
+        })
+      });
+
+      if (checkResponse.ok) {
+        const { duplicates } = await checkResponse.json();
+        if (duplicates.length > 0) {
+          const duplicate = duplicates[0];
+          let message = 'Attenzione: Esiste già una scheda con ';
+          if (duplicate.business_name === formData.businessName) message += 'questa Ragione Sociale.';
+          else if (duplicate.phone === formData.phone) message += 'questo Telefono.';
+          else if (duplicate.email === formData.email) message += 'questa Email.';
+          
+          message += '\nVuoi procedere comunque al salvataggio?';
+          
+          if (!window.confirm(message)) {
+            return;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking duplicates:", error);
+      // Continue saving if check fails to avoid blocking the user
+    }
+
+    try {
+      let signatureDataToSave = '';
+
       if (signatureType === 'draw') {
         if (!sigCanvas.current.isEmpty()) {
-          signatureData = sigCanvas.current.toDataURL();
+          // Get the base64 string directly from the canvas
+          signatureDataToSave = sigCanvas.current.toDataURL('image/png');
+        } else if (initialData && initialData.signature_type === 'draw') {
+           // Keep existing signature if not modified
+           signatureDataToSave = initialData.signature_data;
         }
       } else {
-        signatureData = formData.operatorName;
+         signatureDataToSave = formData.operatorName;
       }
-
-      const payload = {
+      
+      const dataToSubmit = {
         ...formData,
-        bettingPartners,
-        utilityPartners,
         signatureType,
-        signatureData
+        signatureData: signatureDataToSave,
+        bettingPartners,
+        utilityPartners
       };
 
       const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
@@ -356,12 +401,37 @@ const ConsultingForm = ({ initialData }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(dataToSubmit),
       });
 
       if (response.ok) {
         alert('Scheda salvata con successo!');
-        // Optional: clear form or redirect
+        
+        if (!initialData) {
+            setFormData({
+                businessName: '',
+                fullName: '',
+                address: '',
+                city: '',
+                province: '',
+                phone: '',
+                email: '',
+                source: 'TELEFONO',
+                availability: 'MEDIA',
+                bettingActive: 'NO',
+                utilitiesActive: 'NO',
+                mainInterest: 'SCOMMESSE',
+                requests: '',
+                notes: '',
+                assignedConsultant: '',
+                operatorName: ''
+              });
+              setBettingPartners([]);
+              setUtilityPartners([]);
+              if (sigCanvas.current && typeof sigCanvas.current.clear === 'function') {
+                  sigCanvas.current.clear();
+              }
+        }
       } else {
         alert('Errore durante il salvataggio della scheda');
       }

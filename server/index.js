@@ -24,6 +24,32 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+// Check for duplicates
+app.post('/api/cards/check-duplicate', async (req, res) => {
+  const { businessName, email, phone, id } = req.body;
+  const client = await pool.connect();
+  try {
+    let query = `
+      SELECT id, business_name, email, phone FROM consulting_cards 
+      WHERE (business_name = $1 OR email = $2 OR phone = $3)
+    `;
+    let values = [businessName, email, phone];
+
+    if (id) {
+      query += ` AND id != $4`;
+      values.push(id);
+    }
+
+    const result = await client.query(query, values);
+    res.json({ duplicates: result.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to check duplicates' });
+  } finally {
+    client.release();
+  }
+});
+
 // Save a new consulting card
 app.post('/api/cards', async (req, res) => {
   const client = await pool.connect();
