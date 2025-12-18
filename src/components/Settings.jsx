@@ -1,143 +1,88 @@
-import React, { useState } from 'react';
-import { Bell, Lock, Globe, Database, Save, Moon, Sun } from 'lucide-react';
+import React from 'react';
+import { Bell, Shield, Smartphone, Globe, Moon, Database } from 'lucide-react';
 
 const Settings = () => {
-  const [activeTab, setActiveTab] = useState('general');
-
-  const tabs = [
-    { id: 'general', label: 'Generale', icon: Globe },
-    { id: 'notifications', label: 'Notifiche', icon: Bell },
-    { id: 'security', label: 'Sicurezza', icon: Lock },
-    { id: 'data', label: 'Dati', icon: Database },
-  ];
-
   return (
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Impostazioni</h2>
-
+    <div className="max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Impostazioni</h1>
+      
+      {/* General Settings */}
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-        <div className="flex flex-col md:flex-row min-h-[500px]">
-          {/* Sidebar */}
-          <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-            <nav className="p-4 space-y-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
-                    activeTab === tab.id
-                      ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <tab.icon className="mr-3 h-5 w-5" />
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <Globe className="h-5 w-5 text-blue-500" />
+            Generale
+          </h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Lingua</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Seleziona la lingua dell'interfaccia</p>
+            </div>
+            <select className="mt-1 block w-40 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white text-sm">
+              <option>Italiano</option>
+              <option>English</option>
+              <option>Español</option>
+            </select>
           </div>
+        </div>
+      </div>
 
-          {/* Content */}
-          <div className="flex-1 p-6 md:p-8">
-            {activeTab === 'general' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2 dark:border-gray-700">Impostazioni Generali</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Lingua</label>
-                      <p className="text-xs text-gray-500">Seleziona la lingua dell'interfaccia</p>
-                    </div>
-                    <select className="mt-1 block w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                      <option>Italiano</option>
-                      <option>English</option>
-                      <option>Español</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Fuso Orario</label>
-                      <p className="text-xs text-gray-500">Imposta il tuo fuso orario locale</p>
-                    </div>
-                    <select className="mt-1 block w-48 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                      <option>Europe/Rome (GMT+1)</option>
-                      <option>UTC</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2 dark:border-gray-700">Preferenze Notifiche</h3>
-                
-                <div className="space-y-4">
-                  {['Nuove pratiche assegnate', 'Aggiornamenti di stato', 'Scadenze imminenti', 'Newsletter settimanale'].map((item, i) => (
-                    <div key={i} className="flex items-start">
-                      <div className="flex items-center h-5">
-                        <input
-                          id={`notify-${i}`}
-                          name={`notify-${i}`}
-                          type="checkbox"
-                          defaultChecked={i < 2}
-                          className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                        />
-                      </div>
-                      <div className="ml-3 text-sm">
-                        <label htmlFor={`notify-${i}`} className="font-medium text-gray-700 dark:text-gray-300">{item}</label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'security' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2 dark:border-gray-700">Sicurezza</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password Attuale</label>
-                    <input type="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nuova Password</label>
-                    <input type="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600" />
-                  </div>
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium">
-                    Aggiorna Password
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'data' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white border-b pb-2 dark:border-gray-700">Gestione Dati</h3>
-                
-                <div className="space-y-4">
-                   <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
-                    <h4 className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Esporta Dati</h4>
-                    <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">Scarica una copia di tutti i tuoi dati in formato JSON.</p>
-                    <button className="mt-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-3 py-1.5 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-                      Scarica Archivio
-                    </button>
-                   </div>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-              <button className="flex items-center gap-2 bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition-colors font-medium shadow-sm">
-                <Save className="h-4 w-4" />
-                Salva Modifiche
-              </button>
+      {/* Notifications */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <Bell className="h-5 w-5 text-yellow-500" />
+            Notifiche
+          </h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">Notifiche Email</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Ricevi aggiornamenti via email</p>
+            </div>
+            <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+              <input type="checkbox" name="toggle" id="toggle1" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 checked:right-0 checked:border-blue-600"/>
+              <label htmlFor="toggle1" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer checked:bg-blue-600"></label>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Security */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <Shield className="h-5 w-5 text-green-500" />
+            Sicurezza
+          </h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            Cambia Password
+          </button>
+          <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
+             <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            Attiva Autenticazione a Due Fattori
+          </button>
+          </div>
+        </div>
+      </div>
+      
+       {/* Data */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+            <Database className="h-5 w-5 text-purple-500" />
+            Dati
+          </h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <button className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+            Esporta Tutti i Dati
+          </button>
         </div>
       </div>
     </div>

@@ -22,6 +22,7 @@ const Sidebar = ({ currentView, onNavigate, isOpen, onClose }) => {
       <aside className={`
         fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-30 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:translate-x-0 md:block
       `}>
         <div className="flex flex-col h-full py-4">
           <nav className="flex-1 space-y-1 px-2">
@@ -57,7 +58,7 @@ const Header = ({ darkMode, toggleDarkMode, onNavigate, toggleSidebar }) => {
         <div className="flex items-center gap-4">
           <button
             onClick={toggleSidebar}
-            className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+            className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md md:hidden focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             aria-label="Open sidebar"
           >
             <Menu className="h-6 w-6" />
@@ -119,7 +120,7 @@ const Layout = ({ children, darkMode, toggleDarkMode, currentView, onNavigate })
         onClose={() => setIsSidebarOpen(false)}
       />
       
-      <main className={`pt-16 min-h-screen transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : ''}`}>
+      <main className="pt-16 md:pl-64 min-h-screen transition-all duration-200">
         <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 p-4">
           {children}
         </div>
