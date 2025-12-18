@@ -11,6 +11,7 @@ const Archive = ({ onLoadCard }) => {
     globalSearch: '',
     businessName: '',
     fullName: '',
+    address: '',
     city: [],
     province: [],
     mainInterest: [],
@@ -103,6 +104,7 @@ const Archive = ({ onLoadCard }) => {
     const matchesSpecific = 
       (filters.businessName === '' || card.business_name?.toLowerCase().includes(filters.businessName.toLowerCase())) &&
       (filters.fullName === '' || card.full_name?.toLowerCase().includes(filters.fullName.toLowerCase())) &&
+      (filters.address === '' || card.address?.toLowerCase().includes(filters.address.toLowerCase())) &&
       (filters.city.length === 0 || filters.city.includes(card.city)) &&
       (filters.province.length === 0 || filters.province.includes(card.province)) &&
       (filters.mainInterest.length === 0 || filters.mainInterest.includes(card.main_interest)) &&
@@ -212,6 +214,14 @@ const Archive = ({ onLoadCard }) => {
             onChange={handleFilterChange}
             className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
           />
+          <input
+            type="text"
+            name="address"
+            placeholder="Indirizzo"
+            value={filters.address}
+            onChange={handleFilterChange}
+            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
           
           <FilterDropdown 
             label="Comune" 
@@ -286,6 +296,12 @@ const Archive = ({ onLoadCard }) => {
               </div>
               
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 truncate">{card.business_name}</h3>
+              
+              {/* Address in Grid View */}
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate">
+                {card.address}
+              </p>
+
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1">
                 <User className="h-3 w-3" />
                 {card.full_name}
@@ -340,6 +356,9 @@ const Archive = ({ onLoadCard }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {card.business_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {card.address}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {card.full_name}
