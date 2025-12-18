@@ -11,13 +11,19 @@ const Archive = ({ onLoadCard }) => {
     globalSearch: '',
     businessName: '',
     fullName: '',
-    city: '',
-    province: '',
-    phone: '',
-    email: '',
-    mainInterest: '',
-    assignedConsultant: '',
-    operatorName: ''
+    city: [],
+    province: [],
+    mainInterest: [],
+    assignedConsultant: [],
+    operatorName: []
+  });
+
+  const [uniqueValues, setUniqueValues] = useState({
+    city: [],
+    province: [],
+    mainInterest: [],
+    assignedConsultant: [],
+    operatorName: []
   });
 
   const [showFilters, setShowFilters] = useState(false);
@@ -25,6 +31,19 @@ const Archive = ({ onLoadCard }) => {
   useEffect(() => {
     fetchCards();
   }, []);
+
+  useEffect(() => {
+    if (cards.length > 0) {
+      const getUnique = (key) => [...new Set(cards.map(c => c[key]).filter(Boolean))].sort();
+      setUniqueValues({
+        city: getUnique('city'),
+        province: getUnique('province'),
+        mainInterest: getUnique('main_interest'),
+        assignedConsultant: getUnique('assigned_consultant'),
+        operatorName: getUnique('operator_name')
+      });
+    }
+  }, [cards]);
 
   const fetchCards = async () => {
     try {
@@ -65,6 +84,16 @@ const Archive = ({ onLoadCard }) => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleCheckboxChange = (category, value) => {
+    setFilters(prev => {
+      const currentValues = prev[category];
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter(v => v !== value)
+        : [...currentValues, value];
+      return { ...prev, [category]: newValues };
+    });
+  };
+
   const filteredCards = cards.filter(card => {
     const matchesGlobal = filters.globalSearch === '' || 
       Object.values(card).some(val => 
@@ -74,16 +103,39 @@ const Archive = ({ onLoadCard }) => {
     const matchesSpecific = 
       (filters.businessName === '' || card.business_name?.toLowerCase().includes(filters.businessName.toLowerCase())) &&
       (filters.fullName === '' || card.full_name?.toLowerCase().includes(filters.fullName.toLowerCase())) &&
-      (filters.city === '' || card.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
-      (filters.province === '' || card.province?.toLowerCase().includes(filters.province.toLowerCase())) &&
-      (filters.phone === '' || card.phone?.toLowerCase().includes(filters.phone.toLowerCase())) &&
-      (filters.email === '' || card.email?.toLowerCase().includes(filters.email.toLowerCase())) &&
-      (filters.mainInterest === '' || card.main_interest?.toLowerCase().includes(filters.mainInterest.toLowerCase())) &&
-      (filters.assignedConsultant === '' || card.assigned_consultant?.toLowerCase().includes(filters.assignedConsultant.toLowerCase())) &&
-      (filters.operatorName === '' || card.operator_name?.toLowerCase().includes(filters.operatorName.toLowerCase()));
+      (filters.city.length === 0 || filters.city.includes(card.city)) &&
+      (filters.province.length === 0 || filters.province.includes(card.province)) &&
+      (filters.mainInterest.length === 0 || filters.mainInterest.includes(card.main_interest)) &&
+      (filters.assignedConsultant.length === 0 || filters.assignedConsultant.includes(card.assigned_consultant)) &&
+      (filters.operatorName.length === 0 || filters.operatorName.includes(card.operator_name));
 
     return matchesGlobal && matchesSpecific;
   });
+
+  const FilterDropdown = ({ label, options, selected, onChange, category }) => (
+    <div className="relative group">
+      <div className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer flex justify-between items-center group-hover:border-blue-500">
+        <span className="truncate">{selected.length ? `${selected.length} selezionati` : label}</span>
+        <Filter className="h-3 w-3 text-gray-400" />
+      </div>
+      <div className="hidden group-hover:block absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+        {options.map(option => (
+          <label key={option} className="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={selected.includes(option)}
+              onChange={() => onChange(category, option)}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+            />
+            <span className="text-sm text-gray-700 dark:text-gray-200">{option}</span>
+          </label>
+        ))}
+        {options.length === 0 && (
+          <div className="px-4 py-2 text-sm text-gray-500 italic">Nessuna opzione</div>
+        )}
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -95,55 +147,55 @@ const Archive = ({ onLoadCard }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Archivio Schede</h2>
-        
-        <div className="flex items-center gap-2 w-full md:w-auto">
-           {/* View Toggle */}
-           <div className="flex bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Archivio Schede</h2>
+          
+          <div className="flex items-center gap-2 w-full md:w-auto">
+             {/* Global Search - Always Visible */}
+             <div className="relative flex-grow md:flex-grow-0 md:w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  name="globalSearch"
+                  placeholder="Cerca ovunque..."
+                  value={filters.globalSearch}
+                  onChange={handleFilterChange}
+                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 shadow-sm"
+                />
+              </div>
+
+             {/* View Toggle */}
+             <div className="flex bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
+                title="Vista Griglia"
+              >
+                <LayoutGrid className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
+                title="Vista Elenco"
+              >
+                <List className="h-5 w-5" />
+              </button>
+            </div>
+
             <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
-              title="Vista Griglia"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
             >
-              <LayoutGrid className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
-              title="Vista Elenco"
-            >
-              <List className="h-5 w-5" />
+              <Filter className="h-4 w-4" />
+              Filtri Avanzati
             </button>
           </div>
-
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
-          >
-            <Filter className="h-4 w-4" />
-            Filtri
-          </button>
         </div>
-      </div>
 
       {/* Filters Section */}
       {showFilters && (
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all">
-          <div className="col-span-full">
-             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                name="globalSearch"
-                placeholder="Cerca ovunque..."
-                value={filters.globalSearch}
-                onChange={handleFilterChange}
-                className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-          </div>
-          
           <input
             type="text"
             name="businessName"
@@ -154,38 +206,47 @@ const Archive = ({ onLoadCard }) => {
           />
           <input
             type="text"
-            name="city"
-            placeholder="Comune"
-            value={filters.city}
+            name="fullName"
+            placeholder="Referente"
+            value={filters.fullName}
             onChange={handleFilterChange}
             className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
           />
-          <input
-            type="text"
-            name="province"
-            placeholder="Provincia"
-            value={filters.province}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+          
+          <FilterDropdown 
+            label="Comune" 
+            options={uniqueValues.city} 
+            selected={filters.city} 
+            onChange={handleCheckboxChange} 
+            category="city" 
           />
-          <input
-            type="text"
-            name="mainInterest"
-            placeholder="Interesse Principale"
-            value={filters.mainInterest}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+          
+          <FilterDropdown 
+            label="Provincia" 
+            options={uniqueValues.province} 
+            selected={filters.province} 
+            onChange={handleCheckboxChange} 
+            category="province" 
           />
-           <input
-            type="text"
-            name="assignedConsultant"
-            placeholder="Consulente Assegnato"
-            value={filters.assignedConsultant}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+          
+          <FilterDropdown 
+            label="Interesse" 
+            options={uniqueValues.mainInterest} 
+            selected={filters.mainInterest} 
+            onChange={handleCheckboxChange} 
+            category="mainInterest" 
+          />
+          
+          <FilterDropdown 
+            label="Consulente" 
+            options={uniqueValues.assignedConsultant} 
+            selected={filters.assignedConsultant} 
+            onChange={handleCheckboxChange} 
+            category="assignedConsultant" 
           />
         </div>
       )}
+      </div>
 
       {/* Results Count */}
       <div className="text-sm text-gray-500 dark:text-gray-400">

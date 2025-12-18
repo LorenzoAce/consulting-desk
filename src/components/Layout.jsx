@@ -42,8 +42,8 @@ const Header = ({ darkMode, toggleDarkMode, onNavigate }) => {
           className="flex items-center gap-3 cursor-pointer" 
           onClick={() => onNavigate('form')}
         >
-          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30">
-            <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          <div className="flex items-center justify-center h-10 w-10 overflow-hidden">
+            <img src="/logo.png" alt="Logo" className="h-full w-full object-contain" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide leading-none">
