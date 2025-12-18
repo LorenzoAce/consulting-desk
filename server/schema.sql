@@ -19,5 +19,6 @@ CREATE TABLE IF NOT EXISTS consulting_cards (
   operator_name TEXT,
   signature_type TEXT,
   signature_data TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
