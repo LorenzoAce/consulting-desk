@@ -30,8 +30,35 @@ const ConsultingForm = ({ initialData }) => {
   const [utilityPartners, setUtilityPartners] = useState([]);
   const [newBettingPartner, setNewBettingPartner] = useState('');
   const [newUtilityPartner, setNewUtilityPartner] = useState('');
+  
+  // Cities autocomplete state
+  const [allCities, setAllCities] = useState([]);
+  const [filteredCities, setFilteredCities] = useState([]);
+  const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+  const [isCityLoading, setIsCityLoading] = useState(false);
 
   const sigCanvas = useRef({});
+
+  // Load cities data
+  useEffect(() => {
+    const fetchCities = async () => {
+      setIsCityLoading(true);
+      try {
+        // Using a reliable open source repository for Italian municipalities
+        const response = await fetch('https://raw.githubusercontent.com/matteocontrini/comuni-json/master/comuni.json');
+        if (response.ok) {
+          const data = await response.json();
+          setAllCities(data);
+        }
+      } catch (error) {
+        console.error('Error loading cities:', error);
+      } finally {
+        setIsCityLoading(false);
+      }
+    };
+    
+    fetchCities();
+  }, []);
 
   // Load initial data if provided
   useEffect(() => {
@@ -86,7 +113,31 @@ const ConsultingForm = ({ initialData }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value.toUpperCase() }));
+    const upperValue = value.toUpperCase();
+    
+    setFormData(prev => ({ ...prev, [name]: upperValue }));
+
+    // Handle city autocomplete logic
+    if (name === 'city') {
+      if (value.length > 1) {
+        const matches = allCities.filter(c => 
+          c.nome.toUpperCase().startsWith(upperValue)
+        ).slice(0, 10); // Limit to 10 suggestions
+        setFilteredCities(matches);
+        setShowCitySuggestions(true);
+      } else {
+        setShowCitySuggestions(false);
+      }
+    }
+  };
+
+  const selectCity = (cityData) => {
+    setFormData(prev => ({
+      ...prev,
+      city: cityData.nome.toUpperCase(),
+      province: cityData.sigla.toUpperCase()
+    }));
+    setShowCitySuggestions(false);
   };
 
   const clearSignature = () => {
@@ -520,15 +571,32 @@ const ConsultingForm = ({ initialData }) => {
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Comune</label>
               <input
                 type="text"
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
+                onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
+                onFocus={() => formData.city.length > 1 && setShowCitySuggestions(true)}
+                autoComplete="off"
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                placeholder={isCityLoading ? "Caricamento comuni..." : ""}
               />
+              {showCitySuggestions && filteredCities.length > 0 && (
+                <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
+                  {filteredCities.map((city, index) => (
+                    <li
+                      key={`${city.codice}-${index}`}
+                      onClick={() => selectCity(city)}
+                      className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-700 dark:text-gray-200"
+                    >
+                      {city.nome} ({city.sigla})
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Provincia</label>
