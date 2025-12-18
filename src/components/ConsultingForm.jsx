@@ -37,6 +37,12 @@ const ConsultingForm = ({ initialData }) => {
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [isCityLoading, setIsCityLoading] = useState(false);
 
+  // Address autocomplete state
+  const [filteredAddresses, setFilteredAddresses] = useState([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const addressTimeoutRef = useRef(null);
+
   const sigCanvas = useRef({});
 
   // Load cities data
@@ -129,6 +135,36 @@ const ConsultingForm = ({ initialData }) => {
         setShowCitySuggestions(false);
       }
     }
+
+    // Handle address autocomplete logic
+    if (name === 'address') {
+      if (addressTimeoutRef.current) clearTimeout(addressTimeoutRef.current);
+      
+      if (value.length > 2) {
+        setIsAddressLoading(true);
+        addressTimeoutRef.current = setTimeout(async () => {
+          try {
+            // Use Nominatim OpenStreetMap API for address search
+            // Focus on Italy
+            const query = encodeURIComponent(value);
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&countrycodes=it&addressdetails=1&limit=5`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              setFilteredAddresses(data);
+              setShowAddressSuggestions(true);
+            }
+          } catch (error) {
+            console.error('Error searching address:', error);
+          } finally {
+            setIsAddressLoading(false);
+          }
+        }, 500); // Debounce 500ms to avoid too many requests
+      } else {
+        setShowAddressSuggestions(false);
+        setIsAddressLoading(false);
+      }
+    }
   };
 
   const selectCity = (cityData) => {
@@ -138,6 +174,37 @@ const ConsultingForm = ({ initialData }) => {
       province: cityData.sigla.toUpperCase()
     }));
     setShowCitySuggestions(false);
+  };
+
+  const selectAddress = (addressData) => {
+    // Extract address components
+    const road = addressData.address.road || '';
+    const houseNumber = addressData.address.house_number || '';
+    const fullAddress = `${road} ${houseNumber}`.trim().toUpperCase();
+    
+    // Extract city and province if available
+    const city = (addressData.address.city || addressData.address.town || addressData.address.village || '').toUpperCase();
+    
+    // Find province code if possible (Nominatim returns full province name usually)
+    let provinceCode = '';
+    const provinceName = (addressData.address.county || addressData.address.province || '').toUpperCase();
+    
+    if (city) {
+        // Try to find matching city in our local database to get the correct province code
+        const matchingCity = allCities.find(c => c.nome.toUpperCase() === city);
+        if (matchingCity) {
+            provinceCode = matchingCity.sigla;
+        }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      address: fullAddress || addressData.display_name.split(',')[0].toUpperCase(),
+      city: city || prev.city,
+      province: provinceCode || prev.province
+    }));
+    
+    setShowAddressSuggestions(false);
   };
 
   const clearSignature = () => {
@@ -561,15 +628,34 @@ const ConsultingForm = ({ initialData }) => {
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Indirizzo</label>
               <input
                 type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
+                onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 200)}
+                autoComplete="off"
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                placeholder={isAddressLoading ? "Ricerca indirizzo..." : ""}
               />
+              {showAddressSuggestions && filteredAddresses.length > 0 && (
+                <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
+                  {filteredAddresses.map((item, index) => (
+                    <li
+                      key={`${item.place_id}-${index}`}
+                      onClick={() => selectAddress(item)}
+                      className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 last:border-0"
+                    >
+                      <div className="font-medium">{item.address.road} {item.address.house_number}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {item.address.city || item.address.town || item.address.village}, {item.address.county || item.address.province}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Comune</label>
