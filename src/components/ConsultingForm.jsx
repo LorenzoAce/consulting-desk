@@ -445,7 +445,7 @@ const ConsultingForm = ({ initialData }) => {
     // Footer
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(8);
-    doc.text(`Generato il: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} - CONSULTING DESK`, 105, pageHeight - 10, { align: 'center' });
+    doc.text(`Generato il: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} - CONSULTING DESK by DESA SERVICE S.R.L.S.`, 105, pageHeight - 10, { align: 'center' });
 
     doc.save(`scheda_${formData.fullName.replace(/\s+/g, '_') || 'cliente'}.pdf`);
   };

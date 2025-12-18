@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ConsultingForm from './components/ConsultingForm';
 import Archive from './components/Archive';
+import Profile from './components/Profile';
+import Settings from './components/Settings';
 import Layout from './components/Layout';
 
 function App() {
@@ -37,6 +39,10 @@ function App() {
         return <ConsultingForm initialData={selectedCard} key={selectedCard ? selectedCard.id : 'new'} />;
       case 'archive':
         return <Archive onLoadCard={handleLoadCard} />;
+      case 'profile':
+        return <Profile />;
+      case 'settings':
+        return <Settings />;
       default:
         return <ConsultingForm />;
     }

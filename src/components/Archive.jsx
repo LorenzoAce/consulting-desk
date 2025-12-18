@@ -9,8 +9,8 @@ const Archive = ({ onLoadCard }) => {
   // Advanced filters state
   const [filters, setFilters] = useState({
     globalSearch: '',
-    businessName: '',
-    fullName: '',
+    businessName: [],
+    fullName: [],
     address: '',
     city: [],
     province: [],
@@ -20,6 +20,8 @@ const Archive = ({ onLoadCard }) => {
   });
 
   const [uniqueValues, setUniqueValues] = useState({
+    businessName: [],
+    fullName: [],
     city: [],
     province: [],
     mainInterest: [],
@@ -198,21 +200,19 @@ const Archive = ({ onLoadCard }) => {
       {/* Filters Section */}
       {showFilters && (
         <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all">
-          <input
-            type="text"
-            name="businessName"
-            placeholder="Ragione Sociale"
-            value={filters.businessName}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+          <FilterDropdown 
+            label="Ragione Sociale" 
+            options={uniqueValues.businessName} 
+            selected={filters.businessName} 
+            onChange={handleCheckboxChange} 
+            category="businessName" 
           />
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Referente"
-            value={filters.fullName}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
+          <FilterDropdown 
+            label="Referente" 
+            options={uniqueValues.fullName} 
+            selected={filters.fullName} 
+            onChange={handleCheckboxChange} 
+            category="fullName" 
           />
           <input
             type="text"
@@ -253,6 +253,14 @@ const Archive = ({ onLoadCard }) => {
             selected={filters.assignedConsultant} 
             onChange={handleCheckboxChange} 
             category="assignedConsultant" 
+          />
+
+          <FilterDropdown 
+            label="Operatore" 
+            options={uniqueValues.operatorName} 
+            selected={filters.operatorName} 
+            onChange={handleCheckboxChange} 
+            category="operatorName" 
           />
         </div>
       )}
