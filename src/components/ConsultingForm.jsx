@@ -43,15 +43,15 @@ const ConsultingForm = ({ initialData }) => {
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const addressTimeoutRef = useRef(null);
 
-  // PDF Generation State
+  // PDF Generation Options State
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [pdfOptions, setPdfOptions] = useState({
     anagrafica: true,
-    servizi: true,
+    dettagli: true,
     note: true,
     assegnazione: true,
     firma: true,
-    disclaimer: false
+    disclaimer: true
   });
 
   const sigCanvas = useRef({});
@@ -240,7 +240,7 @@ const ConsultingForm = ({ initialData }) => {
     }
   };
 
-  const generatePDF = (options = pdfOptions) => {
+  const generatePDF = () => {
     const doc = new jsPDF();
     
     // Header / Logo
@@ -309,7 +309,7 @@ const ConsultingForm = ({ initialData }) => {
     };
 
     // Section 1: Anagrafica
-    if (options.anagrafica) {
+    if (pdfOptions.anagrafica) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('Anagrafica Cliente', leftCol, y);
@@ -336,7 +336,13 @@ const ConsultingForm = ({ initialData }) => {
     }
 
     // Section 2: Dettagli Servizio
-    if (options.servizi) {
+    if (pdfOptions.dettagli) {
+      // Check space
+      if (y + 40 > 280) {
+        doc.addPage();
+        y = 20;
+      }
+
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text('Dettagli Servizio', leftCol, y);
@@ -375,7 +381,7 @@ const ConsultingForm = ({ initialData }) => {
     }
 
     // Section 3: Note e Richieste
-    if (options.note) {
+    if (pdfOptions.note) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       
@@ -398,14 +404,20 @@ const ConsultingForm = ({ initialData }) => {
       y += Math.max(reqHeight, notesHeight) + 20;
     }
 
-    // Section 4: Assegnazione
-    if (options.assegnazione) {
-       // Check if we need a new page
-      if (y + 40 > 280) {
+    // Check if we need a new page for signature
+    if (y + 40 > 280) {
+      doc.addPage();
+      y = 20;
+    }
+
+    // Assegnazione Section
+    if (pdfOptions.assegnazione) {
+      // Check space
+      if (y + 30 > 280) {
         doc.addPage();
         y = 20;
       }
-
+      
       // Assigned Consultant Field
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
@@ -417,29 +429,8 @@ const ConsultingForm = ({ initialData }) => {
       y += 20;
     }
 
-    // Disclaimer
-    if (options.disclaimer) {
-      if (y + 60 > 280) {
-        doc.addPage();
-        y = 20;
-      }
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Avviso', leftCol, y);
-      y += 7;
-      
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      const disclaimerText = "I contatti presenti in questa scheda sono stati individuati tramite ricerche svolte con criteri accurati e non costituiscono appuntamenti, richieste dirette o manifestazioni di interesse da parte dei soggetti indicati. L’utilizzo dei dati è a esclusiva responsabilità dell’utente, nel rispetto della normativa vigente.";
-      const splitDisclaimer = doc.splitTextToSize(disclaimerText, 170);
-      doc.text(splitDisclaimer, leftCol, y);
-      
-      y += splitDisclaimer.length * 4 + 10;
-    }
-
     // Signature Section
-    if (options.firma) {
+    if (pdfOptions.firma) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       
@@ -450,8 +441,6 @@ const ConsultingForm = ({ initialData }) => {
       }
 
       // Left: Firma Operatore
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
       doc.text('Firma Operatore', leftCol, y);
       
       // Right: Firma Consulente
@@ -483,19 +472,37 @@ const ConsultingForm = ({ initialData }) => {
       // Placeholder for manual signature
       doc.text('_________________________', rightCol, y + 20);
       doc.setTextColor(0);
+      
+      y += 40; // Add some space after signatures
+    }
+    
+    // Disclaimer
+    if (pdfOptions.disclaimer) {
+      // Check space
+      if (y + 30 > 280) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.setFont('helvetica', 'italic');
+      
+      const disclaimerText = "Avviso - I contatti presenti in questa scheda sono stati individuati tramite ricerche svolte con criteri accurati e non costituiscono appuntamenti, richieste dirette o manifestazioni di interesse da parte dei soggetti indicati. L’utilizzo dei dati è a esclusiva responsabilità dell’utente, nel rispetto della normativa vigente.";
+      const splitDisclaimer = doc.splitTextToSize(disclaimerText, 170); // Width 190 - 20 padding
+      
+      doc.text(splitDisclaimer, 105, y, { align: 'center' });
+      doc.setTextColor(0);
     }
 
     // Footer
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
     doc.text(`Generato il: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} - CONSULTING DESK by DESA SERVICE S.R.L.S.`, 105, pageHeight - 10, { align: 'center' });
 
     doc.save(`scheda_${formData.fullName.replace(/\s+/g, '_') || 'cliente'}.pdf`);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    handleSave();
+    setShowPdfModal(false); // Close modal after generation
   };
 
   const handleSave = async () => {
@@ -608,6 +615,11 @@ const ConsultingForm = ({ initialData }) => {
       console.error('Error saving card:', error);
       alert('Errore di connessione al server');
     }
+  };
+
+  const handlePdfOptionChange = (e) => {
+    const { name, checked } = e.target;
+    setPdfOptions(prev => ({ ...prev, [name]: checked }));
   };
 
   return (
@@ -1037,139 +1049,108 @@ const ConsultingForm = ({ initialData }) => {
         </div>
       </div>
 
-      {/* PDF Generation Modal */}
+      {/* PDF Options Modal */}
       {showPdfModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setShowPdfModal(false)}></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
-                      Seleziona Sezioni PDF
-                    </h3>
-                    <div className="mt-4 space-y-3">
-                      <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="anagrafica"
-                            name="anagrafica"
-                            type="checkbox"
-                            checked={pdfOptions.anagrafica}
-                            onChange={(e) => setPdfOptions({...pdfOptions, anagrafica: e.target.checked})}
-                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="anagrafica" className="font-medium text-gray-700 dark:text-gray-300">Anagrafica Cliente</label>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="servizi"
-                            name="servizi"
-                            type="checkbox"
-                            checked={pdfOptions.servizi}
-                            onChange={(e) => setPdfOptions({...pdfOptions, servizi: e.target.checked})}
-                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="servizi" className="font-medium text-gray-700 dark:text-gray-300">Dettagli Servizio</label>
-                        </div>
-                      </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Opzioni PDF</h3>
+              <button onClick={() => setShowPdfModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-3">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Seleziona le sezioni da includere nel PDF:</p>
+              
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="anagrafica"
+                    checked={pdfOptions.anagrafica}
+                    onChange={handlePdfOptionChange}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">Anagrafica</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="dettagli"
+                    checked={pdfOptions.dettagli}
+                    onChange={handlePdfOptionChange}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">Dettagli Servizio</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="note"
+                    checked={pdfOptions.note}
+                    onChange={handlePdfOptionChange}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">Note e Richieste</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="assegnazione"
+                    checked={pdfOptions.assegnazione}
+                    onChange={handlePdfOptionChange}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">Assegnazione</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="firma"
+                    checked={pdfOptions.firma}
+                    onChange={handlePdfOptionChange}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">Firma Operatore</span>
+                </label>
+                
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="disclaimer"
+                    checked={pdfOptions.disclaimer}
+                    onChange={handlePdfOptionChange}
+                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">Avviso (Disclaimer)</span>
+                </label>
+              </div>
 
-                      <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="note"
-                            name="note"
-                            type="checkbox"
-                            checked={pdfOptions.note}
-                            onChange={(e) => setPdfOptions({...pdfOptions, note: e.target.checked})}
-                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="note" className="font-medium text-gray-700 dark:text-gray-300">Note e Richieste</label>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="assegnazione"
-                            name="assegnazione"
-                            type="checkbox"
-                            checked={pdfOptions.assegnazione}
-                            onChange={(e) => setPdfOptions({...pdfOptions, assegnazione: e.target.checked})}
-                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="assegnazione" className="font-medium text-gray-700 dark:text-gray-300">Assegnazione (Consulente)</label>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="firma"
-                            name="firma"
-                            type="checkbox"
-                            checked={pdfOptions.firma}
-                            onChange={(e) => setPdfOptions({...pdfOptions, firma: e.target.checked})}
-                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="firma" className="font-medium text-gray-700 dark:text-gray-300">Firma Operatore</label>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
-                        <div className="flex items-center h-5">
-                          <input
-                            id="disclaimer"
-                            name="disclaimer"
-                            type="checkbox"
-                            checked={pdfOptions.disclaimer}
-                            onChange={(e) => setPdfOptions({...pdfOptions, disclaimer: e.target.checked})}
-                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                          />
-                        </div>
-                        <div className="ml-3 text-sm">
-                          <label htmlFor="disclaimer" className="font-medium text-gray-700 dark:text-gray-300">Includi Avviso Legale</label>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Aggiunge il disclaimer sulla natura dei contatti e responsabilità.</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {pdfOptions.disclaimer && (
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-xs text-gray-500 dark:text-gray-400 italic border border-gray-200 dark:border-gray-600">
+                  Avviso - I contatti presenti in questa scheda sono stati individuati tramite ricerche svolte con criteri accurati e non costituiscono appuntamenti, richieste dirette o manifestazioni di interesse da parte dei soggetti indicati. L’utilizzo dei dati è a esclusiva responsabilità dell’utente, nel rispetto della normativa vigente.
                 </div>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() => {
-                    generatePDF(pdfOptions);
-                    setShowPdfModal(false);
-                  }}
-                >
-                  Genera PDF
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
-                  onClick={() => setShowPdfModal(false)}
-                >
-                  Annulla
-                </button>
-              </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
+              <button
+                onClick={() => setShowPdfModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={generatePDF}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Conferma e Genera
+              </button>
             </div>
           </div>
         </div>
