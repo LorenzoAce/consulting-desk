@@ -43,6 +43,17 @@ const ConsultingForm = ({ initialData }) => {
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const addressTimeoutRef = useRef(null);
 
+  // PDF Generation State
+  const [showPdfModal, setShowPdfModal] = useState(false);
+  const [pdfOptions, setPdfOptions] = useState({
+    anagrafica: true,
+    servizi: true,
+    note: true,
+    assegnazione: true,
+    firma: true,
+    disclaimer: false
+  });
+
   const sigCanvas = useRef({});
 
   // Load cities data
@@ -229,7 +240,7 @@ const ConsultingForm = ({ initialData }) => {
     }
   };
 
-  const generatePDF = () => {
+  const generatePDF = (options = pdfOptions) => {
     const doc = new jsPDF();
     
     // Header / Logo
@@ -298,149 +309,181 @@ const ConsultingForm = ({ initialData }) => {
     };
 
     // Section 1: Anagrafica
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Anagrafica Cliente', leftCol, y);
-    doc.line(leftCol, y + 2, 190, y + 2);
-    y += 15;
+    if (options.anagrafica) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Anagrafica Cliente', leftCol, y);
+      doc.line(leftCol, y + 2, 190, y + 2);
+      y += 15;
 
-    doc.setFontSize(11);
-    
-    drawField('Nome Attività', formData.businessName, leftCol, y);
-    drawField('Nome e Cognome', formData.fullName, rightCol, y);
-    y += 15;
+      doc.setFontSize(11);
+      
+      drawField('Nome Attività', formData.businessName, leftCol, y);
+      drawField('Nome e Cognome', formData.fullName, rightCol, y);
+      y += 15;
 
-    drawField('Indirizzo', formData.address, leftCol, y);
-    drawField('Comune', formData.city, rightCol, y);
-    y += 15;
+      drawField('Indirizzo', formData.address, leftCol, y);
+      drawField('Comune', formData.city, rightCol, y);
+      y += 15;
 
-    drawField('Provincia', formData.province, leftCol, y);
-    drawField('Telefono', formData.phone, rightCol, y);
-    y += 15;
+      drawField('Provincia', formData.province, leftCol, y);
+      drawField('Telefono', formData.phone, rightCol, y);
+      y += 15;
 
-    drawField('Email', formData.email, leftCol, y);
-    drawField('Fonte Acquisizione', formData.source, rightCol, y);
-    y += 20;
+      drawField('Email', formData.email, leftCol, y);
+      drawField('Fonte Acquisizione', formData.source, rightCol, y);
+      y += 20;
+    }
 
     // Section 2: Dettagli Servizio
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Dettagli Servizio', leftCol, y);
-    doc.line(leftCol, y + 2, 190, y + 2);
-    y += 15;
+    if (options.servizi) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Dettagli Servizio', leftCol, y);
+      doc.line(leftCol, y + 2, 190, y + 2);
+      y += 15;
 
-    doc.setFontSize(11);
-    drawField('Disponibilità Cliente', formData.availability, leftCol, y);
-    drawField('Interesse Maggiore', formData.mainInterest, rightCol, y);
-    y += 15;
+      doc.setFontSize(11);
+      drawField('Disponibilità Cliente', formData.availability, leftCol, y);
+      drawField('Interesse Maggiore', formData.mainInterest, rightCol, y);
+      y += 15;
 
-    drawField('Servizio Scommesse Attivo', formData.bettingActive, leftCol, y);
-    drawField('Servizio Utenze Attivo', formData.utilitiesActive, rightCol, y);
-    
-    let extraHeight = 0;
-    
-    if (formData.bettingActive === 'SI' && bettingPartners.length > 0) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'italic');
-      const partnersText = `Partner: ${bettingPartners.join(', ')}`;
-      const splitPartners = doc.splitTextToSize(partnersText, 80);
-      doc.text(splitPartners, leftCol, y + 10);
-      extraHeight = Math.max(extraHeight, splitPartners.length * 5 + 5);
+      drawField('Servizio Scommesse Attivo', formData.bettingActive, leftCol, y);
+      drawField('Servizio Utenze Attivo', formData.utilitiesActive, rightCol, y);
+      
+      let extraHeight = 0;
+      
+      if (formData.bettingActive === 'SI' && bettingPartners.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        const partnersText = `Partner: ${bettingPartners.join(', ')}`;
+        const splitPartners = doc.splitTextToSize(partnersText, 80);
+        doc.text(splitPartners, leftCol, y + 10);
+        extraHeight = Math.max(extraHeight, splitPartners.length * 5 + 5);
+      }
+
+      if (formData.utilitiesActive === 'SI' && utilityPartners.length > 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        const partnersText = `Partner: ${utilityPartners.join(', ')}`;
+        const splitPartners = doc.splitTextToSize(partnersText, 80);
+        doc.text(splitPartners, rightCol, y + 10);
+        extraHeight = Math.max(extraHeight, splitPartners.length * 5 + 5);
+      }
+      
+      y += 20 + extraHeight;
     }
-
-    if (formData.utilitiesActive === 'SI' && utilityPartners.length > 0) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'italic');
-      const partnersText = `Partner: ${utilityPartners.join(', ')}`;
-      const splitPartners = doc.splitTextToSize(partnersText, 80);
-      doc.text(splitPartners, rightCol, y + 10);
-      extraHeight = Math.max(extraHeight, splitPartners.length * 5 + 5);
-    }
-    
-    y += 20 + extraHeight;
 
     // Section 3: Note e Richieste
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    
-    // Check space for Section 3 Header
-    if (y + 40 > 280) {
-      doc.addPage();
-      y = 20;
+    if (options.note) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      
+      // Check space for Section 3 Header
+      if (y + 40 > 280) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.text('Note e Richieste', leftCol, y);
+      doc.line(leftCol, y + 2, 190, y + 2);
+      y += 15;
+
+      doc.setFontSize(11);
+      
+      // Requests and Notes side-by-side
+      const reqHeight = drawField('Richieste del Cliente', formData.requests, leftCol, y);
+      const notesHeight = drawField('Note', formData.notes, rightCol, y);
+      
+      y += Math.max(reqHeight, notesHeight) + 20;
     }
 
-    doc.text('Note e Richieste', leftCol, y);
-    doc.line(leftCol, y + 2, 190, y + 2);
-    y += 15;
+    // Section 4: Assegnazione
+    if (options.assegnazione) {
+       // Check if we need a new page
+      if (y + 40 > 280) {
+        doc.addPage();
+        y = 20;
+      }
 
-    doc.setFontSize(11);
-    
-    // Requests and Notes side-by-side
-    const reqHeight = drawField('Richieste del Cliente', formData.requests, leftCol, y);
-    const notesHeight = drawField('Note', formData.notes, rightCol, y);
-    
-    y += Math.max(reqHeight, notesHeight) + 20;
+      // Assigned Consultant Field
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Consulente Assegnato:', leftCol, y);
+      doc.setFont('helvetica', 'normal');
+      const consultantText = formData.assignedConsultant || '_________________________';
+      doc.text(consultantText, leftCol + 45, y);
+      
+      y += 20;
+    }
 
-    // Check if we need a new page for signature
-    if (y + 40 > 280) {
-      doc.addPage();
-      y = 20;
+    // Disclaimer
+    if (options.disclaimer) {
+      if (y + 60 > 280) {
+        doc.addPage();
+        y = 20;
+      }
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Avviso', leftCol, y);
+      y += 7;
+      
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      const disclaimerText = "I contatti presenti in questa scheda sono stati individuati tramite ricerche svolte con criteri accurati e non costituiscono appuntamenti, richieste dirette o manifestazioni di interesse da parte dei soggetti indicati. L’utilizzo dei dati è a esclusiva responsabilità dell’utente, nel rispetto della normativa vigente.";
+      const splitDisclaimer = doc.splitTextToSize(disclaimerText, 170);
+      doc.text(splitDisclaimer, leftCol, y);
+      
+      y += splitDisclaimer.length * 4 + 10;
     }
 
     // Signature Section
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    
-    // Check space for Signature Section
-    if (y + 50 > 280) {
-      doc.addPage();
-      y = 20;
-    }
+    if (options.firma) {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      
+      // Check space for Signature Section
+      if (y + 50 > 280) {
+        doc.addPage();
+        y = 20;
+      }
 
-    // Assigned Consultant Field (New)
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Consulente Assegnato:', leftCol, y);
-    doc.setFont('helvetica', 'normal');
-    const consultantText = formData.assignedConsultant || '_________________________';
-    doc.text(consultantText, leftCol + 45, y);
-    
-    y += 20;
+      // Left: Firma Operatore
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Firma Operatore', leftCol, y);
+      
+      // Right: Firma Consulente
+      doc.text('Firma Consulente', rightCol, y);
+      
+      doc.line(leftCol, y + 2, 190, y + 2);
+      y += 10;
 
-    // Left: Firma Operatore
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Firma Operatore', leftCol, y);
-    
-    // Right: Firma Consulente
-    doc.text('Firma Consulente', rightCol, y);
-    
-    doc.line(leftCol, y + 2, 190, y + 2);
-    y += 10;
-
-    // Render Operator Signature (Left)
-    if (signatureType === 'draw' && !sigCanvas.current.isEmpty()) {
-      const sigData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-      doc.addImage(sigData, 'PNG', leftCol, y, 60, 30);
-    } else if (signatureType === 'type' && formData.operatorName) {
-      doc.setFont('helvetica', 'italic');
-      doc.setFontSize(12);
-      doc.text(formData.operatorName, leftCol, y + 20);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-    } else {
+      // Render Operator Signature (Left)
+      if (signatureType === 'draw' && !sigCanvas.current.isEmpty()) {
+        const sigData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+        doc.addImage(sigData, 'PNG', leftCol, y, 60, 30);
+      } else if (signatureType === 'type' && formData.operatorName) {
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(12);
+        doc.text(formData.operatorName, leftCol, y + 20);
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'normal');
+      } else {
+        doc.setFontSize(10);
+        doc.setTextColor(150);
+        doc.text('(Nessuna firma apposta)', leftCol, y + 20);
+        doc.setTextColor(0);
+      }
+      
+      // Render Consultant Signature Placeholder (Right)
       doc.setFontSize(10);
       doc.setTextColor(150);
-      doc.text('(Nessuna firma apposta)', leftCol, y + 20);
+      // Placeholder for manual signature
+      doc.text('_________________________', rightCol, y + 20);
       doc.setTextColor(0);
     }
-    
-    // Render Consultant Signature Placeholder (Right)
-    doc.setFontSize(10);
-    doc.setTextColor(150);
-    // Placeholder for manual signature
-    doc.text('_________________________', rightCol, y + 20);
-    doc.setTextColor(0);
 
     // Footer
     const pageHeight = doc.internal.pageSize.height;
@@ -985,7 +1028,7 @@ const ConsultingForm = ({ initialData }) => {
             Salva in Archivio
           </button>
           <button
-            onClick={generatePDF}
+            onClick={() => setShowPdfModal(true)}
             className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             <FileDown className="h-5 w-5" />
@@ -993,6 +1036,144 @@ const ConsultingForm = ({ initialData }) => {
           </button>
         </div>
       </div>
+
+      {/* PDF Generation Modal */}
+      {showPdfModal && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setShowPdfModal(false)}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                      Seleziona Sezioni PDF
+                    </h3>
+                    <div className="mt-4 space-y-3">
+                      <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <input
+                            id="anagrafica"
+                            name="anagrafica"
+                            type="checkbox"
+                            checked={pdfOptions.anagrafica}
+                            onChange={(e) => setPdfOptions({...pdfOptions, anagrafica: e.target.checked})}
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor="anagrafica" className="font-medium text-gray-700 dark:text-gray-300">Anagrafica Cliente</label>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <input
+                            id="servizi"
+                            name="servizi"
+                            type="checkbox"
+                            checked={pdfOptions.servizi}
+                            onChange={(e) => setPdfOptions({...pdfOptions, servizi: e.target.checked})}
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor="servizi" className="font-medium text-gray-700 dark:text-gray-300">Dettagli Servizio</label>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <input
+                            id="note"
+                            name="note"
+                            type="checkbox"
+                            checked={pdfOptions.note}
+                            onChange={(e) => setPdfOptions({...pdfOptions, note: e.target.checked})}
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor="note" className="font-medium text-gray-700 dark:text-gray-300">Note e Richieste</label>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <input
+                            id="assegnazione"
+                            name="assegnazione"
+                            type="checkbox"
+                            checked={pdfOptions.assegnazione}
+                            onChange={(e) => setPdfOptions({...pdfOptions, assegnazione: e.target.checked})}
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor="assegnazione" className="font-medium text-gray-700 dark:text-gray-300">Assegnazione (Consulente)</label>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                          <input
+                            id="firma"
+                            name="firma"
+                            type="checkbox"
+                            checked={pdfOptions.firma}
+                            onChange={(e) => setPdfOptions({...pdfOptions, firma: e.target.checked})}
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor="firma" className="font-medium text-gray-700 dark:text-gray-300">Firma Operatore</label>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
+                        <div className="flex items-center h-5">
+                          <input
+                            id="disclaimer"
+                            name="disclaimer"
+                            type="checkbox"
+                            checked={pdfOptions.disclaimer}
+                            onChange={(e) => setPdfOptions({...pdfOptions, disclaimer: e.target.checked})}
+                            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                        </div>
+                        <div className="ml-3 text-sm">
+                          <label htmlFor="disclaimer" className="font-medium text-gray-700 dark:text-gray-300">Includi Avviso Legale</label>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Aggiunge il disclaimer sulla natura dei contatti e responsabilità.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={() => {
+                    generatePDF(pdfOptions);
+                    setShowPdfModal(false);
+                  }}
+                >
+                  Genera PDF
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+                  onClick={() => setShowPdfModal(false)}
+                >
+                  Annulla
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
