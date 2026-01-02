@@ -175,6 +175,15 @@ const Archive = ({ onLoadCard }) => {
               Filtri Avanzati
             </button>
 
+            <button
+              onClick={exportToExcel}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-900/30 transition-colors"
+              title="Esporta Excel"
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Excel</span>
+            </button>
+
              {/* View Toggle */}
              <div className="flex bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
               <button
