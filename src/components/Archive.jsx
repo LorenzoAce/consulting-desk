@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter } from 'lucide-react';
+import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 const Archive = ({ onLoadCard }) => {
   const [cards, setCards] = useState([]);
@@ -113,6 +114,50 @@ const Archive = ({ onLoadCard }) => {
 
     return matchesGlobal && matchesSpecific;
   });
+
+  const exportToExcel = () => {
+    const stats = {};
+    
+    // Group by Province then City
+    filteredCards.forEach(card => {
+      const province = (card.province || 'Sconosciuta').toUpperCase();
+      const city = (card.city || 'Sconosciuto').toUpperCase();
+      
+      if (!stats[province]) {
+        stats[province] = {};
+      }
+      
+      stats[province][city] = (stats[province][city] || 0) + 1;
+    });
+
+    // Flatten for Excel
+    const data = [];
+    Object.keys(stats).sort().forEach(province => {
+      Object.keys(stats[province]).sort().forEach(city => {
+        data.push({
+          'Provincia': province,
+          'Comune': city,
+          'Numero Schede': stats[province][city]
+        });
+      });
+    });
+
+    // Create workbook and worksheet
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Statistiche");
+
+    // Auto-width columns
+    const wscols = [
+      { wch: 20 }, // Provincia
+      { wch: 30 }, // Comune
+      { wch: 15 }  // Numero Schede
+    ];
+    ws['!cols'] = wscols;
+
+    // Download file
+    XLSX.writeFile(wb, "statistiche_territoriali.xlsx");
+  };
 
   const FilterDropdown = ({ label, options, selected, onChange, category }) => (
     <div className="relative group">
