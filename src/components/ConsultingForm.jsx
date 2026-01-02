@@ -47,7 +47,7 @@ const ConsultingForm = ({ initialData }) => {
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [pdfOptions, setPdfOptions] = useState({
     anagrafica: true,
-    dettagli: true,
+    dettagli: false,
     note: true,
     assegnazione: true,
     firma: true,
