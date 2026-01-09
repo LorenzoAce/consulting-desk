@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
-import jsPDF from 'jspdf';
+import { generatePDF as generatePDFUtility } from '../utils/pdfGenerator';
 import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save, Printer } from 'lucide-react';
 
 const ConsultingForm = ({ initialData }) => {
@@ -219,7 +219,6 @@ const ConsultingForm = ({ initialData }) => {
     
     // Find province code if possible (Nominatim returns full province name usually)
     let provinceCode = '';
-    const provinceName = (addressData.address.county || addressData.address.province || '').toUpperCase();
     
     if (city) {
         // Try to find matching city in our local database to get the correct province code
@@ -262,267 +261,26 @@ const ConsultingForm = ({ initialData }) => {
   };
 
   const generatePDF = () => {
-    const doc = new jsPDF();
-    
-    // Header / Logo
-    // Logo is positioned at x=15, y=10 with max dimensions 40x25
-    // Title is centered at x=105, y=25 to align vertically with the logo
-    
-    if (logo && logoDimensions) {
-      try {
-        const format = logo.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-        
-        // Define max dimensions for the logo in the PDF
-        const maxWidth = 40;
-        const maxHeight = 25;
-
-        // Calculate scale factor to fit within max dimensions while maintaining aspect ratio
-        const scaleX = maxWidth / logoDimensions.width;
-        const scaleY = maxHeight / logoDimensions.height;
-        const scale = Math.min(scaleX, scaleY);
-
-        const w = logoDimensions.width * scale;
-        const h = logoDimensions.height * scale;
-
-        // Center logo vertically in the 10-35 range if needed, but top-aligning at 10 is fine
-        // for "same line" alignment with text at y=25 (baseline)
-        doc.addImage(logo, format, 15, 10, w, h);
-      } catch (error) {
-        console.error("Error adding logo to PDF:", error);
-      }
+    let signatureDataToUse = '';
+    if (signatureType === 'draw') {
+        if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
+          signatureDataToUse = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
+        } else if (initialData && initialData.signature_type === 'draw') {
+           signatureDataToUse = initialData.signature_data;
+        }
     }
 
-    doc.setFontSize(24);
-    doc.setTextColor(37, 99, 235); // Blue-600 #2563eb
-    doc.setFont('helvetica', 'bold');
-    
-    // Subtitle / Title
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    // Always center the title
-    doc.text('SCHEDA CONSULENZA', 105, 25, { align: 'center' });
-    
-    doc.setFontSize(12);
-    let y = 50;
-    const lineHeight = 10;
-    const leftCol = 20;
-    const rightCol = 110;
-
-    // Helper to draw a field
-    const drawField = (label, value, x, y) => {
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${label}:`, x, y);
-      doc.setFont('helvetica', 'normal');
-      
-      let textToRender = value;
-      let yOffset = 5;
-
-      if (!textToRender) {
-        // Use shorter underscores for empty fields, adapted for manual filling
-        // Increased distance from title (yOffset) and reduced length
-        textToRender = '_________________________'; 
-        yOffset = 10;
-      }
-      
-      const splitText = doc.splitTextToSize(textToRender, 80);
-      doc.text(splitText, x, y + yOffset);
-      return splitText.length * 5; // Return height used
+    const cardData = {
+        ...formData,
+        signatureType,
+        signatureData: signatureDataToUse,
+        bettingPartners,
+        utilityPartners,
+        logo,
+        logoDimensions
     };
-
-    // Section 1: Anagrafica
-    if (pdfOptions.anagrafica) {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Anagrafica Cliente', leftCol, y);
-      doc.line(leftCol, y + 2, 190, y + 2);
-      y += 15;
-
-      doc.setFontSize(11);
-      
-      drawField('Nome Attività', formData.businessName, leftCol, y);
-      drawField('Nome e Cognome', formData.fullName, rightCol, y);
-      y += 15;
-
-      drawField('Indirizzo', formData.address, leftCol, y);
-      drawField('Comune', formData.city, rightCol, y);
-      y += 15;
-
-      drawField('Provincia', formData.province, leftCol, y);
-      drawField('Telefono', formData.phone, rightCol, y);
-      y += 15;
-
-      drawField('Email', formData.email, leftCol, y);
-      drawField('Fonte Acquisizione', formData.source, rightCol, y);
-      y += 20;
-    }
-
-    // Section 2: Dettagli Servizio
-    if (pdfOptions.dettagli) {
-      // Check space
-      if (y + 40 > 280) {
-        doc.addPage();
-        y = 20;
-      }
-
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Dettagli Servizio', leftCol, y);
-      doc.line(leftCol, y + 2, 190, y + 2);
-      y += 15;
-
-      doc.setFontSize(11);
-      drawField('Disponibilità Cliente', formData.availability, leftCol, y);
-      drawField('Interesse Maggiore', formData.mainInterest, rightCol, y);
-      y += 15;
-
-      drawField('Servizio Scommesse Attivo', formData.bettingActive, leftCol, y);
-      drawField('Servizio Utenze Attivo', formData.utilitiesActive, rightCol, y);
-      
-      let extraHeight = 0;
-      
-      if (formData.bettingActive === 'SI' && bettingPartners.length > 0) {
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        const partnersText = `Partner: ${bettingPartners.join(', ')}`;
-        const splitPartners = doc.splitTextToSize(partnersText, 80);
-        doc.text(splitPartners, leftCol, y + 10);
-        extraHeight = Math.max(extraHeight, splitPartners.length * 5 + 5);
-      }
-
-      if (formData.utilitiesActive === 'SI' && utilityPartners.length > 0) {
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        const partnersText = `Partner: ${utilityPartners.join(', ')}`;
-        const splitPartners = doc.splitTextToSize(partnersText, 80);
-        doc.text(splitPartners, rightCol, y + 10);
-        extraHeight = Math.max(extraHeight, splitPartners.length * 5 + 5);
-      }
-      
-      y += 20 + extraHeight;
-    }
-
-    // Section 3: Note e Richieste
-    if (pdfOptions.note) {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      
-      // Check space for Section 3 Header
-      if (y + 40 > 280) {
-        doc.addPage();
-        y = 20;
-      }
-
-      doc.text('Note e Richieste', leftCol, y);
-      doc.line(leftCol, y + 2, 190, y + 2);
-      y += 15;
-
-      doc.setFontSize(11);
-      
-      // Requests and Notes side-by-side
-      const reqHeight = drawField('Richieste del Cliente', formData.requests, leftCol, y);
-      const notesHeight = drawField('Note', formData.notes, rightCol, y);
-      
-      y += Math.max(reqHeight, notesHeight) + 20;
-    }
-
-    // Check if we need a new page for signature
-    if (y + 40 > 280) {
-      doc.addPage();
-      y = 20;
-    }
-
-    // Assegnazione Section
-    if (pdfOptions.assegnazione) {
-      // Check space
-      if (y + 30 > 280) {
-        doc.addPage();
-        y = 20;
-      }
-      
-      // Assigned Consultant Field
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Consulente Assegnato:', leftCol, y);
-      doc.setFont('helvetica', 'normal');
-      const consultantText = formData.assignedConsultant || '_________________________';
-      doc.text(consultantText, leftCol + 45, y);
-      
-      y += 20;
-    }
-
-    // Signature Section
-    if (pdfOptions.firma) {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      
-      // Check space for Signature Section
-      if (y + 50 > 280) {
-        doc.addPage();
-        y = 20;
-      }
-
-      // Left: Firma Operatore
-      doc.text('Firma Operatore', leftCol, y);
-      
-      // Right: Firma Consulente
-      doc.text('Firma Consulente', rightCol, y);
-      
-      doc.line(leftCol, y + 2, 190, y + 2);
-      y += 10;
-
-      // Render Operator Signature (Left)
-      if (signatureType === 'draw' && !sigCanvas.current.isEmpty()) {
-        const sigData = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png');
-        doc.addImage(sigData, 'PNG', leftCol, y, 60, 30);
-      } else if (signatureType === 'type' && formData.operatorName) {
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(12);
-        doc.text(formData.operatorName, leftCol, y + 20);
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'normal');
-      } else {
-        doc.setFontSize(10);
-        doc.setTextColor(150);
-        doc.text('(Nessuna firma apposta)', leftCol, y + 20);
-        doc.setTextColor(0);
-      }
-      
-      // Render Consultant Signature Placeholder (Right)
-      doc.setFontSize(10);
-      doc.setTextColor(150);
-      // Placeholder for manual signature
-      doc.text('_________________________', rightCol, y + 20);
-      doc.setTextColor(0);
-      
-      y += 40; // Add some space after signatures
-    }
     
-    // Disclaimer
-    if (pdfOptions.disclaimer) {
-      // Check space
-      if (y + 30 > 280) {
-        doc.addPage();
-        y = 20;
-      }
-      
-      doc.setFontSize(8);
-      doc.setTextColor(100);
-      doc.setFont('helvetica', 'italic');
-      
-      const disclaimerText = "Avviso - I contatti presenti in questa scheda sono stati individuati tramite ricerche svolte con criteri accurati e non costituiscono appuntamenti, richieste dirette o manifestazioni di interesse da parte dei soggetti indicati. L’utilizzo dei dati è a esclusiva responsabilità dell’utente, nel rispetto della normativa vigente.";
-      const splitDisclaimer = doc.splitTextToSize(disclaimerText, 170); // Width 190 - 20 padding
-      
-      doc.text(splitDisclaimer, 105, y, { align: 'center' });
-      doc.setTextColor(0);
-    }
-
-    // Footer
-    const pageHeight = doc.internal.pageSize.height;
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Generato il: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} - CONSULTING DESK by DESA SERVICE S.R.L.S.`, 105, pageHeight - 10, { align: 'center' });
-
-    doc.save(`scheda_${formData.fullName.replace(/\s+/g, '_') || 'cliente'}.pdf`);
+    generatePDFUtility(cardData, { pdfOptions });
   };
 
   const handleSave = async () => {

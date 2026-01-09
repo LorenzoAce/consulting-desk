@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download } from 'lucide-react';
+import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, Printer, CheckSquare, Square } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import { generatePDF } from '../utils/pdfGenerator';
 
 const Archive = ({ onLoadCard }) => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   
+  // Selection state
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [pdfOptions, setPdfOptions] = useState(null);
+
   // Advanced filters state
   const [filters, setFilters] = useState({
     globalSearch: '',
@@ -32,6 +37,7 @@ const Archive = ({ onLoadCard }) => {
 
   useEffect(() => {
     fetchCards();
+    fetchSettings();
   }, []);
 
   useEffect(() => {
@@ -62,6 +68,20 @@ const Archive = ({ onLoadCard }) => {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const response = await fetch(`${apiUrl}/api/settings`);
+      if (response.ok) {
+        const data = await response.json();
+        // Handle both snake_case (DB) and camelCase (if passed from other places)
+        setPdfOptions(data.pdf_options || data.pdfOptions);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
   const deleteCard = async (id, e) => {
     e.stopPropagation(); // Prevent card click
     if (!window.confirm('Sei sicuro di voler eliminare questa scheda?')) return;
@@ -73,6 +93,7 @@ const Archive = ({ onLoadCard }) => {
       });
       if (response.ok) {
         setCards(cards.filter(card => card.id !== id));
+        setSelectedCards(prev => prev.filter(cardId => cardId !== id));
       } else {
         alert('Errore durante l\'eliminazione della scheda');
       }
@@ -114,6 +135,30 @@ const Archive = ({ onLoadCard }) => {
 
     return matchesGlobal && matchesSpecific;
   });
+
+  // Selection Logic
+  const handleSelectCard = (id) => {
+    setSelectedCards(prev => 
+      prev.includes(id) 
+        ? prev.filter(cardId => cardId !== id) 
+        : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedCards.length === filteredCards.length) {
+      setSelectedCards([]);
+    } else {
+      setSelectedCards(filteredCards.map(c => c.id));
+    }
+  };
+
+  const handleBatchPrint = () => {
+    const selected = cards.filter(c => selectedCards.includes(c.id));
+    if (selected.length === 0) return;
+    
+    generatePDF(selected, { pdfOptions });
+  };
 
   const exportToExcel = () => {
     const stats = {};
@@ -196,9 +241,16 @@ const Archive = ({ onLoadCard }) => {
     <div className="space-y-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Archivio Schede</h2>
+          <div className="flex items-center gap-3">
+             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Archivio Schede</h2>
+             {selectedCards.length > 0 && (
+               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                 {selectedCards.length} selezionati
+               </span>
+             )}
+          </div>
           
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
              {/* Global Search - Always Visible */}
              <div className="relative flex-grow md:flex-grow-0 md:w-64">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -217,8 +269,20 @@ const Archive = ({ onLoadCard }) => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
             >
               <Filter className="h-4 w-4" />
-              Filtri Avanzati
+              <span className="hidden sm:inline">Filtri</span>
             </button>
+
+             {/* Batch Print Button */}
+            {selectedCards.length > 0 && (
+              <button
+                onClick={handleBatchPrint}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-blue-600 border-blue-700 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                title="Stampa Selezionati"
+              >
+                <Printer className="h-4 w-4" />
+                <span className="hidden sm:inline">Stampa ({selectedCards.length})</span>
+              </button>
+            )}
 
             <button
               onClick={exportToExcel}
@@ -312,16 +376,39 @@ const Archive = ({ onLoadCard }) => {
       )}
       </div>
 
-      {/* Results Count */}
-      <div className="text-sm text-gray-500 dark:text-gray-400">
-        Trovate {filteredCards.length} schede
+      {/* Results Count and Select All */}
+      <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
+        <div>
+           Trovate {filteredCards.length} schede
+        </div>
+        <button 
+          onClick={handleSelectAll}
+          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+        >
+          {selectedCards.length === filteredCards.length && filteredCards.length > 0 ? 'Deseleziona Tutto' : 'Seleziona Tutto'}
+        </button>
       </div>
 
       {viewMode === 'grid' ? (
         /* GRID VIEW */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCards.map((card) => (
-            <div key={card.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow relative group">
+          {filteredCards.map((card) => {
+            const isSelected = selectedCards.includes(card.id);
+            return (
+            <div 
+              key={card.id} 
+              className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all relative group ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+            >
+              {/* Checkbox for Grid View */}
+              <div className="absolute top-4 left-4 z-10">
+                <button
+                   onClick={(e) => { e.stopPropagation(); handleSelectCard(card.id); }}
+                   className={`p-1 rounded-md transition-colors ${isSelected ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-600 bg-gray-50'}`}
+                >
+                  {isSelected ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5" />}
+                </button>
+              </div>
+
               <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button 
                   onClick={() => onLoadCard(card)}
@@ -339,7 +426,7 @@ const Archive = ({ onLoadCard }) => {
                 </button>
               </div>
 
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-4 pl-8">
                 <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
                   <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
@@ -395,7 +482,7 @@ const Archive = ({ onLoadCard }) => {
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       ) : (
         /* LIST VIEW */
@@ -404,6 +491,14 @@ const Archive = ({ onLoadCard }) => {
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
+                  <th scope="col" className="px-6 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedCards.length === filteredCards.length && filteredCards.length > 0}
+                      onChange={handleSelectAll}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ragione Sociale</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Indirizzo</th>
@@ -414,7 +509,15 @@ const Archive = ({ onLoadCard }) => {
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {filteredCards.map((card) => (
-                  <tr key={card.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => onLoadCard(card)}>
+                  <tr key={card.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${selectedCards.includes(card.id) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => onLoadCard(card)}>
+                    <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCards.includes(card.id)}
+                        onChange={() => handleSelectCard(card.id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(card.created_at).toLocaleDateString()}
                     </td>
