@@ -95,12 +95,18 @@ const ConsultingForm = ({ initialData }) => {
         mainInterest: initialData.main_interest || 'SCOMMESSE',
         requests: initialData.requests || '',
         notes: initialData.notes || '',
+        assignedConsultant: initialData.assigned_consultant || '',
         operatorName: initialData.operator_name || ''
       });
       
       setBettingPartners(initialData.betting_partners || []);
       setUtilityPartners(initialData.utility_partners || []);
       
+      if (initialData.logo) {
+        setLogo(initialData.logo);
+        setLogoDimensions(initialData.logo_dimensions);
+      }
+
       if (initialData.signature_type) {
         setSignatureType(initialData.signature_type);
       }
@@ -561,7 +567,9 @@ const ConsultingForm = ({ initialData }) => {
         signatureType,
         signatureData: signatureDataToSave,
         bettingPartners,
-        utilityPartners
+        utilityPartners,
+        logo,
+        logoDimensions
       };
 
       const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
