@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ConsultingForm from './components/ConsultingForm';
 import Archive from './components/Archive';
+import Settings from './components/Settings';
 import Layout from './components/Layout';
 
 function App() {

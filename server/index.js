@@ -171,6 +171,35 @@ app.put('/api/cards/:id', async (req, res) => {
   }
 });
 
+// Bulk update logo for all cards
+app.post('/api/cards/bulk-logo', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { logo, logoDimensions } = req.body;
+    
+    if (!logo) {
+      return res.status(400).json({ error: 'Logo data is required' });
+    }
+
+    const query = `
+      UPDATE consulting_cards 
+      SET logo = $1, logo_dimensions = $2, updated_at = NOW()
+    `;
+
+    const result = await client.query(query, [logo, JSON.stringify(logoDimensions)]);
+    
+    res.json({ 
+      message: 'All cards updated successfully', 
+      updatedCount: result.rowCount 
+    });
+  } catch (err) {
+    console.error('Error updating all cards logo:', err);
+    res.status(500).json({ error: 'Failed to update cards', details: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 // Get all cards
 app.get('/api/cards', async (req, res) => {
   try {
