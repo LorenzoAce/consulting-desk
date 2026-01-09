@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { generatePDF as generatePDFUtility } from '../utils/pdfGenerator';
-import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save, Printer } from 'lucide-react';
+import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save } from 'lucide-react';
 
 const ConsultingForm = ({ initialData }) => {
   const [signatureType, setSignatureType] = useState('type'); // 'draw' | 'type'
@@ -809,10 +809,10 @@ const ConsultingForm = ({ initialData }) => {
         <div className="pt-6 flex flex-col sm:flex-row gap-4 border-t dark:border-gray-700 mt-6">
           <button
             onClick={generatePDF}
-            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
-            <Printer className="h-5 w-5" />
-            Stampa
+            <FileDown className="h-5 w-5" />
+            Genera PDF
           </button>
 
           <button

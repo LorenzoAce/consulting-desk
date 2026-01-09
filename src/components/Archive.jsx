@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, Printer, CheckSquare, Square } from 'lucide-react';
+import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
 
@@ -320,10 +320,10 @@ const Archive = ({ onLoadCard }) => {
                 <button
                   onClick={handleBatchPrint}
                   className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-blue-600 border-blue-700 text-white hover:bg-blue-700 transition-colors shadow-sm"
-                  title="Stampa Selezionati"
+                  title="Genera PDF Selezionati"
                 >
-                  <Printer className="h-4 w-4" />
-                  <span className="hidden sm:inline">Stampa ({selectedCards.length})</span>
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline">Genera PDF ({selectedCards.length})</span>
                 </button>
               </div>
             )}
