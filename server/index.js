@@ -200,6 +200,51 @@ app.post('/api/cards/bulk-logo', async (req, res) => {
   }
 });
 
+// Get global settings
+app.get('/api/settings', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM app_settings WHERE id = 1');
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.json({ pdf_options: {
+        anagrafica: true,
+        dettagli: false,
+        note: true,
+        assegnazione: true,
+        firma: true,
+        disclaimer: true
+      }});
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// Update global settings
+app.put('/api/settings', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { pdfOptions } = req.body;
+    
+    const query = `
+      UPDATE app_settings 
+      SET pdf_options = $1, updated_at = NOW()
+      WHERE id = 1
+      RETURNING *;
+    `;
+
+    const result = await client.query(query, [JSON.stringify(pdfOptions)]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating settings:', err);
+    res.status(500).json({ error: 'Failed to update settings', details: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 // Get all cards
 app.get('/api/cards', async (req, res) => {
   try {

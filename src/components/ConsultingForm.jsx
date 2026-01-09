@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import jsPDF from 'jspdf';
-import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save } from 'lucide-react';
+import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save, Printer } from 'lucide-react';
 
 const ConsultingForm = ({ initialData }) => {
   const [signatureType, setSignatureType] = useState('type'); // 'draw' | 'type'
@@ -44,7 +44,6 @@ const ConsultingForm = ({ initialData }) => {
   const addressTimeoutRef = useRef(null);
 
   // PDF Generation Options State
-  const [showPdfModal, setShowPdfModal] = useState(false);
   const [pdfOptions, setPdfOptions] = useState({
     anagrafica: true,
     dettagli: false,
@@ -56,7 +55,7 @@ const ConsultingForm = ({ initialData }) => {
 
   const sigCanvas = useRef({});
 
-  // Load cities data
+  // Load cities data and global settings
   useEffect(() => {
     const fetchCities = async () => {
       setIsCityLoading(true);
@@ -74,7 +73,23 @@ const ConsultingForm = ({ initialData }) => {
       }
     };
     
+    const fetchSettings = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+        const response = await fetch(`${apiUrl}/api/settings`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.pdf_options) {
+            setPdfOptions(data.pdf_options);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    };
+
     fetchCities();
+    fetchSettings();
   }, []);
 
   // Load initial data if provided
@@ -508,7 +523,6 @@ const ConsultingForm = ({ initialData }) => {
     doc.text(`Generato il: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()} - CONSULTING DESK by DESA SERVICE S.R.L.S.`, 105, pageHeight - 10, { align: 'center' });
 
     doc.save(`scheda_${formData.fullName.replace(/\s+/g, '_') || 'cliente'}.pdf`);
-    setShowPdfModal(false); // Close modal after generation
   };
 
   const handleSave = async () => {
@@ -623,11 +637,6 @@ const ConsultingForm = ({ initialData }) => {
       console.error('Error saving card:', error);
       alert('Errore di connessione al server');
     }
-  };
-
-  const handlePdfOptionChange = (e) => {
-    const { name, checked } = e.target;
-    setPdfOptions(prev => ({ ...prev, [name]: checked }));
   };
 
   return (
@@ -1038,8 +1047,16 @@ const ConsultingForm = ({ initialData }) => {
           )}
         </section>
 
-        {/* Action */}
-        <div className="pt-6 flex flex-col sm:flex-row gap-4">
+        {/* Action Buttons */}
+        <div className="pt-6 flex flex-col sm:flex-row gap-4 border-t dark:border-gray-700 mt-6">
+          <button
+            onClick={generatePDF}
+            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 dark:bg-purple-600 dark:hover:bg-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors"
+          >
+            <Printer className="h-5 w-5" />
+            Stampa
+          </button>
+
           <button
             onClick={handleSave}
             className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
@@ -1047,122 +1064,8 @@ const ConsultingForm = ({ initialData }) => {
             <Save className="h-5 w-5" />
             Salva in Archivio
           </button>
-          <button
-            onClick={() => setShowPdfModal(true)}
-            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          >
-            <FileDown className="h-5 w-5" />
-            Genera PDF
-          </button>
         </div>
       </div>
-
-      {/* PDF Options Modal */}
-      {showPdfModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Opzioni PDF</h3>
-              <button onClick={() => setShowPdfModal(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-3">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Seleziona le sezioni da includere nel PDF:</p>
-              
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="anagrafica"
-                    checked={pdfOptions.anagrafica}
-                    onChange={handlePdfOptionChange}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">Anagrafica</span>
-                </label>
-                
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="dettagli"
-                    checked={pdfOptions.dettagli}
-                    onChange={handlePdfOptionChange}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">Dettagli Servizio</span>
-                </label>
-                
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="note"
-                    checked={pdfOptions.note}
-                    onChange={handlePdfOptionChange}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">Note e Richieste</span>
-                </label>
-                
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="assegnazione"
-                    checked={pdfOptions.assegnazione}
-                    onChange={handlePdfOptionChange}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">Assegnazione</span>
-                </label>
-                
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="firma"
-                    checked={pdfOptions.firma}
-                    onChange={handlePdfOptionChange}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">Firma Operatore</span>
-                </label>
-                
-                <label className="flex items-center space-x-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="disclaimer"
-                    checked={pdfOptions.disclaimer}
-                    onChange={handlePdfOptionChange}
-                    className="rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">Avviso (Disclaimer)</span>
-                </label>
-              </div>
-
-              {pdfOptions.disclaimer && (
-                <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md text-xs text-gray-500 dark:text-gray-400 italic border border-gray-200 dark:border-gray-600">
-                  Avviso - I contatti presenti in questa scheda sono stati individuati tramite ricerche svolte con criteri accurati e non costituiscono appuntamenti, richieste dirette o manifestazioni di interesse da parte dei soggetti indicati. L’utilizzo dei dati è a esclusiva responsabilità dell’utente, nel rispetto della normativa vigente.
-                </div>
-              )}
-            </div>
-            
-            <div className="p-4 border-t dark:border-gray-700 flex justify-end gap-3 bg-gray-50 dark:bg-gray-900">
-              <button
-                onClick={() => setShowPdfModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Annulla
-              </button>
-              <button
-                onClick={generatePDF}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Conferma e Genera
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

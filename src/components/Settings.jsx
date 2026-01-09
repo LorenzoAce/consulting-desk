@@ -1,10 +1,74 @@
-import React, { useState } from 'react';
-import { Upload, Check, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, Check, AlertTriangle, FileText, Save } from 'lucide-react';
 
 const Settings = () => {
   const [logo, setLogo] = useState(null);
   const [logoDimensions, setLogoDimensions] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // PDF Options State
+  const [pdfOptions, setPdfOptions] = useState({
+    anagrafica: true,
+    dettagli: false,
+    note: true,
+    assegnazione: true,
+    firma: true,
+    disclaimer: true
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const response = await fetch(`${apiUrl}/api/settings`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.pdf_options) {
+          setPdfOptions(data.pdf_options);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
+
+  const handlePdfOptionChange = (option) => {
+    setPdfOptions(prev => ({
+      ...prev,
+      [option]: !prev[option]
+    }));
+  };
+
+  const savePdfSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const response = await fetch(`${apiUrl}/api/settings`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pdfOptions
+        }),
+      });
+
+      if (response.ok) {
+        alert('Impostazioni PDF salvate con successo!');
+      } else {
+        alert('Errore durante il salvataggio delle impostazioni.');
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Errore di connessione al server.');
+    } finally {
+      setIsSavingSettings(false);
+    }
+  };
 
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
@@ -63,6 +127,106 @@ const Settings = () => {
       <div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Impostazioni</h2>
         <p className="text-gray-500 dark:text-gray-400">Gestisci le configurazioni globali dell'applicazione.</p>
+      </div>
+
+      {/* PDF Options Section */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-red-500" />
+          Opzioni PDF Globali
+        </h3>
+        
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Seleziona quali sezioni includere nel PDF generato per tutte le schede.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={pdfOptions.anagrafica} 
+                onChange={() => handlePdfOptionChange('anagrafica')}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200">Anagrafica Cliente</span>
+            </label>
+
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={pdfOptions.dettagli} 
+                onChange={() => handlePdfOptionChange('dettagli')}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200">Dettagli Servizio</span>
+            </label>
+
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={pdfOptions.note} 
+                onChange={() => handlePdfOptionChange('note')}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200">Note e Richieste</span>
+            </label>
+
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={pdfOptions.assegnazione} 
+                onChange={() => handlePdfOptionChange('assegnazione')}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200">Assegnazione Consulente</span>
+            </label>
+
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={pdfOptions.firma} 
+                onChange={() => handlePdfOptionChange('firma')}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200">Sezione Firme</span>
+            </label>
+
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={pdfOptions.disclaimer} 
+                onChange={() => handlePdfOptionChange('disclaimer')}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+              />
+              <span className="text-gray-700 dark:text-gray-200">Disclaimer Legale</span>
+            </label>
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={savePdfSettings}
+              disabled={isSavingSettings}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                isSavingSettings
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                  : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
+              }`}
+            >
+              {isSavingSettings ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Salvataggio...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Salva Impostazioni PDF
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
