@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS consulting_cards (
   utility_partners JSONB,
   requests TEXT,
   notes TEXT,
+  assigned_consultant TEXT,
   operator_name TEXT,
   signature_type TEXT,
   signature_data TEXT,
