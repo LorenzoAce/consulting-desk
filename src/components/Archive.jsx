@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FileText, Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown } from 'lucide-react';
+import { Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
 
@@ -505,10 +505,7 @@ const Archive = ({ onLoadCard }) => {
                 </button>
               </div>
 
-              <div className="flex items-start justify-between mb-4 pl-8">
-                <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
-                  <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                </div>
+              <div className="flex items-start justify-end mb-4 pl-8">
                 <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   {new Date(card.created_at).toLocaleDateString()}
