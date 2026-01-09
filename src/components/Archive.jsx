@@ -11,6 +11,10 @@ const Archive = ({ onLoadCard }) => {
   // Selection state
   const [selectedCards, setSelectedCards] = useState([]);
   const [pdfOptions, setPdfOptions] = useState(null);
+  
+  // Bulk Assign State
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [consultantToAssign, setConsultantToAssign] = useState('');
 
   // Advanced filters state
   const [filters, setFilters] = useState({
@@ -160,6 +164,35 @@ const Archive = ({ onLoadCard }) => {
     generatePDF(selected, { pdfOptions });
   };
 
+  const handleBatchAssign = async () => {
+    if (!consultantToAssign.trim()) return;
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const response = await fetch(`${apiUrl}/api/cards/bulk-consultant`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cardIds: selectedCards,
+          consultantName: consultantToAssign.toUpperCase()
+        })
+      });
+
+      if (response.ok) {
+        alert('Consulente assegnato con successo!');
+        setShowAssignModal(false);
+        setConsultantToAssign('');
+        setSelectedCards([]);
+        fetchCards(); // Refresh data
+      } else {
+        alert('Errore durante l\'assegnazione del consulente');
+      }
+    } catch (error) {
+      console.error('Error assigning consultant:', error);
+      alert('Errore di connessione');
+    }
+  };
+
   const exportToExcel = () => {
     const stats = {};
     
@@ -272,16 +305,27 @@ const Archive = ({ onLoadCard }) => {
               <span className="hidden sm:inline">Filtri</span>
             </button>
 
-             {/* Batch Print Button */}
+             {/* Batch Actions */}
             {selectedCards.length > 0 && (
-              <button
-                onClick={handleBatchPrint}
-                className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-blue-600 border-blue-700 text-white hover:bg-blue-700 transition-colors shadow-sm"
-                title="Stampa Selezionati"
-              >
-                <Printer className="h-4 w-4" />
-                <span className="hidden sm:inline">Stampa ({selectedCards.length})</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowAssignModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-purple-600 border-purple-700 text-white hover:bg-purple-700 transition-colors shadow-sm"
+                  title="Assegna Consulente"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">Assegna ({selectedCards.length})</span>
+                </button>
+
+                <button
+                  onClick={handleBatchPrint}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-blue-600 border-blue-700 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                  title="Stampa Selezionati"
+                >
+                  <Printer className="h-4 w-4" />
+                  <span className="hidden sm:inline">Stampa ({selectedCards.length})</span>
+                </button>
+              </div>
             )}
 
             <button
@@ -375,6 +419,58 @@ const Archive = ({ onLoadCard }) => {
         </div>
       )}
       </div>
+
+      {/* Assign Consultant Modal */}
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Assegna Consulente a {selectedCards.length} schede
+            </h3>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Nome Consulente
+              </label>
+              <input
+                type="text"
+                value={consultantToAssign}
+                onChange={(e) => setConsultantToAssign(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                placeholder="Inserisci nome..."
+                autoFocus
+              />
+              <div className="mt-2 flex flex-wrap gap-2">
+                {uniqueValues.assignedConsultant.slice(0, 5).map(name => (
+                  <button
+                    key={name}
+                    onClick={() => setConsultantToAssign(name)}
+                    className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300 transition-colors"
+                  >
+                    {name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleBatchAssign}
+                disabled={!consultantToAssign.trim()}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Conferma
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Results Count and Select All */}
       <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">

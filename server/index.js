@@ -200,6 +200,36 @@ app.post('/api/cards/bulk-logo', async (req, res) => {
   }
 });
 
+// Bulk update consultant for selected cards
+app.post('/api/cards/bulk-consultant', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { cardIds, consultantName } = req.body;
+    
+    if (!cardIds || !Array.isArray(cardIds) || cardIds.length === 0) {
+      return res.status(400).json({ error: 'Card IDs are required' });
+    }
+
+    const query = `
+      UPDATE consulting_cards 
+      SET assigned_consultant = $1, updated_at = NOW()
+      WHERE id = ANY($2::int[])
+    `;
+
+    const result = await client.query(query, [consultantName, cardIds]);
+    
+    res.json({ 
+      message: 'Consultant updated successfully', 
+      updatedCount: result.rowCount 
+    });
+  } catch (err) {
+    console.error('Error updating consultant:', err);
+    res.status(500).json({ error: 'Failed to update consultant', details: err.message });
+  } finally {
+    client.release();
+  }
+});
+
 // Get global settings
 app.get('/api/settings', async (req, res) => {
   try {
