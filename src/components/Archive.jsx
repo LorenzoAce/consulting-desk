@@ -376,12 +376,24 @@ const Archive = ({ onLoadCard }) => {
                 </div>
               </div>
 
-              <button
-                onClick={() => onLoadCard(card)}
-                className="w-full mt-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
-              >
-                Visualizza Dettagli
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => onLoadCard(card)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
+                  title="Modifica"
+                >
+                  <Edit className="h-4 w-4" />
+                  Modifica
+                </button>
+                <button 
+                  onClick={(e) => deleteCard(card.id, e)}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-sm font-medium"
+                  title="Elimina"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Elimina
+                </button>
+              </div>
             </div>
           ))}
         </div>
