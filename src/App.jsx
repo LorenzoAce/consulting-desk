@@ -38,6 +38,8 @@ function App() {
         return <ConsultingForm initialData={selectedCard} key={selectedCard ? selectedCard.id : 'new'} />;
       case 'archive':
         return <Archive onLoadCard={handleLoadCard} />;
+      case 'settings':
+        return <Settings />;
       default:
         return <ConsultingForm />;
     }
