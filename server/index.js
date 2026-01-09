@@ -256,16 +256,45 @@ app.get('/api/settings', async (req, res) => {
 app.put('/api/settings', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { pdfOptions } = req.body;
+    const { pdfOptions, logo, logoDimensions } = req.body;
     
-    const query = `
-      UPDATE app_settings 
-      SET pdf_options = $1, updated_at = NOW()
-      WHERE id = 1
-      RETURNING *;
-    `;
+    // First check if settings row exists
+    const checkQuery = 'SELECT * FROM app_settings WHERE id = 1';
+    const checkResult = await client.query(checkQuery);
 
-    const result = await client.query(query, [JSON.stringify(pdfOptions)]);
+    if (checkResult.rows.length === 0) {
+       // Insert default row if not exists
+       await client.query(`
+         INSERT INTO app_settings (id, pdf_options, logo, logo_dimensions) 
+         VALUES (1, $1, $2, $3)
+       `, [JSON.stringify(pdfOptions || {}), logo, JSON.stringify(logoDimensions)]);
+    }
+
+    let query = `UPDATE app_settings SET updated_at = NOW()`;
+    const params = [];
+    let paramIndex = 1;
+
+    if (pdfOptions) {
+      query += `, pdf_options = $${paramIndex}`;
+      params.push(JSON.stringify(pdfOptions));
+      paramIndex++;
+    }
+    
+    if (logo !== undefined) { // Allow null/empty string to clear logo if needed
+      query += `, logo = $${paramIndex}`;
+      params.push(logo);
+      paramIndex++;
+    }
+
+    if (logoDimensions) {
+      query += `, logo_dimensions = $${paramIndex}`;
+      params.push(JSON.stringify(logoDimensions));
+      paramIndex++;
+    }
+
+    query += ` WHERE id = 1 RETURNING *;`;
+
+    const result = await client.query(query, params);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating settings:', err);

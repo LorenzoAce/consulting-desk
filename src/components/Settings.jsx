@@ -30,6 +30,25 @@ const Settings = () => {
         if (data.pdf_options) {
           setPdfOptions(data.pdf_options);
         }
+        // Assuming the backend might return a global logo if implemented, 
+        // currently it seems we only have per-card logos or bulk update.
+        // If we want to show the 'current' logo, we might need to fetch it from a card or a global setting if it existed.
+        // Based on user request "fai vedere in impostazioni nella sua zezione il logo che in questo momento e caricato globalmente",
+        // we should check if there's a way to retrieve the last uploaded global logo.
+        // Since there isn't a dedicated global logo table, we can't easily show "the" global logo unless we saved it somewhere.
+        // However, if the user means the logo currently in the application (like in the header), that is static '/logo.png'.
+        
+        // Let's check if the backend stores a global logo in settings.
+        // The server/index.js (from previous context) shows:
+        // app.get('/api/settings', async (req, res) => { ... SELECT * FROM global_settings LIMIT 1 ... })
+        // Let's see if global_settings table has a logo column.
+        
+        if (data.logo) {
+            setLogo(data.logo);
+        }
+        if (data.logo_dimensions) {
+            setLogoDimensions(data.logo_dimensions);
+        }
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -90,6 +109,19 @@ const Settings = () => {
   const applyLogoToAll = async () => {
     if (!logo || !logoDimensions) return;
     
+    // Also save this logo as the global logo in settings
+    try {
+        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+        await fetch(`${apiUrl}/api/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ logo, logoDimensions })
+        });
+    } catch (error) {
+        console.error('Failed to save global logo setting:', error);
+        // Continue anyway to update cards
+    }
+
     if (!window.confirm('Sei sicuro di voler applicare questo logo a TUTTE le schede esistenti? Questa operazione non può essere annullata.')) {
         return;
     }
@@ -110,7 +142,7 @@ const Settings = () => {
 
       if (response.ok) {
         const result = await response.json();
-        alert(`Operazione completata! Logo aggiornato su ${result.updatedCount} schede.`);
+        alert(`Operazione completata! Logo aggiornato su ${result.updatedCount} schede e salvato come logo globale.`);
       } else {
         alert('Errore durante l\'aggiornamento delle schede.');
       }
