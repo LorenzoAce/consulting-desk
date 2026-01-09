@@ -409,23 +409,6 @@ const Archive = ({ onLoadCard }) => {
                 </button>
               </div>
 
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button 
-                  onClick={() => onLoadCard(card)}
-                  className="p-1.5 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200"
-                  title="Modifica"
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-                <button 
-                  onClick={(e) => deleteCard(card.id, e)}
-                  className="p-1.5 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
-                  title="Elimina"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-
               <div className="flex items-start justify-between mb-4 pl-8">
                 <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
                   <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
