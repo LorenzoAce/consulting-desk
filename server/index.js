@@ -256,51 +256,45 @@ app.get('/api/settings', async (req, res) => {
 app.put('/api/settings', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { pdfOptions, logo, logoDimensions } = req.body;
-    
-    // First check if settings row exists
-    const checkQuery = 'SELECT * FROM app_settings WHERE id = 1';
-    const checkResult = await client.query(checkQuery);
+    const { pdfOptions } = req.body;
 
-    if (checkResult.rows.length === 0) {
-       // Insert default row if not exists
-       await client.query(`
-         INSERT INTO app_settings (id, pdf_options, logo, logo_dimensions) 
-         VALUES (1, $1, $2, $3)
-       `, [JSON.stringify(pdfOptions || {}), logo, JSON.stringify(logoDimensions)]);
-    }
+    const query = `
+      INSERT INTO app_settings (id, pdf_options, updated_at)
+      VALUES (1, $1, NOW())
+      ON CONFLICT (id) DO UPDATE
+      SET pdf_options = EXCLUDED.pdf_options, updated_at = NOW()
+      RETURNING *;
+    `;
 
-    let query = `UPDATE app_settings SET updated_at = NOW()`;
-    const params = [];
-    let paramIndex = 1;
-
-    if (pdfOptions) {
-      query += `, pdf_options = $${paramIndex}`;
-      params.push(JSON.stringify(pdfOptions));
-      paramIndex++;
-    }
-    
-    if (logo !== undefined) { // Allow null/empty string to clear logo if needed
-      query += `, logo = $${paramIndex}`;
-      params.push(logo);
-      paramIndex++;
-    }
-
-    if (logoDimensions) {
-      query += `, logo_dimensions = $${paramIndex}`;
-      params.push(JSON.stringify(logoDimensions));
-      paramIndex++;
-    }
-
-    query += ` WHERE id = 1 RETURNING *;`;
-
-    const result = await client.query(query, params);
+    const result = await client.query(query, [JSON.stringify(pdfOptions)]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating settings:', err);
     res.status(500).json({ error: 'Failed to update settings', details: err.message });
   } finally {
     client.release();
+  }
+});
+
+app.get('/api/cards/global-logo', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT logo, logo_dimensions
+      FROM consulting_cards
+      WHERE logo IS NOT NULL AND logo <> ''
+      ORDER BY updated_at DESC NULLS LAST, created_at DESC
+      LIMIT 1
+    `);
+
+    if (result.rows.length === 0) {
+      res.json({ logo: null, logo_dimensions: null });
+      return;
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching global logo:', err);
+    res.status(500).json({ error: 'Failed to fetch global logo' });
   }
 });
 
