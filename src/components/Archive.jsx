@@ -39,6 +39,14 @@ const Archive = ({ onLoadCard }) => {
     operatorName: []
   });
 
+  // Combined consultants list for filter (Cards data + Registry data)
+  const consultantFilterOptions = React.useMemo(() => {
+    const fromCards = uniqueValues.assignedConsultant || [];
+    const fromRegistry = consultantsList.map(c => c.name);
+    // Combine and deduplicate
+    return [...new Set([...fromCards, ...fromRegistry])].sort();
+  }, [uniqueValues.assignedConsultant, consultantsList]);
+
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -427,7 +435,7 @@ const Archive = ({ onLoadCard }) => {
           
           <FilterDropdown 
             label="Consulente" 
-            options={uniqueValues.assignedConsultant} 
+            options={consultantFilterOptions} 
             selected={filters.assignedConsultant} 
             onChange={handleCheckboxChange} 
             category="assignedConsultant" 
@@ -438,7 +446,7 @@ const Archive = ({ onLoadCard }) => {
 
       {/* Assign Consultant Modal */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
               Assegna Consulente a {selectedCards.length} schede
@@ -446,27 +454,18 @@ const Archive = ({ onLoadCard }) => {
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Nome Consulente
+                Seleziona Consulente
               </label>
-              <input
-                type="text"
+              <select
                 value={consultantToAssign}
                 onChange={(e) => setConsultantToAssign(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
-                placeholder="Inserisci nome..."
-                autoFocus
-              />
-              <div className="mt-2 flex flex-wrap gap-2">
-                {(consultantsList.length > 0 ? consultantsList.map(c => c.name) : uniqueValues.assignedConsultant.slice(0, 5)).map(name => (
-                  <button
-                    key={name}
-                    onClick={() => setConsultantToAssign(name)}
-                    className="text-xs bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-2 py-1 rounded-full text-gray-700 dark:text-gray-300 transition-colors"
-                  >
-                    {name}
-                  </button>
+              >
+                <option value="">Seleziona un consulente...</option>
+                {consultantsList.map(c => (
+                  <option key={c.id} value={c.name}>{c.name}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
             <div className="flex justify-end gap-3">
