@@ -58,7 +58,7 @@ const Settings = () => {
   const savePdfSettings = async () => {
     setIsSavingSettings(true);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/settings`, {
         method: 'PUT',
         headers: {
