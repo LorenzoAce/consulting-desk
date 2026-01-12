@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { User, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle, Building, Menu, X } from 'lucide-react';
+import { User, Users, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle, Building, Menu, X } from 'lucide-react';
 
 const Sidebar = ({ currentView, onNavigate, isOpen, onClose }) => {
   const menuItems = [
     { icon: PlusCircle, label: 'Nuova Scheda', id: 'form' },
-    { icon: User, label: 'Profilo', id: 'profile' },
     { icon: FolderArchive, label: 'Archivio Schede', id: 'archive' },
+    { icon: Users, label: 'Gestione Consulenti', id: 'consultants' },
     { icon: Settings, label: 'Impostazioni', id: 'settings' },
   ];
 

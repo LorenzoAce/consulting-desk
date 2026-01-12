@@ -324,6 +324,74 @@ app.delete('/api/cards/:id', async (req, res) => {
   }
 });
 
+// --- Consultants Management ---
+
+// Get all consultants
+app.get('/api/consultants', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM consultants ORDER BY name ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching consultants:', err);
+    res.status(500).json({ error: 'Failed to fetch consultants' });
+  }
+});
+
+// Add a new consultant
+app.post('/api/consultants', async (req, res) => {
+  const { name, email, phone } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO consultants (name, email, phone) VALUES ($1, $2, $3) RETURNING *',
+      [name, email, phone]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error adding consultant:', err);
+    if (err.code === '23505') { // Unique violation
+      return res.status(409).json({ error: 'Consultant already exists' });
+    }
+    res.status(500).json({ error: 'Failed to add consultant' });
+  }
+});
+
+// Update a consultant
+app.put('/api/consultants/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, email, phone } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE consultants SET name = $1, email = $2, phone = $3 WHERE id = $4 RETURNING *',
+      [name, email, phone, id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Consultant not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating consultant:', err);
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Consultant name already exists' });
+    }
+    res.status(500).json({ error: 'Failed to update consultant' });
+  }
+});
+
+// Delete a consultant
+app.delete('/api/consultants/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM consultants WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Consultant not found' });
+    }
+    res.json({ message: 'Consultant deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting consultant:', err);
+    res.status(500).json({ error: 'Failed to delete consultant' });
+  }
+});
+
 // Start the server only if run directly (not imported by Vercel)
 if (require.main === module) {
   app.listen(PORT, () => {
