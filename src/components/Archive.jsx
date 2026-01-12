@@ -15,6 +15,7 @@ const Archive = ({ onLoadCard }) => {
   // Bulk Assign State
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [consultantToAssign, setConsultantToAssign] = useState('');
+  const [consultantsList, setConsultantsList] = useState([]); // Full list from registry
 
   // Advanced filters state
   const [filters, setFilters] = useState({
@@ -42,6 +43,7 @@ const Archive = ({ onLoadCard }) => {
   useEffect(() => {
     fetchCards();
     fetchSettings();
+    fetchConsultants();
   }, []);
 
   useEffect(() => {
@@ -83,6 +85,19 @@ const Archive = ({ onLoadCard }) => {
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
+    }
+  };
+
+  const fetchConsultants = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const response = await fetch(`${apiUrl}/api/consultants`);
+      if (response.ok) {
+        const data = await response.json();
+        setConsultantsList(data);
+      }
+    } catch (error) {
+      console.error('Error fetching consultants:', error);
     }
   };
 
@@ -441,7 +456,7 @@ const Archive = ({ onLoadCard }) => {
                 autoFocus
               />
               <div className="mt-2 flex flex-wrap gap-2">
-                {uniqueValues.assignedConsultant.slice(0, 5).map(name => (
+                {(consultantsList.length > 0 ? consultantsList.map(c => c.name) : uniqueValues.assignedConsultant.slice(0, 5)).map(name => (
                   <button
                     key={name}
                     onClick={() => setConsultantToAssign(name)}

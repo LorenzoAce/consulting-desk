@@ -17,6 +17,36 @@ async function setup() {
     `);
     
     console.log('Table "consultants" created or already exists.');
+
+    // Migrate existing consultants from consulting_cards
+    console.log('Migrating existing consultants from cards...');
+    
+    const res = await client.query(`
+      SELECT DISTINCT assigned_consultant 
+      FROM consulting_cards 
+      WHERE assigned_consultant IS NOT NULL 
+      AND assigned_consultant != ''
+    `);
+
+    const existingConsultants = res.rows.map(r => r.assigned_consultant);
+    console.log(`Found ${existingConsultants.length} unique consultants in cards.`);
+
+    let addedCount = 0;
+    for (const name of existingConsultants) {
+      const insertRes = await client.query(`
+        INSERT INTO consultants (name) 
+        VALUES ($1) 
+        ON CONFLICT (name) DO NOTHING
+        RETURNING id
+      `, [name]);
+      
+      if (insertRes.rowCount > 0) {
+        addedCount++;
+      }
+    }
+
+    console.log(`Successfully added ${addedCount} new consultants to the registry.`);
+
     client.release();
   } catch (err) {
     console.error('Error creating table:', err);
