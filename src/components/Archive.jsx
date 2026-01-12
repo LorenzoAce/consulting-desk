@@ -6,7 +6,6 @@ import { generatePDF } from '../utils/pdfGenerator';
 const Archive = ({ onLoadCard }) => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
   
   // Selection state
@@ -62,20 +61,14 @@ const Archive = ({ onLoadCard }) => {
 
   const fetchCards = async () => {
     try {
-      setLoading(true);
-      setError(null);
       const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cards`);
       if (response.ok) {
         const data = await response.json();
         setCards(data);
-      } else {
-        throw new Error(`Errore server: ${response.status}`);
       }
     } catch (error) {
       console.error('Error fetching cards:', error);
-      const apiUrl = getApiUrl();
-      setError(`Impossibile caricare le schede. (${error.message}) URL: ${apiUrl}/api/cards`);
     } finally {
       setLoading(false);
     }
@@ -288,24 +281,6 @@ const Archive = ({ onLoadCard }) => {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-8 text-center">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-2xl mx-auto">
-          <Trash2 className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-red-700 dark:text-red-400 mb-2">Errore di Caricamento</h3>
-          <p className="text-red-600 dark:text-red-300 mb-4">{error}</p>
-          <button 
-            onClick={fetchCards}
-            className="bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 px-4 py-2 rounded-md transition-colors font-medium"
-          >
-            Riprova
-          </button>
-        </div>
       </div>
     );
   }
