@@ -75,7 +75,7 @@ const ConsultingForm = ({ initialData }) => {
     
     const fetchSettings = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+        const apiUrl = getApiUrl();
         const response = await fetch(`${apiUrl}/api/settings`);
         if (response.ok) {
           const data = await response.json();
@@ -286,7 +286,7 @@ const ConsultingForm = ({ initialData }) => {
   const handleSave = async () => {
     // Check for duplicates before saving
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const checkResponse = await fetch(`${apiUrl}/api/cards/check-duplicate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -344,7 +344,7 @@ const ConsultingForm = ({ initialData }) => {
         logoDimensions
       };
 
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       
       const isUpdate = initialData && initialData.id;
       const url = isUpdate ? `${apiUrl}/api/cards/${initialData.id}` : `${apiUrl}/api/cards`;

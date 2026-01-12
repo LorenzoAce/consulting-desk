@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Check, AlertTriangle, FileText, Save } from 'lucide-react';
+import { getApiUrl } from '../utils/api';
 
 const Settings = () => {
   const [logo, setLogo] = useState(null);
@@ -23,7 +24,7 @@ const Settings = () => {
 
   const fetchSettings = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/settings`);
       if (response.ok) {
         const data = await response.json();

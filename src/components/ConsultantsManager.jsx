@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, X, Save, Search, User, Mail, Phone } from 'lucide-react';
+import { getApiUrl } from '../utils/api';
 
 const ConsultantsManager = () => {
   const [consultants, setConsultants] = useState([]);
@@ -20,12 +21,15 @@ const ConsultantsManager = () => {
   const fetchConsultants = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3001/api/consultants');
+      setError(null);
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/consultants`);
       if (!response.ok) throw new Error('Failed to fetch consultants');
       const data = await response.json();
       setConsultants(data);
     } catch (err) {
-      setError(err.message);
+      const apiUrl = getApiUrl();
+      setError(`${err.message} (${apiUrl}/api/consultants)`);
     } finally {
       setLoading(false);
     }
@@ -84,7 +88,7 @@ const ConsultantsManager = () => {
     if (!window.confirm('Sei sicuro di voler eliminare questo consulente?')) return;
     
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/consultants/${id}`, {
         method: 'DELETE'
       });

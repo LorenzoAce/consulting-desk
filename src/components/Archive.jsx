@@ -61,7 +61,7 @@ const Archive = ({ onLoadCard }) => {
 
   const fetchCards = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cards`);
       if (response.ok) {
         const data = await response.json();
@@ -76,7 +76,7 @@ const Archive = ({ onLoadCard }) => {
 
   const fetchSettings = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/settings`);
       if (response.ok) {
         const data = await response.json();
@@ -90,7 +90,7 @@ const Archive = ({ onLoadCard }) => {
 
   const fetchConsultants = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/consultants`);
       if (response.ok) {
         const data = await response.json();
@@ -106,7 +106,7 @@ const Archive = ({ onLoadCard }) => {
     if (!window.confirm('Sei sicuro di voler eliminare questa scheda?')) return;
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cards/${id}`, {
         method: 'DELETE',
       });
@@ -183,7 +183,7 @@ const Archive = ({ onLoadCard }) => {
     if (!consultantToAssign.trim()) return;
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
+      const apiUrl = getApiUrl();
       const response = await fetch(`${apiUrl}/api/cards/bulk-consultant`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
