@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { generatePDF as generatePDFUtility } from '../utils/pdfGenerator';
+import { getApiUrl } from '../utils/api';
 import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save } from 'lucide-react';
 
 const ConsultingForm = ({ initialData }) => {
@@ -30,6 +31,7 @@ const ConsultingForm = ({ initialData }) => {
   const [utilityPartners, setUtilityPartners] = useState([]);
   const [newBettingPartner, setNewBettingPartner] = useState('');
   const [newUtilityPartner, setNewUtilityPartner] = useState('');
+  const [consultantsList, setConsultantsList] = useState([]);
   
   // Cities autocomplete state
   const [allCities, setAllCities] = useState([]);
@@ -88,8 +90,22 @@ const ConsultingForm = ({ initialData }) => {
       }
     };
 
+    const fetchConsultants = async () => {
+      try {
+        const apiUrl = getApiUrl();
+        const response = await fetch(`${apiUrl}/api/consultants`);
+        if (response.ok) {
+          const data = await response.json();
+          setConsultantsList(data);
+        }
+      } catch (error) {
+        console.error('Error loading consultants:', error);
+      }
+    };
+
     fetchCities();
     fetchSettings();
+    fetchConsultants();
   }, []);
 
   // Load initial data if provided
@@ -731,14 +747,19 @@ const ConsultingForm = ({ initialData }) => {
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Assegnazione</h2>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Consulente Assegnato</label>
-            <input
-              type="text"
+            <select
               name="assignedConsultant"
               value={formData.assignedConsultant}
               onChange={handleChange}
-              placeholder="Nome del consulente a cui viene assegnata la scheda"
               className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
-            />
+            >
+              <option value="">Seleziona un consulente...</option>
+              {consultantsList.map((consultant) => (
+                <option key={consultant.id} value={consultant.name}>
+                  {consultant.name}
+                </option>
+              ))}
+            </select>
           </div>
         </section>
 
