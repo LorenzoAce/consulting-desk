@@ -101,6 +101,21 @@ const ConsultantsManager = () => {
     (c.email && c.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md text-red-600 dark:text-red-400">
+        <p className="font-bold">Errore nel caricamento dei consulenti</p>
+        <p>{error}</p>
+        <button 
+          onClick={fetchConsultants}
+          className="mt-2 text-sm underline hover:text-red-800 dark:hover:text-red-300"
+        >
+          Riprova
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
