@@ -39,13 +39,10 @@ const Archive = ({ onLoadCard }) => {
     operatorName: []
   });
 
-  // Combined consultants list for filter (Cards data + Registry data)
+  // Filter options based ONLY on active consultants from registry
   const consultantFilterOptions = React.useMemo(() => {
-    const fromCards = uniqueValues.assignedConsultant || [];
-    const fromRegistry = consultantsList.map(c => c.name);
-    // Combine and deduplicate
-    return [...new Set([...fromCards, ...fromRegistry])].sort();
-  }, [uniqueValues.assignedConsultant, consultantsList]);
+    return consultantsList.map(c => c.name).sort();
+  }, [consultantsList]);
 
   const [showFilters, setShowFilters] = useState(false);
 
