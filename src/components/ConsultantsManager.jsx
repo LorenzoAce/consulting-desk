@@ -55,9 +55,10 @@ const ConsultantsManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '' : 'http://localhost:3001');
       const url = currentConsultant 
-        ? `http://localhost:3001/api/consultants/${currentConsultant.id}`
-        : 'http://localhost:3001/api/consultants';
+        ? `${apiUrl}/api/consultants/${currentConsultant.id}`
+        : `${apiUrl}/api/consultants`;
       
       const method = currentConsultant ? 'PUT' : 'POST';
       
