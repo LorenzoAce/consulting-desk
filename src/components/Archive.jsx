@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
+import { getApiUrl } from '../utils/api';
 
 const Archive = ({ onLoadCard }) => {
   const [cards, setCards] = useState([]);
