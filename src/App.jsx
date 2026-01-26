@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ConsultingForm from './components/ConsultingForm';
 import Archive from './components/Archive';
+import CRM from './components/CRM';
 import Settings from './components/Settings';
 import ConsultantsManager from './components/ConsultantsManager';
 import Layout from './components/Layout';
