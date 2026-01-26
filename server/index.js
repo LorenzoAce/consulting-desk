@@ -392,6 +392,105 @@ app.delete('/api/consultants/:id', async (req, res) => {
   }
 });
 
+// --- CRM Management ---
+
+// Initialize CRM Table
+app.post('/api/crm/init', async (req, res) => {
+  try {
+    const query = `
+      CREATE TABLE IF NOT EXISTS crm_leads (
+        id SERIAL PRIMARY KEY,
+        card_id INTEGER REFERENCES consulting_cards(id) ON DELETE SET NULL,
+        business_name VARCHAR(255),
+        contact_name VARCHAR(255),
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        source VARCHAR(50),
+        status VARCHAR(50) DEFAULT 'new',
+        notes TEXT,
+        last_contact_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `;
+    await pool.query(query);
+    res.json({ message: 'CRM table initialized' });
+  } catch (err) {
+    console.error('Error initializing CRM table:', err);
+    res.status(500).json({ error: 'Failed to initialize CRM table' });
+  }
+});
+
+// Get all CRM leads
+app.get('/api/crm/leads', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM crm_leads ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching CRM leads:', err);
+    res.status(500).json({ error: 'Failed to fetch CRM leads' });
+  }
+});
+
+// Import from Archive
+app.post('/api/crm/import-archive', async (req, res) => {
+  const { cardIds } = req.body; // Array of IDs
+  if (!cardIds || !Array.isArray(cardIds)) {
+    return res.status(400).json({ error: 'Invalid cardIds' });
+  }
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    let importedCount = 0;
+    
+    for (const id of cardIds) {
+      // Check if already in CRM
+      const check = await client.query('SELECT id FROM crm_leads WHERE card_id = $1', [id]);
+      if (check.rows.length > 0) continue;
+      
+      // Get card data
+      const cardRes = await client.query('SELECT * FROM consulting_cards WHERE id = $1', [id]);
+      if (cardRes.rows.length === 0) continue;
+      
+      const card = cardRes.rows[0];
+      
+      // Insert into CRM
+      await client.query(`
+        INSERT INTO crm_leads (card_id, business_name, contact_name, email, phone, source, status, created_at)
+        VALUES ($1, $2, $3, $4, $5, 'archive', 'new', NOW())
+      `, [card.id, card.business_name, card.full_name, card.email, card.phone]);
+      
+      importedCount++;
+    }
+    
+    await client.query('COMMIT');
+    res.json({ message: `Imported ${importedCount} leads from archive` });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error importing from archive:', err);
+    res.status(500).json({ error: 'Failed to import from archive' });
+  } finally {
+    client.release();
+  }
+});
+
+// Import from Excel (or manual add)
+app.post('/api/crm/leads', async (req, res) => {
+  const { businessName, contactName, email, phone, notes, source } = req.body;
+  try {
+    const result = await pool.query(`
+      INSERT INTO crm_leads (business_name, contact_name, email, phone, notes, source, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, 'new', NOW())
+      RETURNING *
+    `, [businessName, contactName, email, phone, notes, source || 'excel']);
+    
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error adding CRM lead:', err);
+    res.status(500).json({ error: 'Failed to add CRM lead' });
+  }
+});
+
 // Start the server only if run directly (not imported by Vercel)
 if (require.main === module) {
   app.listen(PORT, () => {

@@ -5,6 +5,7 @@ const Sidebar = ({ currentView, onNavigate, isOpen, onClose }) => {
   const menuItems = [
     { icon: PlusCircle, label: 'Nuova Scheda', id: 'form' },
     { icon: FolderArchive, label: 'Archivio Schede', id: 'archive' },
+    { icon: Building, label: 'CRM', id: 'crm' },
     { icon: Users, label: 'Gestione Consulenti', id: 'consultants' },
     { icon: Settings, label: 'Impostazioni', id: 'settings' },
   ];
