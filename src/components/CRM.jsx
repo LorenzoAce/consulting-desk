@@ -86,7 +86,8 @@ const CRM = () => {
     if (selectedCardIds.size === 0) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/crm/import-archive`, {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/crm/import-archive`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cardIds: Array.from(selectedCardIds) })
