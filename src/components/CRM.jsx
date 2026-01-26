@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { getApiUrl } from '../utils/api';
 
 const CRM = () => {
   const [activeTab, setActiveTab] = useState('list'); // 'list', 'import-archive', 'import-excel'
@@ -27,7 +26,8 @@ const CRM = () => {
 
   const initCRM = async () => {
     try {
-      await fetch(`${API_URL}/crm/init`, { method: 'POST' });
+      const apiUrl = getApiUrl();
+      await fetch(`${apiUrl}/api/crm/init`, { method: 'POST' });
     } catch (err) {
       console.error('Failed to init CRM', err);
     }
@@ -36,7 +36,8 @@ const CRM = () => {
   const fetchLeads = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/crm/leads`);
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/crm/leads`);
       if (!res.ok) throw new Error('Failed to fetch leads');
       const data = await res.json();
       setLeads(data);
@@ -50,7 +51,8 @@ const CRM = () => {
 
   const fetchArchiveCards = async () => {
     try {
-      const res = await fetch(`${API_URL}/cards`);
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/cards`);
       if (!res.ok) throw new Error('Failed to fetch cards');
       const data = await res.json();
       setArchiveCards(data);
@@ -137,7 +139,8 @@ const CRM = () => {
             source: 'excel'
         };
 
-        await fetch(`${API_URL}/crm/leads`, {
+        const apiUrl = getApiUrl();
+        await fetch(`${apiUrl}/api/crm/leads`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
