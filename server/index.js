@@ -397,23 +397,61 @@ app.delete('/api/consultants/:id', async (req, res) => {
 // Initialize CRM Table
 app.post('/api/crm/init', async (req, res) => {
   try {
-    const query = `
-      CREATE TABLE IF NOT EXISTS crm_leads (
-        id SERIAL PRIMARY KEY,
-        card_id INTEGER REFERENCES consulting_cards(id) ON DELETE SET NULL,
-        business_name VARCHAR(255),
-        contact_name VARCHAR(255),
-        email VARCHAR(255),
-        phone VARCHAR(50),
-        source VARCHAR(50),
-        status VARCHAR(50) DEFAULT 'new',
-        notes TEXT,
-        last_contact_date TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `;
-    await pool.query(query);
-    res.json({ message: 'CRM table initialized' });
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Create table if not exists
+      const query = `
+        CREATE TABLE IF NOT EXISTS crm_leads (
+          id SERIAL PRIMARY KEY,
+          card_id INTEGER REFERENCES consulting_cards(id) ON DELETE SET NULL,
+          business_name VARCHAR(255),
+          contact_name VARCHAR(255),
+          email VARCHAR(255),
+          phone VARCHAR(50),
+          address VARCHAR(255),
+          city VARCHAR(100),
+          province VARCHAR(100),
+          source VARCHAR(50),
+          status VARCHAR(50) DEFAULT 'new',
+          notes TEXT,
+          last_contact_date TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      await client.query(query);
+
+      // Add missing columns if table exists (migration)
+      await client.query(`
+        DO $$ 
+        BEGIN 
+          BEGIN
+            ALTER TABLE crm_leads ADD COLUMN address VARCHAR(255);
+          EXCEPTION
+            WHEN duplicate_column THEN NULL;
+          END;
+          BEGIN
+            ALTER TABLE crm_leads ADD COLUMN city VARCHAR(100);
+          EXCEPTION
+            WHEN duplicate_column THEN NULL;
+          END;
+          BEGIN
+            ALTER TABLE crm_leads ADD COLUMN province VARCHAR(100);
+          EXCEPTION
+            WHEN duplicate_column THEN NULL;
+          END;
+        END $$;
+      `);
+      
+      await client.query('COMMIT');
+      res.json({ message: 'CRM table initialized and updated' });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   } catch (err) {
     console.error('Error initializing CRM table:', err);
     res.status(500).json({ error: 'Failed to initialize CRM table' });
@@ -428,6 +466,69 @@ app.get('/api/crm/leads', async (req, res) => {
   } catch (err) {
     console.error('Error fetching CRM leads:', err);
     res.status(500).json({ error: 'Failed to fetch CRM leads' });
+  }
+});
+
+// Update a CRM lead
+app.put('/api/crm/leads/:id', async (req, res) => {
+  const { id } = req.params;
+  const { businessName, contactName, email, phone, address, city, province, notes, status, cardId } = req.body;
+  
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Update CRM Lead
+    const updateLeadQuery = `
+      UPDATE crm_leads 
+      SET business_name = $1, contact_name = $2, email = $3, phone = $4, 
+          address = $5, city = $6, province = $7, notes = $8, status = $9
+      WHERE id = $10
+      RETURNING *
+    `;
+    const leadValues = [businessName, contactName, email, phone, address, city, province, notes, status, id];
+    const leadResult = await client.query(updateLeadQuery, leadValues);
+
+    if (leadResult.rowCount === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+
+    // Sync with Card if linked
+    if (cardId) {
+      const updateCardQuery = `
+        UPDATE consulting_cards
+        SET business_name = $1, full_name = $2, email = $3, phone = $4,
+            address = $5, city = $6, province = $7, updated_at = NOW()
+        WHERE id = $8
+      `;
+      // Note: mapping contactName to full_name
+      await client.query(updateCardQuery, [businessName, contactName, email, phone, address, city, province, cardId]);
+    }
+
+    await client.query('COMMIT');
+    res.json(leadResult.rows[0]);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error updating CRM lead:', err);
+    res.status(500).json({ error: 'Failed to update CRM lead' });
+  } finally {
+    client.release();
+  }
+});
+
+// Delete a CRM lead
+app.delete('/api/crm/leads/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM crm_leads WHERE id = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Lead not found' });
+    }
+    res.json({ message: 'Lead deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting CRM lead:', err);
+    res.status(500).json({ error: 'Failed to delete CRM lead' });
   }
 });
 
@@ -456,9 +557,9 @@ app.post('/api/crm/import-archive', async (req, res) => {
       
       // Insert into CRM
       await client.query(`
-        INSERT INTO crm_leads (card_id, business_name, contact_name, email, phone, source, status, created_at)
-        VALUES ($1, $2, $3, $4, $5, 'archive', 'new', NOW())
-      `, [card.id, card.business_name, card.full_name, card.email, card.phone]);
+        INSERT INTO crm_leads (card_id, business_name, contact_name, email, phone, address, city, province, source, status, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'archive', 'new', NOW())
+      `, [card.id, card.business_name, card.full_name, card.email, card.phone, card.address, card.city, card.province]);
       
       importedCount++;
     }
@@ -476,13 +577,13 @@ app.post('/api/crm/import-archive', async (req, res) => {
 
 // Import from Excel (or manual add)
 app.post('/api/crm/leads', async (req, res) => {
-  const { businessName, contactName, email, phone, notes, source } = req.body;
+  const { businessName, contactName, email, phone, address, city, province, notes, source } = req.body;
   try {
     const result = await pool.query(`
-      INSERT INTO crm_leads (business_name, contact_name, email, phone, notes, source, status, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, 'new', NOW())
+      INSERT INTO crm_leads (business_name, contact_name, email, phone, address, city, province, notes, source, status, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'new', NOW())
       RETURNING *
-    `, [businessName, contactName, email, phone, notes, source || 'excel']);
+    `, [businessName, contactName, email, phone, address, city, province, notes, source || 'excel']);
     
     res.status(201).json(result.rows[0]);
   } catch (err) {

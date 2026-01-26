@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle } from 'lucide-react';
+import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
@@ -9,6 +9,11 @@ const CRM = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
+  // Edit/Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentLead, setCurrentLead] = useState(null);
+  const [formData, setFormData] = useState({});
+
   // Archive Import State
   const [archiveCards, setArchiveCards] = useState([]);
   const [selectedCardIds, setSelectedCardIds] = useState(new Set());
@@ -46,6 +51,58 @@ const CRM = () => {
       // Don't show error immediately on fetch fail if table doesn't exist yet (handled by init)
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Sei sicuro di voler eliminare questo contatto?')) return;
+    try {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/crm/leads/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete lead');
+      fetchLeads();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleOpenModal = (lead) => {
+    setCurrentLead(lead);
+    setFormData({
+      businessName: lead.business_name || '',
+      contactName: lead.contact_name || '',
+      email: lead.email || '',
+      phone: lead.phone || '',
+      address: lead.address || '',
+      city: lead.city || '',
+      province: lead.province || '',
+      status: lead.status || 'new',
+      notes: lead.notes || ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setCurrentLead(null);
+    setFormData({});
+  };
+
+  const handleModalSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/crm/leads/${currentLead.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, cardId: currentLead.card_id })
+      });
+      if (!res.ok) throw new Error('Failed to update lead');
+      
+      handleCloseModal();
+      fetchLeads();
+    } catch (err) {
+      alert('Errore durante il salvataggio: ' + err.message);
     }
   };
 
@@ -206,34 +263,198 @@ const CRM = () => {
       {/* CONTENT */}
       {activeTab === 'list' && (
         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                {leads.length === 0 ? (
-                    <li className="px-4 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</li>
-                ) : (
-                    leads.map(lead => (
-                        <li key={lead.id} className="px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-blue-600 truncate">{lead.business_name}</p>
-                                    <p className="flex items-center text-sm text-gray-500">
-                                        {lead.contact_name && <span className="mr-2">{lead.contact_name}</span>}
-                                        {lead.email && <span className="mr-2">&bull; {lead.email}</span>}
-                                        {lead.phone && <span>&bull; {lead.phone}</span>}
-                                    </p>
-                                    <p className="text-xs text-gray-400 mt-1">Fonte: {lead.source}</p>
-                                </div>
-                                <div className="ml-2 flex-shrink-0 flex">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                        lead.status === 'new' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                    }`}>
-                                        {lead.status}
-                                    </span>
-                                </div>
-                            </div>
-                        </li>
-                    ))
-                )}
-            </ul>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome Attività</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contatto</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indirizzo</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Recapiti</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stato</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        {leads.length === 0 ? (
+                            <tr>
+                                <td colSpan="6" className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
+                            </tr>
+                        ) : (
+                            leads.map(lead => (
+                                <tr key={lead.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-blue-600 dark:text-blue-400">{lead.business_name}</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400">Fonte: {lead.source}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900 dark:text-white">{lead.contact_name}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                                            {lead.address}<br/>
+                                            {lead.city} {lead.province && `(${lead.province})`}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                                            {lead.email && <div>{lead.email}</div>}
+                                            {lead.phone && <div>{lead.phone}</div>}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                            lead.status === 'new' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                        }`}>
+                                            {lead.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <button onClick={() => handleOpenModal(lead)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4">
+                                            <Pencil className="h-4 w-4" />
+                                        </button>
+                                        <button onClick={() => handleDelete(lead.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={handleCloseModal}></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <form onSubmit={handleModalSubmit}>
+                <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                      Modifica Contatto
+                    </h3>
+                    <button type="button" onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500">
+                      <X className="h-6 w-6" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ragione Sociale</label>
+                      <input
+                        type="text"
+                        required
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.businessName}
+                        onChange={(e) => setFormData({...formData, businessName: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Referente</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.contactName}
+                        onChange={(e) => setFormData({...formData, contactName: e.target.value})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                        <input
+                          type="email"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          value={formData.email}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefono</label>
+                        <input
+                          type="text"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Indirizzo</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.address}
+                        onChange={(e) => setFormData({...formData, address: e.target.value})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Città</label>
+                        <input
+                          type="text"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          value={formData.city}
+                          onChange={(e) => setFormData({...formData, city: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Provincia</label>
+                        <input
+                          type="text"
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          value={formData.province}
+                          onChange={(e) => setFormData({...formData, province: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Stato</label>
+                      <select
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.status}
+                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      >
+                        <option value="new">Nuovo</option>
+                        <option value="contacted">Contattato</option>
+                        <option value="interested">Interessato</option>
+                        <option value="closed">Chiuso</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Note</label>
+                      <textarea
+                        rows={3}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.notes}
+                        onChange={(e) => setFormData({...formData, notes: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                  <button
+                    type="submit"
+                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                  >
+                    Salva
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCloseModal}
+                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-600 dark:text-white dark:border-gray-500 dark:hover:bg-gray-500"
+                  >
+                    Annulla
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
 
