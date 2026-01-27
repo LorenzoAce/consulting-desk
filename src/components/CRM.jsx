@@ -21,7 +21,6 @@ const CRM = ({ onLoadCard }) => {
 
   // Excel Import State
   const [excelData, setExcelData] = useState([]);
-  const [importStatus, setImportStatus] = useState(null);
 
   // Initial Data Load
   useEffect(() => {
@@ -300,6 +299,8 @@ const CRM = ({ onLoadCard }) => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome Attività</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contatto</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indirizzo</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Città</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Provincia</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Interesse</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disponibilità</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servizi Attivi</th>
@@ -313,7 +314,7 @@ const CRM = ({ onLoadCard }) => {
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {leads.length === 0 ? (
                             <tr>
-                                <td colSpan="8" className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
+                                <td colSpan="13" className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
                             </tr>
                         ) : (
                             leads.map(lead => (
@@ -325,10 +326,19 @@ const CRM = ({ onLoadCard }) => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900 dark:text-white">{lead.contact_name}</div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-500 dark:text-gray-300">
-                                            {lead.address}<br/>
-                                            {lead.city} {lead.province && `(${lead.province})`}
+                                            {lead.address || '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                                            {lead.city || '-'}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                                            {lead.province || '-'}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -340,11 +350,11 @@ const CRM = ({ onLoadCard }) => {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex flex-col space-y-1">
                                             <div className="flex items-center text-xs">
-                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.betting_active === 'Si' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.betting_active === 'Si' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                                 <span className="text-gray-700 dark:text-gray-300">Scommesse</span>
                                             </div>
                                             <div className="flex items-center text-xs">
-                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.utilities_active === 'Si' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.utilities_active === 'Si' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                                                 <span className="text-gray-700 dark:text-gray-300">Utenze</span>
                                             </div>
                                         </div>
