@@ -41,7 +41,7 @@ function App() {
       case 'archive':
         return <Archive onLoadCard={handleLoadCard} />;
       case 'crm':
-        return <CRM onLoadCard={handleLoadCard} />;
+        return <CRM onLoadCard={handleLoadCard} onNavigate={handleNavigate} />;
       case 'consultants':
         return <ConsultantsManager />;
       case 'settings':

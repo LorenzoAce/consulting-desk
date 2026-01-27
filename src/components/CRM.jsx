@@ -3,7 +3,7 @@ import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pe
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
-const CRM = ({ onLoadCard }) => {
+const CRM = ({ onLoadCard, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('list'); // 'list', 'import-archive', 'import-excel'
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -286,6 +286,16 @@ const CRM = ({ onLoadCard }) => {
             className={`px-4 py-2 text-sm font-medium rounded-md ${activeTab === 'import-excel' ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:text-gray-700'}`}
         >
             Importa da Excel
+        </button>
+        
+        <div className="flex-grow"></div>
+
+        <button
+            onClick={() => onNavigate('form')}
+            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 flex items-center"
+        >
+            <Plus className="w-4 h-4 mr-2" />
+            Nuovo Contatto
         </button>
       </div>
 
