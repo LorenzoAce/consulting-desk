@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
+
+const STATUS_ORDER = ['new', 'contacted', 'interested', 'client', 'closed'];
+
+const STATUS_LABELS = {
+  new: 'Nuovo',
+  contacted: 'Contattato',
+  interested: 'Interessato',
+  client: 'Cliente',
+  closed: 'Chiuso'
+};
 
 const CRM = ({ onLoadCard, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('list'); // 'list', 'import-archive', 'import-excel'
@@ -138,6 +148,38 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       fetchLeads();
     } catch (err) {
       alert('Errore durante il salvataggio: ' + err.message);
+    }
+  };
+
+  const handleStatusCycle = async (lead) => {
+    const currentIndex = STATUS_ORDER.indexOf(lead.status);
+    const nextStatus = STATUS_ORDER[(currentIndex + 1) % STATUS_ORDER.length] || 'new';
+
+    try {
+      const apiUrl = getApiUrl();
+      const payload = {
+        businessName: lead.business_name || '',
+        contactName: lead.contact_name || '',
+        email: lead.email || '',
+        phone: lead.phone || '',
+        address: lead.address || '',
+        city: lead.city || '',
+        province: lead.province || '',
+        notes: lead.notes || '',
+        status: nextStatus,
+        cardId: lead.card_id
+      };
+
+      const res = await fetch(`${apiUrl}/api/crm/leads/${lead.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Failed to update status');
+      fetchLeads();
+    } catch (err) {
+      alert('Errore durante l\'aggiornamento dello stato: ' + err.message);
     }
   };
 
@@ -378,6 +420,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     <option value="new">Nuovo</option>
                     <option value="contacted">Contattato</option>
                     <option value="interested">Interessato</option>
+                    <option value="client">Cliente</option>
                     <option value="closed">Chiuso</option>
                   </select>
                 </div>
@@ -460,11 +503,21 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                         <div className="text-sm text-gray-900 dark:text-white">{lead.email || '-'}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                            lead.status === 'new' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                        }`}>
-                                            {lead.status}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                lead.status === 'new' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                            }`}>
+                                                {STATUS_LABELS[lead.status] || lead.status}
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStatusCycle(lead)}
+                                                className="p-1 rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                                title="Cambia stato"
+                                            >
+                                                <RefreshCw className="h-3 w-3" />
+                                            </button>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button 
@@ -584,6 +637,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                         <option value="new">Nuovo</option>
                         <option value="contacted">Contattato</option>
                         <option value="interested">Interessato</option>
+                        <option value="client">Cliente</option>
                         <option value="closed">Chiuso</option>
                       </select>
                     </div>
