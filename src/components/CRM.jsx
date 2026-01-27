@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save, RefreshCw } from 'lucide-react';
+import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
-
-const STATUS_ORDER = ['new', 'contacted', 'interested', 'client', 'closed'];
 
 const STATUS_LABELS = {
   new: 'Nuovo',
@@ -11,6 +9,14 @@ const STATUS_LABELS = {
   interested: 'Interessato',
   client: 'Cliente',
   closed: 'Chiuso'
+};
+
+const STATUS_COLORS = {
+  new: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800',
+  contacted: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+  interested: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
+  client: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+  closed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
 };
 
 const CRM = ({ onLoadCard, onNavigate }) => {
@@ -151,10 +157,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     }
   };
 
-  const handleStatusCycle = async (lead) => {
-    const currentIndex = STATUS_ORDER.indexOf(lead.status);
-    const nextStatus = STATUS_ORDER[(currentIndex + 1) % STATUS_ORDER.length] || 'new';
-
+  const handleStatusChange = async (lead, newStatus) => {
     try {
       const apiUrl = getApiUrl();
       const payload = {
@@ -166,7 +169,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
         city: lead.city || '',
         province: lead.province || '',
         notes: lead.notes || '',
-        status: nextStatus,
+        status: newStatus,
         cardId: lead.card_id
       };
 
@@ -503,21 +506,19 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                         <div className="text-sm text-gray-900 dark:text-white">{lead.email || '-'}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                lead.status === 'new' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                                {STATUS_LABELS[lead.status] || lead.status}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleStatusCycle(lead)}
-                                                className="p-1 rounded-full border border-gray-300 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
-                                                title="Cambia stato"
-                                            >
-                                                <RefreshCw className="h-3 w-3" />
-                                            </button>
-                                        </div>
+                                        <select
+                                            value={lead.status || 'new'}
+                                            onChange={(e) => handleStatusChange(lead, e.target.value)}
+                                            className={`block w-full text-xs font-semibold rounded-full py-1 px-2 border cursor-pointer ${
+                                                STATUS_COLORS[lead.status] || 'bg-gray-100 text-gray-800 border-gray-200'
+                                            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                        >
+                                            {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                                                <option key={value} value={value} className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
+                                                    {label}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button 
