@@ -458,14 +458,40 @@ app.post('/api/crm/init', async (req, res) => {
   }
 });
 
-// Get all CRM leads
+// Get all CRM leads with Card details
 app.get('/api/crm/leads', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM crm_leads ORDER BY created_at DESC');
+    const query = `
+      SELECT l.*, 
+             c.main_interest, 
+             c.assigned_consultant, 
+             c.availability,
+             c.betting_active,
+             c.utilities_active
+      FROM crm_leads l
+      LEFT JOIN consulting_cards c ON l.card_id = c.id
+      ORDER BY l.created_at DESC
+    `;
+    const result = await pool.query(query);
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching CRM leads:', err);
     res.status(500).json({ error: 'Failed to fetch CRM leads' });
+  }
+});
+
+// Get single card by ID
+app.get('/api/cards/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM consulting_cards WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error fetching card:', err);
+    res.status(500).json({ error: 'Failed to fetch card' });
   }
 });
 

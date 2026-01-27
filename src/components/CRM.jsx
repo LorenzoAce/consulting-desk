@@ -3,7 +3,7 @@ import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pe
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
-const CRM = () => {
+const CRM = ({ onLoadCard }) => {
   const [activeTab, setActiveTab] = useState('list'); // 'list', 'import-archive', 'import-excel'
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -63,6 +63,36 @@ const CRM = () => {
       fetchLeads();
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const handleEditCard = async (lead) => {
+    console.log('handleEditCard called with:', lead);
+    try {
+      if (lead.card_id && onLoadCard) {
+        console.log('Fetching card details for ID:', lead.card_id);
+        // Fetch full card data to ensure we have everything (including JSON fields)
+        try {
+          const apiUrl = getApiUrl();
+          const res = await fetch(`${apiUrl}/api/cards/${lead.card_id}`);
+          if (!res.ok) throw new Error('Failed to fetch card details');
+          const card = await res.json();
+          console.log('Card details fetched:', card);
+          onLoadCard(card);
+        } catch (err) {
+          console.error(err);
+          alert('Impossibile caricare la scheda completa: ' + err.message);
+          // Fallback to simple edit if fetch fails
+          handleOpenModal(lead);
+        }
+      } else {
+        console.log('Opening simple modal for lead:', lead);
+        // Fallback for non-linked leads
+        handleOpenModal(lead);
+      }
+    } catch (error) {
+      console.error('Critical error in handleEditCard:', error);
+      alert('Si è verificato un errore critico durante l\'apertura della modifica.');
     }
   };
 
@@ -270,15 +300,19 @@ const CRM = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome Attività</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contatto</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indirizzo</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Interesse</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disponibilità</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servizi Attivi</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Consulente</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Recapiti</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stato</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stato CRM</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Azioni</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {leads.length === 0 ? (
                             <tr>
-                                <td colSpan="6" className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
+                                <td colSpan="8" className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
                             </tr>
                         ) : (
                             leads.map(lead => (
@@ -297,10 +331,31 @@ const CRM = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-500 dark:text-gray-300">
-                                            {lead.email && <div>{lead.email}</div>}
-                                            {lead.phone && <div>{lead.phone}</div>}
+                                        <div className="text-sm text-gray-900 dark:text-white">{lead.main_interest || '-'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900 dark:text-white">{lead.availability || '-'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex flex-col space-y-1">
+                                            <div className="flex items-center text-xs">
+                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.betting_active === 'Si' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                                <span className="text-gray-700 dark:text-gray-300">Scommesse</span>
+                                            </div>
+                                            <div className="flex items-center text-xs">
+                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.utilities_active === 'Si' ? 'bg-green-500' : 'bg-gray-300'}`}></span>
+                                                <span className="text-gray-700 dark:text-gray-300">Utenze</span>
+                                            </div>
                                         </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900 dark:text-white">{lead.assigned_consultant || '-'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900 dark:text-white">{lead.phone || '-'}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm text-gray-900 dark:text-white">{lead.email || '-'}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -310,7 +365,11 @@ const CRM = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onClick={() => handleOpenModal(lead)} className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4">
+                                        <button 
+                                            onClick={() => handleEditCard(lead)} 
+                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
+                                            title={lead.card_id ? "Modifica Scheda Completa" : "Modifica Lead CRM"}
+                                        >
                                             <Pencil className="h-4 w-4" />
                                         </button>
                                         <button onClick={() => handleDelete(lead.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
