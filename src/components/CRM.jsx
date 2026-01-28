@@ -431,11 +431,11 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                             {crmOptions.availability && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disponibilità</th>}
                             {crmOptions.services && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servizi Attivi</th>}
                             {crmOptions.assigned_consultant && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Consulente</th>}
-                            {crmOptions.phone && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono / Cellulare</th>}
+                            {crmOptions.phone && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono</th>}
                             {crmOptions.email && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>}
                             {crmOptions.notes && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Note</th>}
-                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px]">Stato</th>}
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Azioni</th>
+                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px] sticky right-[100px] z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Stato</th>}
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -461,7 +461,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                             </tr>
                         ) : (
                             filteredLeads.map(lead => (
-                                <tr key={lead.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <tr key={lead.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700">
                                     {crmOptions.business_name && (
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm font-medium text-blue-600 dark:text-blue-400">{lead.business_name}</div>
@@ -533,7 +533,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                         </td>
                                     )}
                                     {crmOptions.status && (
-                                        <td className="px-6 py-4 whitespace-nowrap">
+                                        <td className="px-6 py-4 whitespace-nowrap sticky right-[100px] z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
                                             <select
                                                 value={lead.status || 'new'}
                                                 onChange={(e) => handleStatusChange(lead, e.target.value)}
@@ -549,7 +549,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                             </select>
                                         </td>
                                     )}
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
                                         <button 
                                             onClick={() => handleEditCard(lead)} 
                                             className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
