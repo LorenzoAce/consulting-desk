@@ -87,6 +87,7 @@ const Archive = ({ onLoadCard }) => {
   }, [cards, filteredCards, viewMode]);
 
   useEffect(() => {
+    console.log('Archive component loaded - v2.0.1');
     fetchCards();
     fetchSettings();
     fetchConsultants();
