@@ -112,6 +112,8 @@ app.put('/api/cards/:id', async (req, res) => {
   const { id } = req.params;
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
     const {
       businessName,
       fullName,
@@ -159,11 +161,34 @@ app.put('/api/cards/:id', async (req, res) => {
     const result = await client.query(query, values);
     
     if (result.rowCount === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Card not found' });
     }
-    
+
+    // Sync changes to CRM Leads if linked
+    const syncQuery = `
+      UPDATE crm_leads
+      SET business_name = $1, contact_name = $2, email = $3, phone = $4,
+          address = $5, city = $6, province = $7, source = $8, notes = $9
+      WHERE card_id = $10
+    `;
+    await client.query(syncQuery, [
+      businessName, 
+      fullName, 
+      email, 
+      phone, 
+      address, 
+      city, 
+      province, 
+      source,
+      notes,
+      id
+    ]);
+
+    await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('Error updating card:', err);
     res.status(500).json({ error: 'Failed to update card', details: err.message });
   } finally {
@@ -525,11 +550,11 @@ app.put('/api/crm/leads/:id', async (req, res) => {
       const updateCardQuery = `
         UPDATE consulting_cards
         SET business_name = $1, full_name = $2, email = $3, phone = $4,
-            address = $5, city = $6, province = $7, updated_at = NOW()
-        WHERE id = $8
+            address = $5, city = $6, province = $7, notes = $8, updated_at = NOW()
+        WHERE id = $9
       `;
       // Note: mapping contactName to full_name
-      await client.query(updateCardQuery, [businessName, contactName, email, phone, address, city, province, cardId]);
+      await client.query(updateCardQuery, [businessName, contactName, email, phone, address, city, province, notes, cardId]);
     }
 
     await client.query('COMMIT');
