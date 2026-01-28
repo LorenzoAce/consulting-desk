@@ -41,14 +41,45 @@ const CRM = ({ onLoadCard, onNavigate }) => {
   const [filterAvailability, setFilterAvailability] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
-  // Excel Import State
-  const [excelData, setExcelData] = useState([]);
+  // CRM Options State
+  const [crmOptions, setCrmOptions] = useState({
+    business_name: true,
+    contact_name: true,
+    address: true,
+    city: true,
+    province: true,
+    phone: true,
+    email: true,
+    main_interest: true,
+    availability: true,
+    services: true,
+    status: true,
+    source: true,
+    notes: true,
+    assigned_consultant: true
+  });
 
   // Initial Data Load
   useEffect(() => {
     initCRM();
     fetchLeads();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/settings`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.crm_options) {
+          setCrmOptions(data.crm_options);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
 
   const initCRM = async () => {
     try {
@@ -433,93 +464,133 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome Attività</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contatto</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indirizzo</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Città</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Provincia</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Interesse</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disponibilità</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servizi Attivi</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Consulente</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono / Cellulare</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px]">Stato CRM</th>
+                            {crmOptions.business_name && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nome Attività</th>}
+                            {crmOptions.contact_name && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Contatto</th>}
+                            {crmOptions.address && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Indirizzo</th>}
+                            {crmOptions.city && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Città</th>}
+                            {crmOptions.province && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Provincia</th>}
+                            {crmOptions.main_interest && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Interesse</th>}
+                            {crmOptions.availability && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disponibilità</th>}
+                            {crmOptions.services && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servizi Attivi</th>}
+                            {crmOptions.assigned_consultant && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Consulente</th>}
+                            {crmOptions.phone && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono / Cellulare</th>}
+                            {crmOptions.email && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>}
+                            {crmOptions.notes && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Note</th>}
+                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px]">Stato CRM</th>}
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Azioni</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {filteredLeads.length === 0 ? (
                             <tr>
-                                <td colSpan="13" className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
+                                <td colSpan={
+                                    [
+                                        crmOptions.business_name,
+                                        crmOptions.contact_name,
+                                        crmOptions.address,
+                                        crmOptions.city,
+                                        crmOptions.province,
+                                        crmOptions.main_interest,
+                                        crmOptions.availability,
+                                        crmOptions.services,
+                                        crmOptions.assigned_consultant,
+                                        crmOptions.phone,
+                                        crmOptions.email,
+                                        crmOptions.notes,
+                                        crmOptions.status
+                                    ].filter(Boolean).length + 1
+                                } className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
                             </tr>
                         ) : (
                             filteredLeads.map(lead => (
                                 <tr key={lead.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-blue-600 dark:text-blue-400">{lead.business_name}</div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">Fonte: {lead.source}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-white">{lead.contact_name}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-500 dark:text-gray-300">
-                                            {lead.address || '-'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-500 dark:text-gray-300">
-                                            {lead.city || '-'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-500 dark:text-gray-300">
-                                            {lead.province || '-'}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-white">{lead.main_interest || '-'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-white">{lead.availability || '-'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex flex-col space-y-1">
-                                            <div className="flex items-center text-xs">
-                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.betting_active === 'Si' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                <span className="text-gray-700 dark:text-gray-300">Scommesse</span>
+                                    {crmOptions.business_name && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm font-medium text-blue-600 dark:text-blue-400">{lead.business_name}</div>
+                                            {crmOptions.source && <div className="text-xs text-gray-500 dark:text-gray-400">Fonte: {lead.source}</div>}
+                                        </td>
+                                    )}
+                                    {crmOptions.contact_name && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.contact_name}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.address && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-500 dark:text-gray-300">{lead.address || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.city && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-500 dark:text-gray-300">{lead.city || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.province && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-500 dark:text-gray-300">{lead.province || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.main_interest && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.main_interest || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.availability && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.availability || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.services && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex flex-col space-y-1">
+                                                <div className="flex items-center text-xs">
+                                                    <span className={`w-2 h-2 rounded-full mr-2 ${lead.betting_active?.toUpperCase() === 'SI' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                    <span className="text-gray-700 dark:text-gray-300">Scommesse</span>
+                                                </div>
+                                                <div className="flex items-center text-xs">
+                                                    <span className={`w-2 h-2 rounded-full mr-2 ${lead.utilities_active?.toUpperCase() === 'SI' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                    <span className="text-gray-700 dark:text-gray-300">Utenze</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center text-xs">
-                                                <span className={`w-2 h-2 rounded-full mr-2 ${lead.utilities_active === 'Si' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                <span className="text-gray-700 dark:text-gray-300">Utenze</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-white">{lead.assigned_consultant || '-'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-white">{lead.phone || '-'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm text-gray-900 dark:text-white">{lead.email || '-'}</div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <select
-                                            value={lead.status || 'new'}
-                                            onChange={(e) => handleStatusChange(lead, e.target.value)}
-                                            className={`block w-full text-xs font-semibold rounded-full py-1 px-2 border cursor-pointer ${
-                                                STATUS_COLORS[lead.status] || 'bg-gray-100 text-gray-800 border-gray-200'
-                                            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-                                        >
-                                            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                                                <option key={value} value={value} className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
-                                                    {label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </td>
+                                        </td>
+                                    )}
+                                    {crmOptions.assigned_consultant && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.assigned_consultant || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.phone && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.phone || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.email && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.email || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.notes && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900 dark:text-white max-w-xs truncate" title={lead.notes}>{lead.notes || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.status && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <select
+                                                value={lead.status || 'new'}
+                                                onChange={(e) => handleStatusChange(lead, e.target.value)}
+                                                className={`block w-full text-xs font-semibold rounded-full py-1 px-2 border cursor-pointer ${
+                                                    STATUS_COLORS[lead.status] || 'bg-gray-100 text-gray-800 border-gray-200'
+                                                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                                            >
+                                                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                                                    <option key={value} value={value} className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
+                                                        {label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </td>
+                                    )}
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <button 
                                             onClick={() => handleEditCard(lead)} 

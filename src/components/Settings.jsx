@@ -16,6 +16,22 @@ const Settings = () => {
     firma: true,
     disclaimer: true
   });
+  const [crmOptions, setCrmOptions] = useState({
+    business_name: true,
+    contact_name: true,
+    address: true,
+    city: true,
+    province: true,
+    phone: true,
+    email: true,
+    main_interest: true,
+    availability: true,
+    services: true,
+    status: true,
+    source: true,
+    notes: true,
+    assigned_consultant: true
+  });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
   useEffect(() => {
@@ -30,6 +46,9 @@ const Settings = () => {
         const data = await response.json();
         if (data.pdf_options) {
           setPdfOptions(data.pdf_options);
+        }
+        if (data.crm_options) {
+            setCrmOptions(data.crm_options);
         }
         if (data.logo) setLogo(data.logo);
         if (data.logo_dimensions) setLogoDimensions(data.logo_dimensions);
@@ -55,7 +74,14 @@ const Settings = () => {
     }));
   };
 
-  const savePdfSettings = async () => {
+  const handleCrmOptionChange = (option) => {
+    setCrmOptions(prev => ({
+      ...prev,
+      [option]: !prev[option]
+    }));
+  };
+
+  const saveSettings = async () => {
     setIsSavingSettings(true);
     try {
       const apiUrl = getApiUrl();
@@ -65,12 +91,13 @@ const Settings = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          pdfOptions
+          pdfOptions,
+          crmOptions
         }),
       });
 
       if (response.ok) {
-        alert('Impostazioni PDF salvate con successo!');
+        alert('Impostazioni salvate con successo!');
       } else {
         alert('Errore durante il salvataggio delle impostazioni.');
       }
@@ -217,7 +244,7 @@ const Settings = () => {
 
           <div className="flex justify-end pt-4">
             <button
-              onClick={savePdfSettings}
+              onClick={saveSettings}
               disabled={isSavingSettings}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
                 isSavingSettings
@@ -233,7 +260,74 @@ const Settings = () => {
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Salva Impostazioni PDF
+                  Salva Impostazioni
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* CRM Column Options Section */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <FileText className="h-5 w-5 text-blue-500" />
+          Visibilità Colonne CRM
+        </h3>
+        
+        <div className="space-y-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Seleziona quali colonne visualizzare nella tabella CRM.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {[
+              { id: 'business_name', label: 'Nome Attività' },
+              { id: 'contact_name', label: 'Contatto' },
+              { id: 'address', label: 'Indirizzo' },
+              { id: 'city', label: 'Città' },
+              { id: 'province', label: 'Provincia' },
+              { id: 'phone', label: 'Telefono' },
+              { id: 'email', label: 'Email' },
+              { id: 'main_interest', label: 'Interesse' },
+              { id: 'availability', label: 'Disponibilità' },
+              { id: 'services', label: 'Servizi Attivi' },
+              { id: 'status', label: 'Stato CRM' },
+              { id: 'source', label: 'Fonte' },
+              { id: 'notes', label: 'Note' },
+              { id: 'assigned_consultant', label: 'Consulente' }
+            ].map((col) => (
+              <label key={col.id} className="flex items-center space-x-3 cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  checked={crmOptions[col.id]} 
+                  onChange={() => handleCrmOptionChange(col.id)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                />
+                <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
+              </label>
+            ))}
+          </div>
+
+          <div className="flex justify-end pt-4">
+            <button
+              onClick={saveSettings}
+              disabled={isSavingSettings}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                isSavingSettings
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                  : 'bg-green-600 text-white hover:bg-green-700 shadow-sm'
+              }`}
+            >
+              {isSavingSettings ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Salvataggio...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Salva Impostazioni
                 </>
               )}
             </button>
