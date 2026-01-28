@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
@@ -54,6 +54,10 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     assigned_consultant: true
   });
   const [crmStatuses, setCrmStatuses] = useState([]);
+  const topScrollRef = useRef(null);
+  const bottomScrollRef = useRef(null);
+  const [scrollWidth, setScrollWidth] = useState(0);
+  const isSyncingRef = useRef(false);
 
   // Initial Data Load
   useEffect(() => {
@@ -352,6 +356,33 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     (card.email && card.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  const handleTopScroll = (e) => {
+    if (!bottomScrollRef.current) return;
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
+    bottomScrollRef.current.scrollLeft = e.target.scrollLeft;
+    isSyncingRef.current = false;
+  };
+
+  const handleBottomScroll = (e) => {
+    if (!topScrollRef.current) return;
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
+    topScrollRef.current.scrollLeft = e.target.scrollLeft;
+    isSyncingRef.current = false;
+  };
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (bottomScrollRef.current) {
+        setScrollWidth(bottomScrollRef.current.scrollWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [leads, crmOptions, activeTab]);
+
   return (
     <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -418,7 +449,10 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       {/* CONTENT */}
       {activeTab === 'list' && (
         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto h-4 mb-2" ref={topScrollRef} onScroll={handleTopScroll}>
+                <div style={{ width: scrollWidth, height: 1 }} />
+            </div>
+            <div className="overflow-x-auto" ref={bottomScrollRef} onScroll={handleBottomScroll}>
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
