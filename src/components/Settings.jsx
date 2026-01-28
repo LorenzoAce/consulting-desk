@@ -93,6 +93,25 @@ const Settings = () => {
     }));
   };
 
+  const handleAddStatus = () => {
+    const newId = `status_${Date.now()}`;
+    setCrmStatuses([...crmStatuses, { id: newId, label: 'Nuovo Stato', color: 'gray' }]);
+  };
+
+  const handleRemoveStatus = (index) => {
+    if (window.confirm('Sei sicuro di voler rimuovere questo stato?')) {
+      const newStatuses = [...crmStatuses];
+      newStatuses.splice(index, 1);
+      setCrmStatuses(newStatuses);
+    }
+  };
+
+  const handleStatusChange = (index, field, value) => {
+    const newStatuses = [...crmStatuses];
+    newStatuses[index] = { ...newStatuses[index], [field]: value };
+    setCrmStatuses(newStatuses);
+  };
+
   const saveSettings = async () => {
     setIsSavingSettings(true);
     try {
