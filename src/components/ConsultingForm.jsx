@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { generatePDF as generatePDFUtility } from '../utils/pdfGenerator';
 import { getApiUrl } from '../utils/api';
-import { Eraser, FileDown, PenTool, Type, Plus, X as IconX, Upload, Save } from 'lucide-react';
+import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save } from 'lucide-react';
 
 const ConsultingForm = ({ initialData }) => {
   const [signatureType, setSignatureType] = useState('type'); // 'draw' | 'type'
@@ -450,7 +450,7 @@ const ConsultingForm = ({ initialData }) => {
                     className="text-red-600 hover:text-red-700 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     title="Rimuovi Logo"
                   >
-                    <IconX className="h-5 w-5" />
+                    <X className="h-5 w-5" />
                   </button>
                 </div>
               )}
@@ -655,7 +655,7 @@ const ConsultingForm = ({ initialData }) => {
                             onClick={() => removePartner('betting', index)}
                             className="text-red-500 hover:text-red-700 ml-2"
                           >
-                            <IconX className="h-3 w-3" />
+                            <X className="h-3 w-3" />
                           </button>
                         </li>
                       ))}
@@ -704,7 +704,7 @@ const ConsultingForm = ({ initialData }) => {
                             onClick={() => removePartner('utility', index)}
                             className="text-red-500 hover:text-red-700 ml-2"
                           >
-                            <IconX className="h-3 w-3" />
+                            <X className="h-3 w-3" />
                           </button>
                         </li>
                       ))}

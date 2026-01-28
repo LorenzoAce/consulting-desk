@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
@@ -46,48 +46,7 @@ const Archive = ({ onLoadCard }) => {
 
   const [showFilters, setShowFilters] = useState(false);
 
-  // Scroll synchronization
-  const topScrollRef = useRef(null);
-  const bottomScrollRef = useRef(null);
-  const [scrollWidth, setScrollWidth] = useState(0);
-  const isSyncingRef = useRef(false);
-
-  const handleTopScroll = (e) => {
-    if (!bottomScrollRef.current) return;
-    if (isSyncingRef.current) return;
-    isSyncingRef.current = true;
-    bottomScrollRef.current.scrollLeft = e.target.scrollLeft;
-    isSyncingRef.current = false;
-  };
-
-  const handleBottomScroll = (e) => {
-    if (!topScrollRef.current) return;
-    if (isSyncingRef.current) return;
-    isSyncingRef.current = true;
-    topScrollRef.current.scrollLeft = e.target.scrollLeft;
-    isSyncingRef.current = false;
-  };
-
   useEffect(() => {
-    const updateWidth = () => {
-      if (bottomScrollRef.current) {
-        setScrollWidth(bottomScrollRef.current.scrollWidth);
-      }
-    };
-    // Update immediately and on resize/data change
-    updateWidth();
-    // Small timeout to ensure DOM is ready
-    const timer = setTimeout(updateWidth, 100);
-    
-    window.addEventListener('resize', updateWidth);
-    return () => {
-      window.removeEventListener('resize', updateWidth);
-      clearTimeout(timer);
-    };
-  }, [cards, filteredCards, viewMode]);
-
-  useEffect(() => {
-    console.log('Archive component loaded - v2.0.1');
     fetchCards();
     fetchSettings();
     fetchConsultants();
@@ -616,10 +575,7 @@ const Archive = ({ onLoadCard }) => {
       ) : (
         /* LIST VIEW */
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto h-4 mb-2" ref={topScrollRef} onScroll={handleTopScroll}>
-            <div style={{ width: scrollWidth, height: 1 }} />
-          </div>
-          <div className="overflow-x-auto" ref={bottomScrollRef} onScroll={handleBottomScroll}>
+          <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>

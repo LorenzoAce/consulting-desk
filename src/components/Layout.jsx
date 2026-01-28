@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Users, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle, Building, Menu, X as IconX } from 'lucide-react';
+import { User, Users, FolderArchive, Settings, LogOut, Moon, Sun, PlusCircle, Building, Menu, X } from 'lucide-react';
 
 const Sidebar = ({ currentView, onNavigate, isOpen, onClose }) => {
   const menuItems = [
@@ -61,7 +61,7 @@ const Header = ({ darkMode, toggleDarkMode, onNavigate, isSidebarOpen, toggleSid
             className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors focus:outline-none"
             aria-label="Toggle Menu"
           >
-            {isSidebarOpen ? <IconX className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
           {/* Logo and Brand */}
@@ -123,7 +123,7 @@ const Layout = ({ children, darkMode, toggleDarkMode, currentView, onNavigate })
       />
       
       <main className={`pt-16 min-h-screen transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : ''}`}>
-        <div className={`${['crm', 'archive', 'consultants'].includes(currentView) ? 'w-full' : 'max-w-7xl'} mx-auto py-6 sm:px-6 lg:px-8`}>
+        <div className={`${currentView === 'crm' ? 'w-full' : 'max-w-7xl'} mx-auto py-6 sm:px-6 lg:px-8`}>
           {children}
         </div>
       </main>

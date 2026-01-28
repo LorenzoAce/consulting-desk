@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X as IconX, Save } from 'lucide-react';
+import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
@@ -618,7 +618,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                       Modifica Contatto
                     </h3>
                     <button type="button" onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500">
-                      <IconX className="h-6 w-6" />
+                      <X className="h-6 w-6" />
                     </button>
                   </div>
                   

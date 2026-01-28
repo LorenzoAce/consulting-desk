@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X as IconX, Save, Search, User, Mail, Phone } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Save, Search, User, Mail, Phone } from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
 const ConsultantsManager = () => {
