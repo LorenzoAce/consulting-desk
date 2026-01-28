@@ -62,6 +62,11 @@ const Settings = () => {
         if (data.crm_options) {
             setCrmOptions(data.crm_options);
         }
+        if (data.crm_statuses && data.crm_statuses.length > 0) {
+          setCrmStatuses(data.crm_statuses);
+        } else {
+          setCrmStatuses(DEFAULT_CRM_STATUSES);
+        }
         if (data.logo) setLogo(data.logo);
         if (data.logo_dimensions) setLogoDimensions(data.logo_dimensions);
 
