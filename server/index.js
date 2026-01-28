@@ -286,7 +286,14 @@ app.get('/api/settings', async (req, res) => {
             source: true,
             notes: true,
             assigned_consultant: true
-        }
+        },
+        crm_statuses: [
+          { id: 'new', label: 'Nuovo', color: 'green' },
+          { id: 'contacted', label: 'Contattato', color: 'blue' },
+          { id: 'interested', label: 'Interessato', color: 'yellow' },
+          { id: 'client', label: 'Cliente', color: 'purple' },
+          { id: 'closed', label: 'Chiuso', color: 'red' }
+        ]
       });
     }
   } catch (err) {
@@ -299,7 +306,7 @@ app.get('/api/settings', async (req, res) => {
 app.put('/api/settings', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { pdfOptions, crmOptions } = req.body;
+    const { pdfOptions, crmOptions, crmStatuses } = req.body;
     
     // Build update query dynamically or just update both if present
     // Since we are using ON CONFLICT, we need to handle partial updates or full updates.
@@ -311,27 +318,30 @@ app.put('/api/settings', async (req, res) => {
     // But the current query replaces pdf_options.
     
     // We can change the query to:
-    // INSERT INTO app_settings (id, pdf_options, crm_options, updated_at) VALUES (1, $1, $2, NOW())
+    // INSERT INTO app_settings (id, pdf_options, crm_options, crm_statuses, updated_at) VALUES (1, $1, $2, $3, NOW())
     // ON CONFLICT (id) DO UPDATE SET 
     //   pdf_options = COALESCE($1, app_settings.pdf_options),
     //   crm_options = COALESCE($2, app_settings.crm_options),
+    //   crm_statuses = COALESCE($3, app_settings.crm_statuses),
     //   updated_at = NOW()
     
     const pdfJson = pdfOptions ? JSON.stringify(pdfOptions) : null;
     const crmJson = crmOptions ? JSON.stringify(crmOptions) : null;
+    const statusesJson = crmStatuses ? JSON.stringify(crmStatuses) : null;
 
     const query = `
-      INSERT INTO app_settings (id, pdf_options, crm_options, updated_at)
-      VALUES (1, COALESCE($1, '{}'::jsonb), COALESCE($2, '{}'::jsonb), NOW())
+      INSERT INTO app_settings (id, pdf_options, crm_options, crm_statuses, updated_at)
+      VALUES (1, COALESCE($1, '{}'::jsonb), COALESCE($2, '{}'::jsonb), COALESCE($3, '[]'::jsonb), NOW())
       ON CONFLICT (id) DO UPDATE
       SET 
         pdf_options = CASE WHEN $1::jsonb IS NOT NULL THEN $1::jsonb ELSE app_settings.pdf_options END,
         crm_options = CASE WHEN $2::jsonb IS NOT NULL THEN $2::jsonb ELSE app_settings.crm_options END,
+        crm_statuses = CASE WHEN $3::jsonb IS NOT NULL THEN $3::jsonb ELSE app_settings.crm_statuses END,
         updated_at = NOW()
       RETURNING *;
     `;
 
-    const result = await client.query(query, [pdfJson, crmJson]);
+    const result = await client.query(query, [pdfJson, crmJson, statusesJson]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating settings:', err);

@@ -3,21 +3,16 @@ import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pe
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
-const STATUS_LABELS = {
-  new: 'Nuovo',
-  contacted: 'Contattato',
-  interested: 'Interessato',
-  client: 'Cliente',
-  closed: 'Chiuso'
-};
-
-const STATUS_COLORS = {
-  new: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800',
-  contacted: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800',
-  interested: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-  client: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800',
-  closed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800'
-};
+const COLOR_OPTIONS = [
+  { value: 'green', label: 'Verde', classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800' },
+  { value: 'blue', label: 'Blu', classes: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+  { value: 'yellow', label: 'Giallo', classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' },
+  { value: 'purple', label: 'Viola', classes: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
+  { value: 'red', label: 'Rosso', classes: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800' },
+  { value: 'indigo', label: 'Indaco', classes: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' },
+  { value: 'pink', label: 'Rosa', classes: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 border-pink-200 dark:border-pink-800' },
+  { value: 'gray', label: 'Grigio', classes: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' },
+];
 
 const CRM = ({ onLoadCard, onNavigate }) => {
   const [activeTab, setActiveTab] = useState('list'); // 'list', 'import-archive', 'import-excel'
@@ -58,6 +53,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     notes: true,
     assigned_consultant: true
   });
+  const [crmStatuses, setCrmStatuses] = useState([]);
 
   // Initial Data Load
   useEffect(() => {
@@ -74,6 +70,9 @@ const CRM = ({ onLoadCard, onNavigate }) => {
         const data = await response.json();
         if (data.crm_options) {
           setCrmOptions(data.crm_options);
+        }
+        if (data.crm_statuses) {
+          setCrmStatuses(data.crm_statuses);
         }
       }
     } catch (error) {
@@ -451,11 +450,9 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     onChange={(e) => setFilterStatus(e.target.value)}
                   >
                     <option value="">Tutti gli stati CRM</option>
-                    <option value="new">Nuovo</option>
-                    <option value="contacted">Contattato</option>
-                    <option value="interested">Interessato</option>
-                    <option value="client">Cliente</option>
-                    <option value="closed">Chiuso</option>
+                    {crmStatuses.map(status => (
+                      <option key={status.id} value={status.id}>{status.label}</option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -580,12 +577,12 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                                 value={lead.status || 'new'}
                                                 onChange={(e) => handleStatusChange(lead, e.target.value)}
                                                 className={`block w-full text-xs font-semibold rounded-full py-1 px-2 border cursor-pointer ${
-                                                    STATUS_COLORS[lead.status] || 'bg-gray-100 text-gray-800 border-gray-200'
+                                                    COLOR_OPTIONS.find(c => c.value === crmStatuses.find(s => s.id === lead.status)?.color)?.classes || 'bg-gray-100 text-gray-800 border-gray-200'
                                                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
                                             >
-                                                {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                                                    <option key={value} value={value} className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
-                                                        {label}
+                                                {crmStatuses.map(status => (
+                                                    <option key={status.id} value={status.id} className="bg-white text-gray-900 dark:bg-gray-800 dark:text-white">
+                                                        {status.label}
                                                     </option>
                                                 ))}
                                             </select>
@@ -706,11 +703,9 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                         value={formData.status}
                         onChange={(e) => setFormData({...formData, status: e.target.value})}
                       >
-                        <option value="new">Nuovo</option>
-                        <option value="contacted">Contattato</option>
-                        <option value="interested">Interessato</option>
-                        <option value="client">Cliente</option>
-                        <option value="closed">Chiuso</option>
+                        {crmStatuses.map(status => (
+                          <option key={status.id} value={status.id}>{status.label}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
