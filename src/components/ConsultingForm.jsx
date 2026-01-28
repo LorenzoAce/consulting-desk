@@ -610,13 +610,13 @@ const ConsultingForm = ({ initialData }) => {
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               >
-                <option value="SCOMMESSE">SCOMMESSE</option>
+                <option value="SCOMMESSE">PVR</option>
                 <option value="UTENZE">UTENZE</option>
                 <option value="ENTRAMBI">ENTRAMBI</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Servizio Scommesse Attivo</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Servizio PVR Attivo</label>
               <select
                 name="bettingActive"
                 value={formData.bettingActive}
@@ -628,7 +628,7 @@ const ConsultingForm = ({ initialData }) => {
               </select>
               {formData.bettingActive === 'SI' && (
                 <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-800">
-                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Aggiungi Partner Scommesse</label>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Aggiungi Partner PVR</label>
                   <div className="flex gap-2 mb-2">
                     <input
                       type="text"

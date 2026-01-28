@@ -143,10 +143,10 @@ export const generatePDF = (cards, globalSettings) => {
 
       doc.setFontSize(11);
       drawField('Disponibilità Cliente', data.availability, leftCol, y);
-      drawField('Interesse Maggiore', data.mainInterest, rightCol, y);
+      drawField('Interesse Maggiore', data.mainInterest === 'SCOMMESSE' ? 'PVR' : data.mainInterest, rightCol, y);
       y += 15;
 
-      drawField('Servizio Scommesse Attivo', data.bettingActive, leftCol, y);
+      drawField('Servizio PVR Attivo', data.bettingActive, leftCol, y);
       drawField('Servizio Utenze Attivo', data.utilitiesActive, rightCol, y);
       
       let extraHeight = 0;

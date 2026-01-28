@@ -524,7 +524,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                     )}
                                     {crmOptions.main_interest && (
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900 dark:text-white">{lead.main_interest || '-'}</div>
+                                            <div className="text-sm text-gray-900 dark:text-white">{lead.main_interest === 'SCOMMESSE' ? 'PVR' : (lead.main_interest || '-')}</div>
                                         </td>
                                     )}
                                     {crmOptions.availability && (
@@ -537,7 +537,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                             <div className="flex flex-col space-y-1">
                                                 <div className="flex items-center text-xs">
                                                     <span className={`w-2 h-2 rounded-full mr-2 ${lead.betting_active?.toUpperCase() === 'SI' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                                                    <span className="text-gray-700 dark:text-gray-300">Scommesse</span>
+                                                    <span className="text-gray-700 dark:text-gray-300">PVR</span>
                                                 </div>
                                                 <div className="flex items-center text-xs">
                                                     <span className={`w-2 h-2 rounded-full mr-2 ${lead.utilities_active?.toUpperCase() === 'SI' ? 'bg-green-500' : 'bg-red-500'}`}></span>
