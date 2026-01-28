@@ -403,60 +403,6 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       {/* CONTENT */}
       {activeTab === 'list' && (
         <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-            <div className="px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 space-y-3">
-              <div className="flex flex-col md:flex-row md:items-center md:gap-4">
-                <div className="relative flex-1">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Cerca per ragione sociale, referente, città, telefono o email..."
-                    className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={listSearch}
-                    onChange={(e) => setListSearch(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <div>
-                  <select
-                    className="block w-full border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={filterInterest}
-                    onChange={(e) => setFilterInterest(e.target.value)}
-                  >
-                    <option value="">Tutti gli interessi</option>
-                    <option value="SCOMMESSE">SCOMMESSE</option>
-                    <option value="UTENZE">UTENZE</option>
-                    <option value="ENTRAMBI">ENTRAMBI</option>
-                  </select>
-                </div>
-                <div>
-                  <select
-                    className="block w-full border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={filterAvailability}
-                    onChange={(e) => setFilterAvailability(e.target.value)}
-                  >
-                    <option value="">Tutte le disponibilità</option>
-                    <option value="BASSA">BASSA</option>
-                    <option value="MEDIA">MEDIA</option>
-                    <option value="ALTA">ALTA</option>
-                  </select>
-                </div>
-                <div>
-                  <select
-                    className="block w-full border border-gray-300 rounded-md bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                  >
-                    <option value="">Tutti gli stati CRM</option>
-                    {crmStatuses.map(status => (
-                      <option key={status.id} value={status.id}>{status.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-700">
