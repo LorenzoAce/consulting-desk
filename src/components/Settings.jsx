@@ -306,7 +306,7 @@ const Settings = () => {
                 { id: 'main_interest', label: 'Interesse' },
                 { id: 'availability', label: 'Disponibilità' },
                 { id: 'services', label: 'Servizi Attivi' },
-                { id: 'status', label: 'Stato CRM' },
+                { id: 'status', label: 'Stato' },
                 { id: 'source', label: 'Fonte' },
                 { id: 'notes', label: 'Note' },
                 { id: 'assigned_consultant', label: 'Consulente' }

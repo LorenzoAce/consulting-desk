@@ -391,6 +391,21 @@ const CRM = ({ onLoadCard, onNavigate }) => {
         
         <div className="flex-grow"></div>
 
+        {activeTab === 'list' && (
+          <div className="relative w-64">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </span>
+            <input
+              type="text"
+              placeholder="Cerca contatti..."
+              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={listSearch}
+              onChange={(e) => setListSearch(e.target.value)}
+            />
+          </div>
+        )}
+
         <button
             onClick={() => onNavigate('form')}
             className="px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 flex items-center"
@@ -419,7 +434,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                             {crmOptions.phone && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono / Cellulare</th>}
                             {crmOptions.email && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>}
                             {crmOptions.notes && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Note</th>}
-                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px]">Stato CRM</th>}
+                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px]">Stato</th>}
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Azioni</th>
                         </tr>
                     </thead>
