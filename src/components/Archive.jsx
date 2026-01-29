@@ -46,6 +46,43 @@ const Archive = ({ onLoadCard }) => {
 
   const [showFilters, setShowFilters] = useState(false);
 
+  // Scroll Synchronization Refs
+  const topScrollRef = useRef(null);
+  const bottomScrollRef = useRef(null);
+  const [scrollWidth, setScrollWidth] = useState(0);
+  const isSyncingRef = useRef(false);
+
+  const handleTopScroll = (e) => {
+    if (!bottomScrollRef.current) return;
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
+    bottomScrollRef.current.scrollLeft = e.target.scrollLeft;
+    isSyncingRef.current = false;
+  };
+
+  const handleBottomScroll = (e) => {
+    if (!topScrollRef.current) return;
+    if (isSyncingRef.current) return;
+    isSyncingRef.current = true;
+    topScrollRef.current.scrollLeft = e.target.scrollLeft;
+    isSyncingRef.current = false;
+  };
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (bottomScrollRef.current) {
+        setScrollWidth(bottomScrollRef.current.scrollWidth);
+      }
+    };
+    // Update width when switching to list view or when data changes
+    if (viewMode === 'list') {
+      // Small timeout to ensure DOM is rendered
+      setTimeout(updateWidth, 0);
+    }
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [cards, viewMode]);
+
   useEffect(() => {
     fetchCards();
     fetchSettings();
@@ -292,91 +329,91 @@ const Archive = ({ onLoadCard }) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-3">
-             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Archivio Schede</h2>
-             {selectedCards.length > 0 && (
-               <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
-                 {selectedCards.length} selezionati
-               </span>
-             )}
-          </div>
-          
-          <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
-             {/* Global Search - Always Visible */}
-             <div className="relative flex-grow md:flex-grow-0 md:w-64">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <input
-                  type="text"
-                  name="globalSearch"
-                  placeholder="Cerca ovunque..."
-                  value={filters.globalSearch}
-                  onChange={handleFilterChange}
-                  className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 shadow-sm"
-                />
-              </div>
+    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Archivio Schede</h1>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Gestione completa delle schede clienti.
+          {selectedCards.length > 0 && (
+            <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+               {selectedCards.length} selezionati
+            </span>
+          )}
+        </p>
+      </div>
 
+      <div className="flex items-center space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+        {/* Buttons Group */}
+        <button
+            onClick={exportToExcel}
+            className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center gap-2"
+        >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Excel</span>
+        </button>
+
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+        >
+          <Filter className="h-4 w-4" />
+          <span className="hidden sm:inline">Filtri</span>
+        </button>
+
+        {selectedCards.length > 0 && (
+          <>
             <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${showFilters ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300' : 'bg-white border-gray-300 text-gray-700 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
+              onClick={() => setShowAssignModal(true)}
+              className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-purple-600 text-white border-transparent hover:bg-purple-700 flex items-center gap-2"
             >
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">Filtri</span>
+              <User className="h-4 w-4" />
+              <span className="hidden sm:inline">Assegna</span>
             </button>
 
-             {/* Batch Actions */}
-            {selectedCards.length > 0 && (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowAssignModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-purple-600 border-purple-700 text-white hover:bg-purple-700 transition-colors shadow-sm"
-                  title="Assegna Consulente"
-                >
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">Assegna ({selectedCards.length})</span>
-                </button>
-
-                <button
-                  onClick={handleBatchPrint}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-blue-600 border-blue-700 text-white hover:bg-blue-700 transition-colors shadow-sm"
-                  title="Genera PDF Selezionati"
-                >
-                  <FileDown className="h-4 w-4" />
-                  <span className="hidden sm:inline">Genera PDF ({selectedCards.length})</span>
-                </button>
-              </div>
-            )}
-
             <button
-              onClick={exportToExcel}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border bg-green-50 border-green-200 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-800 dark:text-green-300 dark:hover:bg-green-900/30 transition-colors"
-              title="Esporta Excel"
+              onClick={handleBatchPrint}
+              className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-blue-600 text-white border-transparent hover:bg-blue-700 flex items-center gap-2"
             >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Excel</span>
+              <FileDown className="h-4 w-4" />
+              <span className="hidden sm:inline">PDF</span>
             </button>
+          </>
+        )}
 
-             {/* View Toggle */}
-             <div className="flex bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-md transition-colors ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
-                title="Vista Griglia"
-              >
-                <LayoutGrid className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-colors ${viewMode === 'list' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600'}`}
-                title="Vista Elenco"
-              >
-                <List className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
+        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-1 border border-gray-200 dark:border-gray-600">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            title="Griglia"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            title="Elenco"
+          >
+            <List className="h-4 w-4" />
+          </button>
         </div>
+        
+        <div className="flex-grow"></div>
+
+        {/* Search Bar */}
+        <div className="relative w-64">
+            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </span>
+            <input
+              type="text"
+              name="globalSearch"
+              placeholder="Cerca ovunque..."
+              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              value={filters.globalSearch}
+              onChange={handleFilterChange}
+            />
+        </div>
+      </div>
 
       {/* Filters Section */}
       {showFilters && (
@@ -574,10 +611,13 @@ const Archive = ({ onLoadCard }) => {
         </div>
       ) : (
         /* LIST VIEW */
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-900">
+        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+            <div className="overflow-x-auto h-4 mb-2" ref={topScrollRef} onScroll={handleTopScroll}>
+                <div style={{ width: scrollWidth, height: 1 }} />
+            </div>
+            <div className="overflow-x-auto" ref={bottomScrollRef} onScroll={handleBottomScroll}>
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-3 w-10">
                     <input
@@ -593,16 +633,18 @@ const Archive = ({ onLoadCard }) => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comune</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Provincia</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulente</th>
-                  <th scope="col" className="relative px-6 py-3"><span className="sr-only">Azioni</span></th>
+                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredCards.map((card) => (
-                  <tr key={card.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${selectedCards.includes(card.id) ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => onLoadCard(card)}>
+                {filteredCards.map((card) => {
+                  const isSelected = selectedCards.includes(card.id);
+                  return (
+                  <tr key={card.id} className={`group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => onLoadCard(card)}>
                     <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
-                        checked={selectedCards.includes(card.id)}
+                        checked={isSelected}
                         onChange={() => handleSelectCard(card.id)}
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
@@ -625,7 +667,7 @@ const Archive = ({ onLoadCard }) => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {card.assigned_consultant || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
                          <button 
                           onClick={(e) => { e.stopPropagation(); onLoadCard(card); }}
@@ -642,7 +684,7 @@ const Archive = ({ onLoadCard }) => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );})}
               </tbody>
             </table>
           </div>
