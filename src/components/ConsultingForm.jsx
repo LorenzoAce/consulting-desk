@@ -414,21 +414,22 @@ const ConsultingForm = ({ initialData, onBack }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
-      
+    <div className="space-y-4">
       {onBack && (
-        <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 sticky top-16 z-10">
+        <div className="flex justify-end sticky top-20 z-20 pointer-events-none">
            <button 
              onClick={onBack}
-             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors animate-pulse-scale"
+             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors animate-pulse-scale pointer-events-auto shadow-lg"
            >
              <ArrowLeft className="h-4 w-4" />
-             Torna Indietro
+             Indietro
            </button>
         </div>
       )}
 
-      <div className="p-6 space-y-6">
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+        
+        <div className="p-6 space-y-6">
         {/* Logo Upload (Optional) */}
         <section className="border-b dark:border-gray-700 pb-6">
           <div className="flex items-center justify-between">
@@ -857,6 +858,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };
