@@ -205,7 +205,7 @@ export const generatePDF = (cards, globalSettings) => {
       doc.text('Firma Operatore', leftCol, y);
       doc.text('Firma Consulente', rightCol, y);
       doc.line(leftCol, y + 2, 190, y + 2);
-      y += 10;
+      y += 5;
 
       // Operator Signature
       if (data.signatureType === 'draw' && data.signatureData) {
@@ -217,22 +217,22 @@ export const generatePDF = (cards, globalSettings) => {
       } else if (data.signatureType === 'type' && data.operatorName) {
         doc.setFont('helvetica', 'italic');
         doc.setFontSize(12);
-        doc.text(data.operatorName, leftCol, y + 20);
+        doc.text(data.operatorName, leftCol, y + 10);
         doc.setFontSize(11);
         doc.setFont('helvetica', 'normal');
       } else {
         doc.setFontSize(10);
         doc.setTextColor(150);
-        doc.text('(Nessuna firma apposta)', leftCol, y + 20);
+        doc.text('(Nessuna firma apposta)', leftCol, y + 10);
         doc.setTextColor(0);
       }
       
       // Consultant Signature Placeholder
       doc.setFontSize(10);
       doc.setTextColor(150);
-      doc.text('_________________________', rightCol, y + 20);
+      doc.text('_________________________', rightCol, y + 10);
       doc.setTextColor(0);
-      y += 35; // Reduced from 40 to save space
+      y += 30; // Reduced to save space for external image
     }
     
     // External Image (Foto Locale Esterno)
