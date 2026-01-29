@@ -248,8 +248,8 @@ export const generatePDF = (cards, globalSettings) => {
 
       if (availableHeight > 10) { // Relaxed constraint: Only need 10mm
         try {
-          // Default to max 50mm height, or available space
-          const targetHeight = Math.min(50, availableHeight);
+          // Default to max 60mm height (increased by 20% from 50), or available space
+          const targetHeight = Math.min(60, availableHeight);
           
           // Use a standard 4:3 ratio box
           const boxH = targetHeight;
@@ -257,6 +257,13 @@ export const generatePDF = (cards, globalSettings) => {
           const xPos = (210 - boxW) / 2; // Center
           
           const format = data.externalImage.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+          
+          // Add "Foto Locale" label to the left
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          // Vertically center the text relative to the image
+          doc.text("Foto Locale:", 20, y + (boxH / 2) + 2); 
+          
           doc.addImage(data.externalImage, format, xPos, y, boxW, boxH);
           y += boxH + 5;
           
