@@ -920,6 +920,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
       </div>
     </div>
   </div>
+    </div>
   );
 };
 
