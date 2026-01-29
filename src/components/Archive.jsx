@@ -7,7 +7,7 @@ import { getApiUrl } from '../utils/api';
 const Archive = ({ onLoadCard }) => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+  const [viewMode, setViewMode] = useState('list'); // 'grid' | 'list'
   
   // Selection state
   const [selectedCards, setSelectedCards] = useState([]);
@@ -592,6 +592,7 @@ const Archive = ({ onLoadCard }) => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Indirizzo</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comune</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Provincia</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulente</th>
                   <th scope="col" className="relative px-6 py-3"><span className="sr-only">Azioni</span></th>
                 </tr>
               </thead>
@@ -620,6 +621,9 @@ const Archive = ({ onLoadCard }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {card.province}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {card.assigned_consultant || '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">

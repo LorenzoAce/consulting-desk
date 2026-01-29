@@ -123,7 +123,7 @@ const Layout = ({ children, darkMode, toggleDarkMode, currentView, onNavigate })
       />
       
       <main className={`pt-16 min-h-screen transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : ''}`}>
-        <div className={`${currentView === 'crm' ? 'w-full' : 'max-w-7xl'} mx-auto py-6 sm:px-6 lg:px-8`}>
+        <div className={`${['crm', 'archive'].includes(currentView) ? 'w-full' : 'max-w-7xl'} mx-auto py-6 sm:px-6 lg:px-8`}>
           {children}
         </div>
       </main>
