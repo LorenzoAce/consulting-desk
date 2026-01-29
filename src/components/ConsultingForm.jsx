@@ -8,6 +8,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
   const [signatureType, setSignatureType] = useState('type'); // 'draw' | 'type'
   const [logo, setLogo] = useState(null);
   const [logoDimensions, setLogoDimensions] = useState(null);
+  const [externalImage, setExternalImage] = useState(null);
   const [formData, setFormData] = useState({
     businessName: '',
     fullName: '',
@@ -138,6 +139,10 @@ const ConsultingForm = ({ initialData, onBack }) => {
         setLogoDimensions(initialData.logo_dimensions);
       }
 
+      if (initialData.external_image) {
+        setExternalImage(initialData.external_image);
+      }
+
       if (initialData.signature_type) {
         setSignatureType(initialData.signature_type);
       }
@@ -160,6 +165,17 @@ const ConsultingForm = ({ initialData, onBack }) => {
           setLogo(result);
         };
         img.src = result;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleExternalImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setExternalImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -357,7 +373,8 @@ const ConsultingForm = ({ initialData, onBack }) => {
         bettingPartners,
         utilityPartners,
         logo,
-        logoDimensions
+        logoDimensions,
+        externalImage
       };
 
       const apiUrl = getApiUrl();
@@ -398,6 +415,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
               });
               setBettingPartners([]);
               setUtilityPartners([]);
+              setExternalImage(null);
               if (sigCanvas.current && typeof sigCanvas.current.clear === 'function') {
                   sigCanvas.current.clear();
               }
@@ -733,6 +751,37 @@ const ConsultingForm = ({ initialData, onBack }) => {
         <section>
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Note e Richieste</h2>
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Foto Locale Esterno</label>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
+                  <Upload className="h-5 w-5" />
+                  Carica Foto
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleExternalImageUpload}
+                    className="hidden"
+                  />
+                </label>
+                {externalImage && (
+                  <div className="relative group">
+                    <img 
+                      src={externalImage} 
+                      alt="Locale Esterno" 
+                      className="h-20 w-20 object-cover rounded-md border border-gray-200 dark:border-gray-700" 
+                    />
+                    <button
+                      onClick={() => setExternalImage(null)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Richieste del Cliente</label>
               <textarea

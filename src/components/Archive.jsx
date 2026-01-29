@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown } from 'lucide-react';
+import { Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getApiUrl } from '../utils/api';
@@ -13,6 +13,10 @@ const Archive = ({ onLoadCard }) => {
   const [selectedCards, setSelectedCards] = useState([]);
   const [pdfOptions, setPdfOptions] = useState(null);
   
+  // Image Modal State
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
   // Bulk Assign State
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [consultantToAssign, setConsultantToAssign] = useState('');
@@ -45,6 +49,12 @@ const Archive = ({ onLoadCard }) => {
   }, [consultantsList]);
 
   const [showFilters, setShowFilters] = useState(false);
+
+  const handleViewImage = (image, e) => {
+    e.stopPropagation();
+    setSelectedImage(image);
+    setShowImageModal(true);
+  };
 
   // Scroll Synchronization Refs
   const topScrollRef = useRef(null);
@@ -598,6 +608,15 @@ const Archive = ({ onLoadCard }) => {
                   <Edit className="h-4 w-4" />
                   Modifica
                 </button>
+                {card.external_image && (
+                  <button 
+                    onClick={(e) => handleViewImage(card.external_image, e)}
+                    className="flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-2 rounded-md hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors text-sm font-medium"
+                    title="Vedi Foto"
+                  >
+                    <Image className="h-4 w-4" />
+                  </button>
+                )}
                 <button 
                   onClick={(e) => deleteCard(card.id, e)}
                   className="flex-1 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-sm font-medium"
@@ -670,6 +689,15 @@ const Archive = ({ onLoadCard }) => {
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
+                        {card.external_image && (
+                          <button 
+                            onClick={(e) => handleViewImage(card.external_image, e)}
+                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                            title="Vedi Foto Locale"
+                          >
+                            <Image className="h-4 w-4" />
+                          </button>
+                        )}
                          <button 
                           onClick={(e) => { e.stopPropagation(); onLoadCard(card); }}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
@@ -688,6 +716,25 @@ const Archive = ({ onLoadCard }) => {
                 );})}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-xl" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute -top-4 -right-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Anteprima" 
+              className="max-w-full max-h-[85vh] object-contain rounded" 
+            />
           </div>
         </div>
       )}

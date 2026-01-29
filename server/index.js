@@ -76,7 +76,8 @@ app.post('/api/cards', async (req, res) => {
       signatureType,
       signatureData,
       logo,
-      logoDimensions
+      logoDimensions,
+      externalImage
     } = req.body;
 
     const query = `
@@ -84,8 +85,8 @@ app.post('/api/cards', async (req, res) => {
         business_name, full_name, address, city, province, phone, email, source,
         availability, main_interest, betting_active, utilities_active,
         betting_partners, utility_partners, requests, notes, assigned_consultant, operator_name,
-        signature_type, signature_data, logo, logo_dimensions
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+        signature_type, signature_data, logo, logo_dimensions, external_image
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
       RETURNING *;
     `;
 
@@ -94,7 +95,7 @@ app.post('/api/cards', async (req, res) => {
       availability, mainInterest, bettingActive, utilitiesActive,
       JSON.stringify(bettingPartners), JSON.stringify(utilityPartners),
       requests, notes, assignedConsultant, operatorName, signatureType, signatureData,
-      logo, JSON.stringify(logoDimensions)
+      logo, JSON.stringify(logoDimensions), externalImage
     ];
 
     const result = await client.query(query, values);
@@ -136,7 +137,8 @@ app.put('/api/cards/:id', async (req, res) => {
       signatureType,
       signatureData,
       logo,
-      logoDimensions
+      logoDimensions,
+      externalImage
     } = req.body;
 
     const query = `
@@ -144,8 +146,8 @@ app.put('/api/cards/:id', async (req, res) => {
         business_name = $1, full_name = $2, address = $3, city = $4, province = $5, phone = $6, email = $7, source = $8,
         availability = $9, main_interest = $10, betting_active = $11, utilities_active = $12,
         betting_partners = $13, utility_partners = $14, requests = $15, notes = $16, assigned_consultant = $17, operator_name = $18,
-        signature_type = $19, signature_data = $20, logo = $21, logo_dimensions = $22, updated_at = NOW()
-      WHERE id = $23
+        signature_type = $19, signature_data = $20, logo = $21, logo_dimensions = $22, external_image = $23, updated_at = NOW()
+      WHERE id = $24
       RETURNING *;
     `;
 
@@ -154,7 +156,7 @@ app.put('/api/cards/:id', async (req, res) => {
       availability, mainInterest, bettingActive, utilitiesActive,
       JSON.stringify(bettingPartners), JSON.stringify(utilityPartners),
       requests, notes, assignedConsultant, operatorName, signatureType, signatureData,
-      logo, JSON.stringify(logoDimensions),
+      logo, JSON.stringify(logoDimensions), externalImage,
       id
     ];
 
