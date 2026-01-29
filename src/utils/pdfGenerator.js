@@ -194,7 +194,7 @@ export const generatePDF = (cards, globalSettings) => {
       doc.setFont('helvetica', 'normal');
       const consultantText = data.assignedConsultant || '_________________________';
       doc.text(consultantText, leftCol + 45, y);
-      y += 20;
+      y += 15;
     }
 
     // Signature Section
@@ -232,72 +232,39 @@ export const generatePDF = (cards, globalSettings) => {
       doc.setTextColor(150);
       doc.text('_________________________', rightCol, y + 20);
       doc.setTextColor(0);
-      y += 40;
+      y += 35; // Reduced from 40 to save space
     }
     
     // External Image (Foto Locale Esterno)
     if (data.externalImage) {
       // Calculate available space to keep it on one page
       // We reserve space for disclaimer (approx 15mm) and footer (approx 10mm)
-      // Max Y should be around 270
-      const maxPageY = 270;
+      // Max Y should be around 280 (closer to footer)
+      const maxPageY = 280;
       const disclaimerHeight = options.disclaimer ? 15 : 0;
       const availableHeight = maxPageY - disclaimerHeight - y;
 
-      if (availableHeight > 20) { // Only add if we have at least 20mm
+      console.log('External Image Debug:', { y, maxPageY, disclaimerHeight, availableHeight });
+
+      if (availableHeight > 10) { // Relaxed constraint: Only need 10mm
         try {
           // Default to max 50mm height, or available space
           const targetHeight = Math.min(50, availableHeight);
           
-          // Add image centered
-          // We don't calculate exact ratio here to avoid async/complex operations if not needed, 
-          // but addImage usually handles aspect ratio if we provide one dimension or use specific calls.
-          // However, to keep it simple and safe, let's just fit it in a box.
-          // Better: define a fixed box at the bottom or use the available height.
-          
-          // Let's guess aspect ratio or just constrain by height and max width
-          const maxWidth = 80;
-          
-          // Note: To preserve aspect ratio correctly with jsPDF without knowing dimensions beforehand 
-          // can be tricky without an Image object. 
-          // But since we are in a browser env, we can create an Image object (synchronous enough if data url).
-          // Actually, let's just rely on jsPDF fitting or just set a standard size box.
-          
-          // Simple approach: Center it, max height = targetHeight, max width = 100
-          // We will rely on the image format detection from the data URL string
-          const format = data.externalImage.startsWith('data:image/png') ? 'PNG' : 'JPEG';
-          
-          // Calculate dimensions to maintain aspect ratio
-          // We can't easily get dimensions synchronously without the Image object approach,
-          // which is fine here.
-          
-          // Create a temporary image to get dimensions (safe in browser)
-          // Since we are inside the function, we can try-catch.
-          // But for robustness, let's just define a box.
-          // If we pass 0 as width or height, jsPDF might auto-scale? 
-          // jsPDF addImage(data, format, x, y, w, h) -> w and h are required for best results.
-          
-          // Let's use a standard 4:3 ratio box if we can't determine it, or just a fixed height.
-          // Better: Put it at the right side of the signature if there is space? 
-          // No, user said "at the end".
-          
-          // Let's try to get dimensions if possible, otherwise use fixed box.
-          // Since we are in React/Browser, `new Image()` works.
-          // But `generatePDF` is a sync function usually? 
-          // The previous logo logic (lines 51-65) calculates dimensions because `logoDims` is passed.
-          // We don't have `externalImageDimensions`.
-          
-          // Let's just assume a reasonable box of 60x40 (3:2) or similar, scaled to fit available height.
+          // Use a standard 4:3 ratio box
           const boxH = targetHeight;
           const boxW = boxH * 1.5; // 3:2 ratio assumption
           const xPos = (210 - boxW) / 2; // Center
           
+          const format = data.externalImage.startsWith('data:image/png') ? 'PNG' : 'JPEG';
           doc.addImage(data.externalImage, format, xPos, y, boxW, boxH);
           y += boxH + 5;
           
         } catch (e) {
           console.error("Error adding external image:", e);
         }
+      } else {
+         console.warn("Not enough space for external image on single page");
       }
     }
 
