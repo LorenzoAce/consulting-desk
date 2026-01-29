@@ -463,7 +463,7 @@ const ConsultingForm = ({ initialData }) => {
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Anagrafica</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Nome Attività</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">R.Sociale - Insegna</label>
               <input
                 type="text"
                 name="businessName"

@@ -296,7 +296,7 @@ const Settings = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[
-                { id: 'business_name', label: 'Nome Attività' },
+                { id: 'business_name', label: 'R.Sociale - Insegna' },
                 { id: 'contact_name', label: 'Contatto' },
                 { id: 'address', label: 'Indirizzo' },
                 { id: 'city', label: 'Città' },

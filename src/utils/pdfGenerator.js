@@ -114,7 +114,7 @@ export const generatePDF = (cards, globalSettings) => {
       y += 15;
 
       doc.setFontSize(11);
-      drawField('Nome Attività', data.businessName, leftCol, y);
+      drawField('R.Sociale - Insegna', data.businessName, leftCol, y);
       drawField('Nome e Cognome', data.fullName, rightCol, y);
       y += 15;
 
