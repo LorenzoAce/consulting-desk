@@ -476,7 +476,6 @@ const Archive = ({ onLoadCard }) => {
           />
         </div>
       )}
-      </div>
 
       {/* Assign Consultant Modal */}
       {showAssignModal && (
