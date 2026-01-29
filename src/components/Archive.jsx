@@ -259,11 +259,27 @@ const Archive = ({ onLoadCard }) => {
     }
   };
 
-  const handleBatchPrint = () => {
-    const selected = cards.filter(c => selectedCards.includes(c.id));
-    if (selected.length === 0) return;
+  const handleBatchPrint = async () => {
+    const selectedIds = selectedCards;
+    if (selectedIds.length === 0) return;
     
-    generatePDF(selected, { pdfOptions });
+    try {
+      const apiUrl = getApiUrl();
+      // Fetch full card details for each selected card to ensure we have images and signatures
+      // The list view cards are lightweight and might miss these fields
+      const promises = selectedIds.map(id => 
+        fetch(`${apiUrl}/api/cards/${id}`).then(res => {
+          if (!res.ok) throw new Error(`Failed to fetch card ${id}`);
+          return res.json();
+        })
+      );
+      
+      const fullCards = await Promise.all(promises);
+      generatePDF(fullCards, { pdfOptions });
+    } catch (error) {
+      console.error("Error fetching full cards for PDF:", error);
+      alert("Errore durante la preparazione del PDF. Riprova.");
+    }
   };
 
   const handleBatchAssign = async () => {
