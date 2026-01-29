@@ -352,14 +352,6 @@ const Archive = ({ onLoadCard }) => {
             <span className="hidden sm:inline">Excel</span>
         </button>
 
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
-        >
-          <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline">Filtri</span>
-        </button>
-
         {selectedCards.length > 0 && (
           <>
             <button
@@ -379,23 +371,6 @@ const Archive = ({ onLoadCard }) => {
             </button>
           </>
         )}
-
-        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-1 border border-gray-200 dark:border-gray-600">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            title="Griglia"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            title="Elenco"
-          >
-            <List className="h-4 w-4" />
-          </button>
-        </div>
         
         <div className="flex-grow"></div>
 
@@ -412,6 +387,31 @@ const Archive = ({ onLoadCard }) => {
               value={filters.globalSearch}
               onChange={handleFilterChange}
             />
+        </div>
+
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+        >
+          <Filter className="h-4 w-4" />
+          <span className="hidden sm:inline">Filtri</span>
+        </button>
+
+        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-1 border border-gray-200 dark:border-gray-600">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            title="Griglia"
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => setViewMode('list')}
+            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            title="Elenco"
+          >
+            <List className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
@@ -525,12 +525,14 @@ const Archive = ({ onLoadCard }) => {
         <div>
            Trovate {filteredCards.length} schede
         </div>
-        <button 
-          onClick={handleSelectAll}
-          className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-        >
-          {selectedCards.length === filteredCards.length && filteredCards.length > 0 ? 'Deseleziona Tutto' : 'Seleziona Tutto'}
-        </button>
+        {selectedCards.length === filteredCards.length && filteredCards.length > 0 && (
+          <button 
+            onClick={handleSelectAll}
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+          >
+            Deseleziona Tutto
+          </button>
+        )}
       </div>
 
       {viewMode === 'grid' ? (
