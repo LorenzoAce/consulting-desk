@@ -309,7 +309,8 @@ const ConsultingForm = ({ initialData, onBack }) => {
         bettingPartners,
         utilityPartners,
         logo,
-        logoDimensions
+        logoDimensions,
+        externalImage
     };
     
     generatePDFUtility(cardData, { pdfOptions });
