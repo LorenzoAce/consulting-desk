@@ -432,18 +432,26 @@ const ConsultingForm = ({ initialData, onBack }) => {
   };
 
   return (
-    <div className="space-y-4">
-      {onBack && (
-        <div className="flex justify-end sticky top-20 z-20 pointer-events-none">
-           <button 
-             onClick={onBack}
-             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors animate-pulse-scale pointer-events-auto shadow-lg"
-           >
-             <ArrowLeft className="h-4 w-4" />
-             Indietro
-           </button>
+    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {initialData ? 'Modifica Scheda' : 'Nuova Scheda'}
+          </h1>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            {initialData ? 'Modifica i dati della scheda consulenza esistente.' : 'Compila i dati per creare una nuova scheda consulenza.'}
+          </p>
         </div>
-      )}
+        {onBack && (
+          <button 
+            onClick={onBack}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-lg"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Indietro
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Main Form Column */}
@@ -912,7 +920,6 @@ const ConsultingForm = ({ initialData, onBack }) => {
       </div>
     </div>
   </div>
-</div>
   );
 };
 
