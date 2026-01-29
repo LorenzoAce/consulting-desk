@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import SignatureCanvas from 'react-signature-canvas';
 import { generatePDF as generatePDFUtility } from '../utils/pdfGenerator';
 import { getApiUrl } from '../utils/api';
-import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save } from 'lucide-react';
+import { Eraser, FileDown, PenTool, Type, Plus, X, Upload, Save, ArrowLeft } from 'lucide-react';
 
-const ConsultingForm = ({ initialData }) => {
+const ConsultingForm = ({ initialData, onBack }) => {
   const [signatureType, setSignatureType] = useState('type'); // 'draw' | 'type'
   const [logo, setLogo] = useState(null);
   const [logoDimensions, setLogoDimensions] = useState(null);
@@ -416,6 +416,18 @@ const ConsultingForm = ({ initialData }) => {
   return (
     <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
       
+      {onBack && (
+        <div className="p-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 sticky top-16 z-10">
+           <button 
+             onClick={onBack}
+             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors animate-pulse-scale"
+           >
+             <ArrowLeft className="h-4 w-4" />
+             Torna Indietro
+           </button>
+        </div>
+      )}
+
       <div className="p-6 space-y-6">
         {/* Logo Upload (Optional) */}
         <section className="border-b dark:border-gray-700 pb-6">

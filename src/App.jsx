@@ -15,6 +15,7 @@ function App() {
     return false;
   });
   const [currentView, setCurrentView] = useState('form'); // 'form', 'archive', 'profile', 'settings'
+  const [previousView, setPreviousView] = useState(null);
   const [selectedCard, setSelectedCard] = useState(null);
 
   useEffect(() => {
@@ -29,19 +30,30 @@ function App() {
     setDarkMode(!darkMode);
   };
 
-  const handleLoadCard = (card) => {
+  const handleLoadCard = (card, sourceView = null) => {
     setSelectedCard(card);
+    if (sourceView) {
+      setPreviousView(sourceView);
+    }
     setCurrentView('form');
+  };
+
+  const handleBack = () => {
+    if (previousView) {
+      setCurrentView(previousView);
+      setPreviousView(null);
+      setSelectedCard(null);
+    }
   };
 
   const renderView = () => {
     switch (currentView) {
       case 'form':
-        return <ConsultingForm initialData={selectedCard} key={selectedCard ? selectedCard.id : 'new'} />;
+        return <ConsultingForm initialData={selectedCard} key={selectedCard ? selectedCard.id : 'new'} onBack={previousView ? handleBack : null} />;
       case 'archive':
-        return <Archive onLoadCard={handleLoadCard} />;
+        return <Archive onLoadCard={(card) => handleLoadCard(card, 'archive')} />;
       case 'crm':
-        return <CRM onLoadCard={handleLoadCard} onNavigate={handleNavigate} />;
+        return <CRM onLoadCard={(card) => handleLoadCard(card, 'crm')} onNavigate={handleNavigate} />;
       case 'consultants':
         return <ConsultantsManager />;
       case 'settings':
@@ -55,6 +67,7 @@ function App() {
     if (viewId === 'form') {
       setSelectedCard(null);
     }
+    setPreviousView(null);
     setCurrentView(viewId);
   };
 
