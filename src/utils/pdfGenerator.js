@@ -288,7 +288,7 @@ export const generatePDF = (cards, globalSettings) => {
   });
 
   const fileName = cardList.length === 1 
-    ? `${(cardList[0].assignedConsultant || cardList[0].assigned_consultant || 'DA_ASSEGNARE').toUpperCase()} - ${(cardList[0].businessName || cardList[0].business_name || 'CLIENTE').toUpperCase()}.pdf`
+    ? `${(cardList[0].assignedConsultant || cardList[0].assigned_consultant || 'da_assegnare').toLowerCase()} - ${(cardList[0].businessName || cardList[0].business_name || 'cliente').toLowerCase()}.pdf`
     : `schede_consulenza_batch_${new Date().toISOString().slice(0,10)}.pdf`;
     
   doc.save(fileName);
