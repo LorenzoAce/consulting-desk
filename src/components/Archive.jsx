@@ -50,10 +50,44 @@ const Archive = ({ onLoadCard }) => {
 
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleViewImage = (image, e) => {
+  const handleViewImage = async (card, e) => {
     e.stopPropagation();
-    setSelectedImage(image);
-    setShowImageModal(true);
+    try {
+      const apiUrl = getApiUrl();
+      // Fetch the image specifically for this card
+      const response = await fetch(`${apiUrl}/api/cards/${card.id}/image`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.external_image) {
+          setSelectedImage(data.external_image);
+          setShowImageModal(true);
+        } else {
+          alert("Immagine non trovata");
+        }
+      } else {
+        alert("Errore nel caricamento dell'immagine");
+      }
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      alert("Errore di connessione");
+    }
+  };
+
+  const handleEditCard = async (card) => {
+    try {
+      // Fetch full card details before editing
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/cards/${card.id}`);
+      if (response.ok) {
+        const fullCard = await response.json();
+        onLoadCard(fullCard);
+      } else {
+        alert("Errore nel caricamento della scheda completa");
+      }
+    } catch (error) {
+      console.error("Error fetching full card:", error);
+      alert("Errore di connessione");
+    }
   };
 
   // Scroll Synchronization Refs
@@ -601,16 +635,16 @@ const Archive = ({ onLoadCard }) => {
 
               <div className="flex gap-2">
                 <button 
-                  onClick={() => onLoadCard(card)}
+                  onClick={() => handleEditCard(card)}
                   className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
                   title="Modifica"
                 >
                   <Edit className="h-4 w-4" />
                   Modifica
                 </button>
-                {card.external_image && (
+                {card.has_external_image && (
                   <button 
-                    onClick={(e) => handleViewImage(card.external_image, e)}
+                    onClick={(e) => handleViewImage(card, e)}
                     className="flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-2 rounded-md hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors text-sm font-medium"
                     title="Vedi Foto"
                   >
@@ -660,7 +694,7 @@ const Archive = ({ onLoadCard }) => {
                 {filteredCards.map((card) => {
                   const isSelected = selectedCards.includes(card.id);
                   return (
-                  <tr key={card.id} className={`group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => onLoadCard(card)}>
+                  <tr key={card.id} className={`group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => handleEditCard(card)}>
                     <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
@@ -689,9 +723,9 @@ const Archive = ({ onLoadCard }) => {
                     </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
-                        {card.external_image && (
+                        {card.has_external_image && (
                           <button 
-                            onClick={(e) => handleViewImage(card.external_image, e)}
+                            onClick={(e) => handleViewImage(card, e)}
                             className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                             title="Vedi Foto Locale"
                           >
@@ -699,7 +733,7 @@ const Archive = ({ onLoadCard }) => {
                           </button>
                         )}
                          <button 
-                          onClick={(e) => { e.stopPropagation(); onLoadCard(card); }}
+                          onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
                           className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                         >
                           <Edit className="h-4 w-4" />

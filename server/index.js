@@ -375,14 +375,54 @@ app.get('/api/cards/global-logo', async (req, res) => {
   }
 });
 
-// Get all cards
+// Get all cards (Optimized for list view)
 app.get('/api/cards', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM consulting_cards ORDER BY created_at DESC');
+    // Select only lightweight columns for the list view
+    const query = `
+      SELECT 
+        id, business_name, full_name, address, city, province, phone, email, 
+        source, availability, main_interest, betting_active, utilities_active,
+        assigned_consultant, operator_name, created_at, updated_at,
+        (CASE WHEN external_image IS NOT NULL AND length(external_image) > 0 THEN true ELSE false END) as has_external_image
+      FROM consulting_cards 
+      ORDER BY created_at DESC
+    `;
+    const result = await pool.query(query);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch cards' });
+  }
+});
+
+// Get single card by ID (Full details)
+app.get('/api/cards/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT * FROM consulting_cards WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch card details' });
+  }
+});
+
+// Get card external image
+app.get('/api/cards/:id/image', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('SELECT external_image FROM consulting_cards WHERE id = $1', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Card not found' });
+    }
+    res.json({ external_image: result.rows[0].external_image });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch card image' });
   }
 });
 
