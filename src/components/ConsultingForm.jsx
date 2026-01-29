@@ -445,53 +445,14 @@ const ConsultingForm = ({ initialData, onBack }) => {
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
-        
-        <div className="p-6 space-y-6">
-        {/* Logo Upload (Optional) */}
-        <section className="border-b dark:border-gray-700 pb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">Logo Agenzia</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Carica il logo della tua agenzia per personalizzare il PDF (opzionale)</p>
-            </div>
-            <div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleLogoUpload}
-                className="hidden"
-                id="logo-upload"
-              />
-              {!logo ? (
-                <label
-                  htmlFor="logo-upload"
-                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors"
-                >
-                  <Upload className="h-4 w-4" />
-                  Carica Logo
-                </label>
-              ) : (
-                <div className="flex items-center gap-4">
-                  <div className="h-16 w-16 relative border dark:border-gray-600 rounded-lg overflow-hidden bg-white flex items-center justify-center">
-                    <img src={logo} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
-                  </div>
-                  <button
-                    onClick={() => setLogo(null)}
-                    className="text-red-600 hover:text-red-700 p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                    title="Rimuovi Logo"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Anagrafica */}
-        <section>
-          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Anagrafica</h2>
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        {/* Main Form Column */}
+        <div className="xl:col-span-3 bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+          <div className="p-6 space-y-6">
+            
+            {/* Anagrafica */}
+            <section>
+              <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Anagrafica</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">R.Sociale - Insegna</label>
@@ -752,37 +713,6 @@ const ConsultingForm = ({ initialData, onBack }) => {
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Note e Richieste</h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Foto Locale Esterno</label>
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer">
-                  <Upload className="h-5 w-5" />
-                  Carica Foto
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleExternalImageUpload}
-                    className="hidden"
-                  />
-                </label>
-                {externalImage && (
-                  <div className="relative group">
-                    <img 
-                      src={externalImage} 
-                      alt="Locale Esterno" 
-                      className="h-20 w-20 object-cover rounded-md border border-gray-200 dark:border-gray-700" 
-                    />
-                    <button
-                      onClick={() => setExternalImage(null)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Richieste del Cliente</label>
               <textarea
                 name="requests"
@@ -908,7 +838,81 @@ const ConsultingForm = ({ initialData, onBack }) => {
         </div>
       </div>
     </div>
+    
+    {/* Right Column - Uploads */}
+    <div className="xl:col-span-1 space-y-6">
+      {/* Logo Upload Card */}
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+        <div className="p-6">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Logo Agenzia</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Carica il logo per il PDF (opzionale)</p>
+          
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            {!logo ? (
+              <label className="flex flex-col items-center cursor-pointer">
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Clicca per caricare</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="relative w-full">
+                <div className="h-32 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden mb-2">
+                  <img src={logo} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
+                </div>
+                <button
+                  onClick={() => setLogo(null)}
+                  className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 py-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <X className="h-4 w-4" /> Rimuovi Logo
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* External Photo Upload Card */}
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+        <div className="p-6">
+          <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Foto Locale Esterno</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Foto del locale per archivio</p>
+          
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            {!externalImage ? (
+              <label className="flex flex-col items-center cursor-pointer">
+                <Upload className="h-10 w-10 text-gray-400 mb-2" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Clicca per caricare</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleExternalImageUpload}
+                  className="hidden"
+                />
+              </label>
+            ) : (
+              <div className="relative w-full">
+                <div className="h-48 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden mb-2">
+                  <img src={externalImage} alt="Locale Esterno" className="max-h-full max-w-full object-contain" />
+                </div>
+                <button
+                  onClick={() => setExternalImage(null)}
+                  className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 py-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                >
+                  <X className="h-4 w-4" /> Rimuovi Foto
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
   );
 };
 
