@@ -603,7 +603,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                         </td>
                                     )}
                                     {crmOptions.status && (
-                                        <td className="px-6 py-4 whitespace-nowrap sticky right-[100px] z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
+                                        <td className="px-6 py-4 whitespace-nowrap sticky right-[100px] z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] w-[160px]">
                                             <select
                                                 value={lead.status || 'new'}
                                                 onChange={(e) => handleStatusChange(lead, e.target.value)}
