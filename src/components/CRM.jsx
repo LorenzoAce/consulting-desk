@@ -55,7 +55,8 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     status: true,
     source: true,
     notes: true,
-    assigned_consultant: true
+    assigned_consultant: true,
+    status_width: 160
   });
   const [crmStatuses, setCrmStatuses] = useState([]);
   const topScrollRef = useRef(null);
@@ -504,7 +505,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                             {crmOptions.phone && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono</th>}
                             {crmOptions.email && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>}
                             {crmOptions.notes && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Note</th>}
-                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[160px] sticky right-[100px] z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Stato</th>}
+                            {crmOptions.status && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider sticky right-[100px] z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]" style={{ minWidth: crmOptions.status_width ? `${crmOptions.status_width}px` : '160px' }}>Stato</th>}
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
                         </tr>
                     </thead>
@@ -603,7 +604,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                         </td>
                                     )}
                                     {crmOptions.status && (
-                                        <td className="px-6 py-4 whitespace-nowrap sticky right-[100px] z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] w-[160px]">
+                                        <td className="px-6 py-4 whitespace-nowrap sticky right-[100px] z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]" style={{ width: crmOptions.status_width ? `${crmOptions.status_width}px` : '160px' }}>
                                             <select
                                                 value={lead.status || 'new'}
                                                 onChange={(e) => handleStatusChange(lead, e.target.value)}

@@ -41,7 +41,8 @@ const Settings = () => {
     status: true,
     source: true,
     notes: true,
-    assigned_consultant: true
+    assigned_consultant: true,
+    status_width: 160
   });
   const [crmStatuses, setCrmStatuses] = useState([]);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
@@ -321,6 +322,26 @@ const Settings = () => {
                   <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
                 </label>
               ))}
+            </div>
+
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Larghezza Colonna Stato CRM (px)
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="100"
+                  max="400"
+                  step="10"
+                  value={crmOptions.status_width || 160}
+                  onChange={(e) => setCrmOptions(prev => ({ ...prev, status_width: parseInt(e.target.value) }))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                />
+                <span className="text-sm font-medium text-gray-900 dark:text-white min-w-[3rem]">
+                  {crmOptions.status_width || 160}px
+                </span>
+              </div>
             </div>
           </div>
         </div>
