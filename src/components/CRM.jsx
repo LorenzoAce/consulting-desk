@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save, Image } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
@@ -24,6 +24,10 @@ const CRM = ({ onLoadCard, onNavigate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentLead, setCurrentLead] = useState(null);
   const [formData, setFormData] = useState({});
+
+  // Image Modal State
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   // Archive Import State
   const [archiveCards, setArchiveCards] = useState([]);
@@ -106,6 +110,38 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       // Don't show error immediately on fetch fail if table doesn't exist yet (handled by init)
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewImage = async (lead, e) => {
+    e.stopPropagation();
+    
+    // Only proceed if linked to a card or if we can identify image source
+    const cardId = lead.card_id;
+    
+    if (!cardId) {
+        alert("Nessuna immagine associata (Lead non collegato a scheda)");
+        return;
+    }
+
+    try {
+      const apiUrl = getApiUrl();
+      // Fetch the image specifically for this card
+      const response = await fetch(`${apiUrl}/api/cards/${cardId}/image`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.external_image) {
+          setSelectedImage(data.external_image);
+          setShowImageModal(true);
+        } else {
+          alert("Immagine non trovata");
+        }
+      } else {
+        alert("Errore nel caricamento dell'immagine");
+      }
+    } catch (error) {
+      console.error("Error fetching image:", error);
+      alert("Errore di connessione");
     }
   };
 
@@ -584,16 +620,27 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                         </td>
                                     )}
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
-                                        <button 
-                                            onClick={() => handleEditCard(lead)} 
-                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
-                                            title={lead.card_id ? "Modifica Scheda Completa" : "Modifica Lead CRM"}
-                                        >
-                                            <Pencil className="h-4 w-4" />
-                                        </button>
-                                        <button onClick={() => handleDelete(lead.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                            <Trash2 className="h-4 w-4" />
-                                        </button>
+                                        <div className="flex justify-end items-center gap-2">
+                                            {lead.card_id && (
+                                              <button 
+                                                onClick={(e) => handleViewImage(lead, e)}
+                                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                                title="Vedi Foto Locale"
+                                              >
+                                                <Image className="h-4 w-4" />
+                                              </button>
+                                            )}
+                                            <button 
+                                                onClick={() => handleEditCard(lead)} 
+                                                className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                title={lead.card_id ? "Modifica Scheda Completa" : "Modifica Lead CRM"}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </button>
+                                            <button onClick={() => handleDelete(lead.id)} className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -828,6 +875,24 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     </button>
                 </div>
             )}
+        </div>
+      )}
+      {/* Image Preview Modal */}
+      {showImageModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-xl" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setShowImageModal(false)}
+              className="absolute -top-4 -right-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Anteprima" 
+              className="max-w-full max-h-[85vh] object-contain rounded" 
+            />
+          </div>
         </div>
       )}
     </div>
