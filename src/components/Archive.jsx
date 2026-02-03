@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search, Calendar, User, Building, Trash2, Edit, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X } from 'lucide-react';
+import { Search, Calendar, User, Building, Trash2, Pencil, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getApiUrl } from '../utils/api';
@@ -655,7 +655,7 @@ const Archive = ({ onLoadCard }) => {
                   className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
                   title="Modifica"
                 >
-                  <Edit className="h-4 w-4" />
+                  <Pencil className="h-4 w-4" />
                   Modifica
                 </button>
                 {card.has_external_image && (
@@ -750,9 +750,9 @@ const Archive = ({ onLoadCard }) => {
                         )}
                          <button 
                           onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
-                          className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Pencil className="h-4 w-4" />
                         </button>
                         <button 
                           onClick={(e) => deleteCard(card.id, e)}
