@@ -234,7 +234,7 @@ const Archive = ({ onLoadCard }) => {
       (filters.businessName === '' || card.business_name?.toLowerCase().includes(filters.businessName.toLowerCase())) &&
       (filters.fullName === '' || card.full_name?.toLowerCase().includes(filters.fullName.toLowerCase())) &&
       (filters.address === '' || card.address?.toLowerCase().includes(filters.address.toLowerCase())) &&
-      (filters.piva === '' || card.piva?.toLowerCase().includes(filters.piva.toLowerCase())) &&
+      (filters.piva === '' || (card.piva && card.piva.toLowerCase().includes(filters.piva.toLowerCase()))) &&
       (filters.city.length === 0 || filters.city.includes(card.city)) &&
       (filters.province.length === 0 || filters.province.includes(card.province)) &&
       (filters.mainInterest.length === 0 || filters.mainInterest.includes(card.main_interest)) &&

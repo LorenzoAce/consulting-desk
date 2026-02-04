@@ -393,7 +393,8 @@ const CRM = ({ onLoadCard, onNavigate }) => {
   // Filter archive cards
   const filteredArchiveCards = archiveCards.filter(card => 
     (card.business_name && card.business_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (card.email && card.email.toLowerCase().includes(searchTerm.toLowerCase()))
+    (card.email && card.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (card.piva && card.piva.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const handleTopScroll = (e) => {
