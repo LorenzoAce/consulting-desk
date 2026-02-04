@@ -158,61 +158,81 @@ const ConsultantsManager = () => {
 
         {loading ? (
           <div className="p-8 text-center text-gray-500 dark:text-gray-400">Caricamento...</div>
-        ) : filteredConsultants.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            {searchTerm ? 'Nessun consulente trovato.' : 'Nessun consulente presente. Aggiungine uno.'}
-          </div>
         ) : (
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredConsultants.map((consultant) => (
-              <li key={consultant.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                        <span className="text-blue-600 dark:text-blue-300 font-semibold text-lg">
-                          {consultant.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">{consultant.name}</p>
-                      <div className="flex items-center gap-4 mt-1">
-                        {consultant.email && (
-                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                            <Mail className="h-3 w-3 mr-1" />
-                            {consultant.email}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Telefono
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
+                    Azioni
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredConsultants.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+                      {searchTerm ? 'Nessun consulente trovato.' : 'Nessun consulente presente. Aggiungine uno.'}
+                    </td>
+                  </tr>
+                ) : (
+                  filteredConsultants.map((consultant) => (
+                    <tr key={consultant.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-3">
+                            <span className="text-blue-600 dark:text-blue-300 font-semibold text-sm">
+                              {consultant.name.charAt(0).toUpperCase()}
+                            </span>
                           </div>
-                        )}
-                        {consultant.phone && (
-                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {consultant.phone}
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {consultant.name}
                           </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleOpenModal(consultant)}
-                      className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                      title="Modifica"
-                    >
-                      <Pencil className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(consultant.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                      title="Elimina"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                          {consultant.email || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                          {consultant.phone || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
+                        <div className="flex justify-end items-center gap-2">
+                          <button
+                            onClick={() => handleOpenModal(consultant)}
+                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                            title="Modifica"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(consultant.id)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                            title="Elimina"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
