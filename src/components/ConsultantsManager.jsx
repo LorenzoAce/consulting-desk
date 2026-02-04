@@ -12,7 +12,7 @@ const ConsultantsManager = () => {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentConsultant, setCurrentConsultant] = useState(null); // null for new, object for edit
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', address: '', piva: '' });
 
   useEffect(() => {
     fetchConsultants();
@@ -53,7 +53,7 @@ const ConsultantsManager = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentConsultant(null);
-    setFormData({ name: '', email: '', phone: '' });
+    setFormData({ name: '', email: '', phone: '', address: '', piva: '' });
   };
 
   const handleSubmit = async (e) => {
@@ -172,6 +172,12 @@ const ConsultantsManager = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Telefono
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Indirizzo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    P.IVA
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
                     Azioni
                   </th>
@@ -207,6 +213,16 @@ const ConsultantsManager = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500 dark:text-gray-300">
                           {consultant.phone || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                          {consultant.address || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-500 dark:text-gray-300">
+                          {consultant.piva || '-'}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">
@@ -295,6 +311,32 @@ const ConsultantsManager = () => {
                           className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Indirizzo
+                        </label>
+                        <input
+                          type="text"
+                          name="address"
+                          id="address"
+                          className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                          value={formData.address}
+                          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="piva" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          P.IVA
+                        </label>
+                        <input
+                          type="text"
+                          name="piva"
+                          id="piva"
+                          className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                          value={formData.piva}
+                          onChange={(e) => setFormData({ ...formData, piva: e.target.value })}
                         />
                       </div>
                     </div>
