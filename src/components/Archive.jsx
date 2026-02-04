@@ -21,6 +21,22 @@ const Archive = ({ onLoadCard }) => {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [consultantToAssign, setConsultantToAssign] = useState('');
   const [consultantsList, setConsultantsList] = useState([]); // Full list from registry
+  const [archiveOptions, setArchiveOptions] = useState({
+    business_name: true,
+    full_name: true,
+    address: true,
+    city: true,
+    province: true,
+    phone: true,
+    email: true,
+    piva: true,
+    main_interest: true,
+    availability: true,
+    assigned_consultant: true,
+    operator_name: true,
+    created_at: true,
+    updated_at: true
+  });
 
   // Advanced filters state
   const [filters, setFilters] = useState({
@@ -130,8 +146,8 @@ const Archive = ({ onLoadCard }) => {
 
   useEffect(() => {
     fetchCards();
-    fetchSettings();
     fetchConsultants();
+    fetchSettings();
   }, []);
 
   useEffect(() => {
@@ -170,6 +186,9 @@ const Archive = ({ onLoadCard }) => {
         const data = await response.json();
         // Handle both snake_case (DB) and camelCase (if passed from other places)
         setPdfOptions(data.pdf_options || data.pdfOptions);
+        if (data.archive_options) {
+          setArchiveOptions(data.archive_options);
+        }
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -713,12 +732,20 @@ const Archive = ({ onLoadCard }) => {
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ragione Sociale</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Indirizzo</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comune</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Provincia</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulente</th>
+                  {archiveOptions.created_at && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>}
+                  {archiveOptions.updated_at && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Modifica</th>}
+                  {archiveOptions.business_name && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ragione Sociale</th>}
+                  {archiveOptions.full_name && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contatto</th>}
+                  {archiveOptions.piva && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">P.IVA</th>}
+                  {archiveOptions.address && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Indirizzo</th>}
+                  {archiveOptions.city && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comune</th>}
+                  {archiveOptions.province && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pr</th>}
+                  {archiveOptions.phone && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Telefono</th>}
+                  {archiveOptions.email && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>}
+                  {archiveOptions.main_interest && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interesse</th>}
+                  {archiveOptions.availability && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Disp.</th>}
+                  {archiveOptions.assigned_consultant && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulente</th>}
+                  {archiveOptions.operator_name && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Operatore</th>}
                   <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
                 </tr>
               </thead>
@@ -735,24 +762,20 @@ const Archive = ({ onLoadCard }) => {
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(card.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {card.business_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {card.address}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {card.city}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {card.province}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {card.assigned_consultant || '-'}
-                    </td>
+                    {archiveOptions.created_at && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(card.created_at).toLocaleDateString()}</td>}
+                    {archiveOptions.updated_at && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.updated_at ? new Date(card.updated_at).toLocaleDateString() : '-'}</td>}
+                    {archiveOptions.business_name && <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{card.business_name}</td>}
+                    {archiveOptions.full_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.full_name}</td>}
+                    {archiveOptions.piva && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.piva}</td>}
+                    {archiveOptions.address && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.address}</td>}
+                    {archiveOptions.city && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.city}</td>}
+                    {archiveOptions.province && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.province}</td>}
+                    {archiveOptions.phone && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.phone}</td>}
+                    {archiveOptions.email && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.email}</td>}
+                    {archiveOptions.main_interest && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.main_interest}</td>}
+                    {archiveOptions.availability && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.availability}</td>}
+                    {archiveOptions.assigned_consultant && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.assigned_consultant || '-'}</td>}
+                    {archiveOptions.operator_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.operator_name}</td>}
                     <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
                         {card.has_external_image && (

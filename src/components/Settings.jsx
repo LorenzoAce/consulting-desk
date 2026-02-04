@@ -44,6 +44,22 @@ const Settings = () => {
     assigned_consultant: true,
     status_width: 160
   });
+  const [archiveOptions, setArchiveOptions] = useState({
+    business_name: true,
+    full_name: true,
+    address: true,
+    city: true,
+    province: true,
+    phone: true,
+    email: true,
+    piva: true,
+    main_interest: true,
+    availability: true,
+    assigned_consultant: true,
+    operator_name: true,
+    created_at: true,
+    updated_at: true
+  });
   const [crmStatuses, setCrmStatuses] = useState([]);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -62,6 +78,9 @@ const Settings = () => {
         }
         if (data.crm_options) {
             setCrmOptions(data.crm_options);
+        }
+        if (data.archive_options) {
+            setArchiveOptions(data.archive_options);
         }
         if (data.crm_statuses && data.crm_statuses.length > 0) {
           setCrmStatuses(data.crm_statuses);
@@ -99,6 +118,13 @@ const Settings = () => {
     }));
   };
 
+  const handleArchiveOptionChange = (option) => {
+    setArchiveOptions(prev => ({
+      ...prev,
+      [option]: !prev[option]
+    }));
+  };
+
   const handleAddStatus = () => {
     const newId = `status_${Date.now()}`;
     setCrmStatuses([...crmStatuses, { id: newId, label: 'Nuovo Stato', color: 'gray' }]);
@@ -130,7 +156,8 @@ const Settings = () => {
         body: JSON.stringify({
           pdfOptions,
           crmOptions,
-          crmStatuses
+          crmStatuses,
+          archiveOptions
         }),
       });
 
@@ -304,6 +331,7 @@ const Settings = () => {
                 { id: 'province', label: 'Provincia' },
                 { id: 'phone', label: 'Telefono' },
                 { id: 'email', label: 'Email' },
+                { id: 'piva', label: 'P.IVA' },
                 { id: 'main_interest', label: 'Interesse' },
                 { id: 'availability', label: 'Disponibilità' },
                 { id: 'services', label: 'Servizi Attivi' },
@@ -342,6 +370,49 @@ const Settings = () => {
                   {crmOptions.status_width || 160}px
                 </span>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Archive Column Options Section */}
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-green-500" />
+            Visibilità Colonne Archivio Schede
+          </h3>
+          
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Seleziona quali colonne visualizzare nella tabella Archivio Schede.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { id: 'business_name', label: 'R.Sociale' },
+                { id: 'full_name', label: 'Nome e Cognome' },
+                { id: 'address', label: 'Indirizzo' },
+                { id: 'city', label: 'Città' },
+                { id: 'province', label: 'Provincia' },
+                { id: 'phone', label: 'Telefono' },
+                { id: 'email', label: 'Email' },
+                { id: 'piva', label: 'P.IVA' },
+                { id: 'main_interest', label: 'Interesse' },
+                { id: 'availability', label: 'Disponibilità' },
+                { id: 'assigned_consultant', label: 'Consulente' },
+                { id: 'operator_name', label: 'Operatore' },
+                { id: 'created_at', label: 'Data Creazione' },
+                { id: 'updated_at', label: 'Ultima Modifica' }
+              ].map((col) => (
+                <label key={col.id} className="flex items-center space-x-3 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={archiveOptions[col.id]} 
+                    onChange={() => handleArchiveOptionChange(col.id)}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500 h-5 w-5"
+                  />
+                  <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
+                </label>
+              ))}
             </div>
           </div>
         </div>
