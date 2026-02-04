@@ -624,6 +624,12 @@ const Archive = ({ onLoadCard }) => {
               
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 truncate">{card.business_name}</h3>
               
+              {card.piva && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 truncate">
+                  P.IVA: {card.piva}
+                </p>
+              )}
+              
               {/* Address in Grid View */}
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate">
                 {card.address}

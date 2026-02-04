@@ -19,6 +19,7 @@ export const generatePDF = (cards, globalSettings) => {
       address: card.address || '',
       city: card.city || '',
       province: card.province || '',
+      piva: card.piva || '',
       phone: card.phone || '',
       email: card.email || '',
       source: card.source || 'TELEFONO',
@@ -120,15 +121,18 @@ export const generatePDF = (cards, globalSettings) => {
       y += 15;
 
       drawField('Indirizzo', data.address, leftCol, y);
-      drawField('Comune', data.city, rightCol, y);
+      drawField('P.IVA', data.piva, rightCol, y);
       y += 15;
 
-      drawField('Provincia', data.province, leftCol, y);
-      drawField('Telefono', data.phone, rightCol, y);
+      drawField('Comune', data.city, leftCol, y);
+      drawField('Provincia', data.province, rightCol, y);
       y += 15;
 
-      drawField('Email', data.email, leftCol, y);
-      drawField('Fonte Acquisizione', data.source, rightCol, y);
+      drawField('Telefono', data.phone, leftCol, y);
+      drawField('Email', data.email, rightCol, y);
+      y += 15;
+
+      drawField('Fonte Acquisizione', data.source, leftCol, y);
       y += 20;
     }
 

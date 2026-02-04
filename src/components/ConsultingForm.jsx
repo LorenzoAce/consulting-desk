@@ -128,7 +128,8 @@ const ConsultingForm = ({ initialData, onBack }) => {
         requests: initialData.requests || '',
         notes: initialData.notes || '',
         assignedConsultant: initialData.assigned_consultant || '',
-        operatorName: initialData.operator_name || ''
+        operatorName: initialData.operator_name || '',
+        piva: initialData.piva || ''
       });
       
       setBettingPartners(initialData.betting_partners || []);
@@ -479,6 +480,16 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 type="text"
                 name="fullName"
                 value={formData.fullName}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">P.IVA</label>
+              <input
+                type="text"
+                name="piva"
+                value={formData.piva}
                 onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
