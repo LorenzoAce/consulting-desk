@@ -77,7 +77,8 @@ app.post('/api/cards', async (req, res) => {
       signatureData,
       logo,
       logoDimensions,
-      externalImage
+      externalImage,
+      piva
     } = req.body;
 
     const query = `
@@ -85,8 +86,8 @@ app.post('/api/cards', async (req, res) => {
         business_name, full_name, address, city, province, phone, email, source,
         availability, main_interest, betting_active, utilities_active,
         betting_partners, utility_partners, requests, notes, assigned_consultant, operator_name,
-        signature_type, signature_data, logo, logo_dimensions, external_image
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+        signature_type, signature_data, logo, logo_dimensions, external_image, piva
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
       RETURNING *;
     `;
 
@@ -95,7 +96,7 @@ app.post('/api/cards', async (req, res) => {
       availability, mainInterest, bettingActive, utilitiesActive,
       JSON.stringify(bettingPartners), JSON.stringify(utilityPartners),
       requests, notes, assignedConsultant, operatorName, signatureType, signatureData,
-      logo, JSON.stringify(logoDimensions), externalImage
+      logo, JSON.stringify(logoDimensions), externalImage, piva
     ];
 
     const result = await client.query(query, values);
@@ -138,7 +139,8 @@ app.put('/api/cards/:id', async (req, res) => {
       signatureData,
       logo,
       logoDimensions,
-      externalImage
+      externalImage,
+      piva
     } = req.body;
 
     const query = `
@@ -146,7 +148,7 @@ app.put('/api/cards/:id', async (req, res) => {
         business_name = $1, full_name = $2, address = $3, city = $4, province = $5, phone = $6, email = $7, source = $8,
         availability = $9, main_interest = $10, betting_active = $11, utilities_active = $12,
         betting_partners = $13, utility_partners = $14, requests = $15, notes = $16, assigned_consultant = $17, operator_name = $18,
-        signature_type = $19, signature_data = $20, logo = $21, logo_dimensions = $22, external_image = $23, updated_at = NOW()
+        signature_type = $19, signature_data = $20, logo = $21, logo_dimensions = $22, external_image = $23, piva = $25, updated_at = NOW()
       WHERE id = $24
       RETURNING *;
     `;
@@ -157,7 +159,7 @@ app.put('/api/cards/:id', async (req, res) => {
       JSON.stringify(bettingPartners), JSON.stringify(utilityPartners),
       requests, notes, assignedConsultant, operatorName, signatureType, signatureData,
       logo, JSON.stringify(logoDimensions), externalImage,
-      id
+      id, piva
     ];
 
     const result = await client.query(query, values);
@@ -281,6 +283,7 @@ app.get('/api/settings', async (req, res) => {
             province: true,
             phone: true,
             email: true,
+            piva: true,
             main_interest: true,
             availability: true,
             services: true,
@@ -383,7 +386,7 @@ app.get('/api/cards', async (req, res) => {
       SELECT 
         id, business_name, full_name, address, city, province, phone, email, 
         source, availability, main_interest, betting_active, utilities_active,
-        assigned_consultant, operator_name, created_at, updated_at,
+        assigned_consultant, operator_name, created_at, updated_at, piva,
         (CASE WHEN external_image IS NOT NULL AND length(external_image) > 0 THEN true ELSE false END) as has_external_image
       FROM consulting_cards 
       ORDER BY created_at DESC
@@ -615,7 +618,7 @@ app.get('/api/cards/:id', async (req, res) => {
 // Update a CRM lead
 app.put('/api/crm/leads/:id', async (req, res) => {
   const { id } = req.params;
-  const { businessName, contactName, email, phone, address, city, province, notes, status, cardId } = req.body;
+  const { businessName, contactName, email, phone, address, city, province, notes, status, cardId, piva } = req.body;
   
   const client = await pool.connect();
   try {
@@ -625,11 +628,11 @@ app.put('/api/crm/leads/:id', async (req, res) => {
     const updateLeadQuery = `
       UPDATE crm_leads 
       SET business_name = $1, contact_name = $2, email = $3, phone = $4, 
-          address = $5, city = $6, province = $7, notes = $8, status = $9
+          address = $5, city = $6, province = $7, notes = $8, status = $9, piva = $11
       WHERE id = $10
       RETURNING *
     `;
-    const leadValues = [businessName, contactName, email, phone, address, city, province, notes, status, id];
+    const leadValues = [businessName, contactName, email, phone, address, city, province, notes, status, id, piva];
     const leadResult = await client.query(updateLeadQuery, leadValues);
 
     if (leadResult.rowCount === 0) {
@@ -642,11 +645,11 @@ app.put('/api/crm/leads/:id', async (req, res) => {
       const updateCardQuery = `
         UPDATE consulting_cards
         SET business_name = $1, full_name = $2, email = $3, phone = $4,
-            address = $5, city = $6, province = $7, notes = $8, updated_at = NOW()
+            address = $5, city = $6, province = $7, notes = $8, piva = $10, updated_at = NOW()
         WHERE id = $9
       `;
       // Note: mapping contactName to full_name
-      await client.query(updateCardQuery, [businessName, contactName, email, phone, address, city, province, notes, cardId]);
+      await client.query(updateCardQuery, [businessName, contactName, email, phone, address, city, province, notes, cardId, piva]);
     }
 
     await client.query('COMMIT');
@@ -700,9 +703,9 @@ app.post('/api/crm/import-archive', async (req, res) => {
       
       // Insert into CRM
       await client.query(`
-        INSERT INTO crm_leads (card_id, business_name, contact_name, email, phone, address, city, province, source, status, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'archive', 'new', NOW())
-      `, [card.id, card.business_name, card.full_name, card.email, card.phone, card.address, card.city, card.province]);
+        INSERT INTO crm_leads (card_id, business_name, contact_name, email, phone, address, city, province, source, status, piva, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'archive', 'new', $9, NOW())
+      `, [card.id, card.business_name, card.full_name, card.email, card.phone, card.address, card.city, card.province, card.piva]);
       
       importedCount++;
     }
@@ -720,13 +723,13 @@ app.post('/api/crm/import-archive', async (req, res) => {
 
 // Import from Excel (or manual add)
 app.post('/api/crm/leads', async (req, res) => {
-  const { businessName, contactName, email, phone, address, city, province, notes, source } = req.body;
+  const { businessName, contactName, email, phone, address, city, province, notes, source, piva } = req.body;
   try {
     const result = await pool.query(`
-      INSERT INTO crm_leads (business_name, contact_name, email, phone, address, city, province, notes, source, status, created_at)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'new', NOW())
+      INSERT INTO crm_leads (business_name, contact_name, email, phone, address, city, province, notes, source, status, piva, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'new', $10, NOW())
       RETURNING *
-    `, [businessName, contactName, email, phone, address, city, province, notes, source || 'excel']);
+    `, [businessName, contactName, email, phone, address, city, province, notes, source || 'excel', piva]);
     
     res.status(201).json(result.rows[0]);
   } catch (err) {

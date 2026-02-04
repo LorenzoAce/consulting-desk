@@ -49,6 +49,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     province: true,
     phone: true,
     email: true,
+    piva: true,
     main_interest: true,
     availability: true,
     services: true,
@@ -345,6 +346,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
             email: row['Email'] || '',
             phone: row['Telefono'] || row['Phone'] || '',
             notes: row['Note'] || row['Notes'] || '',
+            piva: row['P.IVA'] || row['Partita IVA'] || row['piva'] || '',
             source: 'excel'
         };
 
@@ -378,7 +380,8 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       (lead.city && lead.city.toLowerCase().includes(search)) ||
       (lead.province && lead.province.toLowerCase().includes(search)) ||
       (lead.email && lead.email.toLowerCase().includes(search)) ||
-      (lead.phone && lead.phone.toLowerCase().includes(search));
+      (lead.phone && lead.phone.toLowerCase().includes(search)) ||
+      (lead.piva && lead.piva.toLowerCase().includes(search));
 
     const matchesInterest = !filterInterest || lead.main_interest === filterInterest;
     const matchesAvailability = !filterAvailability || lead.availability === filterAvailability;
@@ -502,6 +505,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                             {crmOptions.availability && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Disponibilità</th>}
                             {crmOptions.services && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Servizi Attivi</th>}
                             {crmOptions.assigned_consultant && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Consulente</th>}
+                            {crmOptions.piva && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">P.IVA</th>}
                             {crmOptions.phone && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Telefono</th>}
                             {crmOptions.email && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>}
                             {crmOptions.notes && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Note</th>}
@@ -586,6 +590,11 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                     {crmOptions.assigned_consultant && (
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="text-sm text-gray-900 dark:text-white">{lead.assigned_consultant || '-'}</div>
+                                        </td>
+                                    )}
+                                    {crmOptions.piva && (
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-500 dark:text-gray-300">{lead.piva || '-'}</div>
                                         </td>
                                     )}
                                     {crmOptions.phone && (
@@ -688,6 +697,15 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                         className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         value={formData.contactName}
                         onChange={(e) => setFormData({...formData, contactName: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">P.IVA</label>
+                      <input
+                        type="text"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        value={formData.piva}
+                        onChange={(e) => setFormData({...formData, piva: e.target.value})}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
