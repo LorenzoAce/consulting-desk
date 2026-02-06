@@ -85,6 +85,26 @@ const ConsultingForm = ({ initialData, onBack }) => {
           if (data.pdf_options) {
             setPdfOptions(data.pdf_options);
           }
+
+          // If creating a new card (no initialData), load the default logo
+          if (!initialData) {
+            let defaultLogo = data.logo;
+            let defaultLogoDims = data.logo_dimensions;
+
+            if (!defaultLogo) {
+              const logoResponse = await fetch(`${apiUrl}/api/cards/global-logo`);
+              if (logoResponse.ok) {
+                const logoData = await logoResponse.json();
+                defaultLogo = logoData.logo;
+                defaultLogoDims = logoData.logo_dimensions;
+              }
+            }
+
+            if (defaultLogo) {
+              setLogo(defaultLogo);
+              if (defaultLogoDims) setLogoDimensions(defaultLogoDims);
+            }
+          }
         }
       } catch (error) {
         console.error('Error loading settings:', error);

@@ -157,7 +157,9 @@ const Settings = () => {
           pdfOptions,
           crmOptions,
           crmStatuses,
-          archiveOptions
+          archiveOptions,
+          logo,
+          logoDimensions
         }),
       });
 
