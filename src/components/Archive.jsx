@@ -63,7 +63,7 @@ const Archive = ({ onLoadCard }) => {
   // Filter options based ONLY on active consultants from registry
   const consultantFilterOptions = React.useMemo(() => {
     const options = consultantsList.map(c => c.name).sort();
-    return ['da assegnare', ...options];
+    return ['DA ASSEGNARE', ...options];
   }, [consultantsList]);
 
   const [showFilters, setShowFilters] = useState(false);
@@ -260,7 +260,7 @@ const Archive = ({ onLoadCard }) => {
       (filters.mainInterest.length === 0 || filters.mainInterest.includes(card.main_interest)) &&
       (filters.assignedConsultant.length === 0 || 
         (card.assigned_consultant && filters.assignedConsultant.includes(card.assigned_consultant)) ||
-        (!card.assigned_consultant && filters.assignedConsultant.includes('da assegnare'))) &&
+        (!card.assigned_consultant && filters.assignedConsultant.includes('DA ASSEGNARE'))) &&
       (filters.operatorName.length === 0 || filters.operatorName.includes(card.operator_name));
 
     return matchesGlobal && matchesSpecific;
@@ -683,7 +683,9 @@ const Archive = ({ onLoadCard }) => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 dark:text-gray-400">Consulente:</span>
-                  <span className="font-medium text-gray-900 dark:text-white truncate max-w-[120px]">{card.assigned_consultant || 'da assegnare'}</span>
+                  <span className={`font-medium truncate max-w-[120px] ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                    {card.assigned_consultant || 'DA ASSEGNARE'}
+                  </span>
                 </div>
               </div>
 
@@ -777,7 +779,7 @@ const Archive = ({ onLoadCard }) => {
                     {archiveOptions.email && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.email}</td>}
                     {archiveOptions.main_interest && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.main_interest}</td>}
                     {archiveOptions.availability && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.availability}</td>}
-                    {archiveOptions.assigned_consultant && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.assigned_consultant || 'da assegnare'}</td>}
+                    {archiveOptions.assigned_consultant && <td className={`px-6 py-4 whitespace-nowrap text-sm ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>{card.assigned_consultant || 'DA ASSEGNARE'}</td>}
                     {archiveOptions.operator_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.operator_name}</td>}
                     <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
