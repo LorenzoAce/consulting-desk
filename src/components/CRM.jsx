@@ -65,6 +65,10 @@ const CRM = ({ onLoadCard, onNavigate }) => {
   const [scrollWidth, setScrollWidth] = useState(0);
   const isSyncingRef = useRef(false);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
+
   // Initial Data Load
   useEffect(() => {
     initCRM();
@@ -390,6 +394,17 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     return matchesSearch && matchesInterest && matchesAvailability && matchesStatus;
   });
 
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLeads.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [listSearch, filterInterest, filterAvailability, filterStatus]);
+
   // Filter archive cards
   const filteredArchiveCards = archiveCards.filter(card => 
     (card.business_name && card.business_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -536,7 +551,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                 } className="px-6 py-8 text-center text-gray-500">Nessun contatto presente. Importane alcuni!</td>
                             </tr>
                         ) : (
-                            filteredLeads.map(lead => (
+                            currentItems.map(lead => (
                                 <tr key={lead.id} className="group hover:bg-gray-50 dark:hover:bg-gray-700">
                                     {crmOptions.business_name && (
                                         <td className="px-6 py-4 whitespace-nowrap">
@@ -659,6 +674,77 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+                <div className="flex-1 flex justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Precedente
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Successivo
+                  </button>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, filteredLeads.length)}</span> di <span className="font-medium">{filteredLeads.length}</span> risultati
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                      >
+                        <span className="sr-only">Precedente</span>
+                        &larr;
+                      </button>
+                      {/* Page Numbers */}
+                      {[...Array(totalPages)].map((_, i) => {
+                         // Show max 5 pages logic or simple list if small
+                         if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
+                            if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
+                            return null;
+                         }
+                         return (
+                            <button
+                                key={i}
+                                onClick={() => setCurrentPage(i + 1)}
+                                aria-current={currentPage === i + 1 ? 'page' : undefined}
+                                className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                    currentPage === i + 1
+                                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
+                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                            >
+                                {i + 1}
+                            </button>
+                         );
+                      })}
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                      >
+                        <span className="sr-only">Successivo</span>
+                        &rarr;
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
       )}
 

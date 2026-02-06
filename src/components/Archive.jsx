@@ -9,6 +9,10 @@ const Archive = ({ onLoadCard }) => {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('list'); // 'grid' | 'list'
   
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
+
   // Selection state
   const [selectedCards, setSelectedCards] = useState([]);
   const [pdfOptions, setPdfOptions] = useState(null);
@@ -265,6 +269,17 @@ const Archive = ({ onLoadCard }) => {
 
     return matchesGlobal && matchesSpecific;
   });
+
+  // Pagination Logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredCards.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredCards.length / itemsPerPage);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   // Selection Logic
   const handleSelectCard = (id) => {
@@ -630,7 +645,7 @@ const Archive = ({ onLoadCard }) => {
       {viewMode === 'grid' ? (
         /* GRID VIEW */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCards.map((card) => {
+          {currentItems.map((card) => {
             const isSelected = selectedCards.includes(card.id);
             return (
             <div 
@@ -755,7 +770,7 @@ const Archive = ({ onLoadCard }) => {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {filteredCards.map((card) => {
+                {currentItems.map((card) => {
                   const isSelected = selectedCards.includes(card.id);
                   return (
                   <tr key={card.id} className={`group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => handleEditCard(card)}>
@@ -810,6 +825,77 @@ const Archive = ({ onLoadCard }) => {
                 );})}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6 mt-4 rounded-md shadow-sm">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              Precedente
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              Successivo
+            </button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-medium">{filteredCards.length}</span> risultati
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                >
+                  <span className="sr-only">Precedente</span>
+                  &larr;
+                </button>
+                {/* Page Numbers */}
+                {[...Array(totalPages)].map((_, i) => {
+                    // Show max 5 pages logic or simple list if small
+                    if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
+                      if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
+                      return null;
+                    }
+                    return (
+                      <button
+                          key={i}
+                          onClick={() => setCurrentPage(i + 1)}
+                          aria-current={currentPage === i + 1 ? 'page' : undefined}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                              currentPage === i + 1
+                                  ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
+                                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                          }`}
+                      >
+                          {i + 1}
+                      </button>
+                    );
+                })}
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                >
+                  <span className="sr-only">Successivo</span>
+                  &rarr;
+                </button>
+              </nav>
+            </div>
           </div>
         </div>
       )}
