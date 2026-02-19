@@ -789,7 +789,7 @@ const Archive = ({ onLoadCard }) => {
             return (
             <div 
               key={card.id} 
-              className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-all relative group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isInCrm ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-white dark:bg-gray-800'}`}
+              className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-all relative group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'}`}
             >
               {/* Checkbox for Grid View */}
               <div className="absolute top-4 left-4 z-10">
@@ -922,7 +922,7 @@ const Archive = ({ onLoadCard }) => {
                   const isSelected = selectedCards.includes(card.id);
                   const isInCrm = crmCardIds.has(card.id);
                   return (
-                  <tr key={card.id} className={`group transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-indigo-50 dark:bg-indigo-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`} onClick={() => handleEditCard(card)}>
+                  <tr key={card.id} className={`group transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`} onClick={() => handleEditCard(card)}>
                     <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
@@ -933,7 +933,18 @@ const Archive = ({ onLoadCard }) => {
                     </td>
                     {archiveOptions.created_at && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(card.created_at).toLocaleDateString()}</td>}
                     {archiveOptions.updated_at && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.updated_at ? new Date(card.updated_at).toLocaleDateString() : '-'}</td>}
-                    {archiveOptions.business_name && <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{card.business_name}</td>}
+                    {archiveOptions.business_name && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="flex items-center gap-2">
+                          <span>{card.business_name}</span>
+                          {isInCrm && (
+                            <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-yellow-300 text-yellow-900">
+                              In CRM
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    )}
                     {archiveOptions.full_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.full_name}</td>}
                     {archiveOptions.piva && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.piva}</td>}
                     {archiveOptions.address && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.address}</td>}
@@ -945,7 +956,7 @@ const Archive = ({ onLoadCard }) => {
                     {archiveOptions.availability && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.availability}</td>}
                     {archiveOptions.assigned_consultant && <td className={`px-6 py-4 whitespace-nowrap text-sm ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>{card.assigned_consultant || 'DA ASSEGNARE'}</td>}
                     {archiveOptions.operator_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.operator_name}</td>}
-                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-indigo-50 dark:bg-indigo-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
+                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
                         {card.has_external_image && (
                           <button 
@@ -957,14 +968,6 @@ const Archive = ({ onLoadCard }) => {
                           </button>
                         )}
                         <button 
-                          onClick={(e) => { e.stopPropagation(); moveCardToCRM(card.id); }}
-                          disabled={isInCrm}
-                          className={` ${isInCrm ? 'text-gray-400 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
-                          title={isInCrm ? 'Già nel CRM' : 'Sposta nel CRM'}
-                        >
-                          <ArrowRight className="h-4 w-4" />
-                        </button>
-                         <button 
                           onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
                           className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
                         >
