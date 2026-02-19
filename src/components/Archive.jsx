@@ -155,6 +155,25 @@ const Archive = ({ onLoadCard }) => {
     fetchConsultants();
     fetchSettings();
     fetchCrmLeads();
+    try {
+      const saved = localStorage.getItem('archiveFilters');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setFilters(parsed);
+      }
+      const savedView = localStorage.getItem('archiveViewMode');
+      if (savedView === 'grid' || savedView === 'list') setViewMode(savedView);
+      const savedPage = localStorage.getItem('archiveCurrentPage');
+      if (savedPage) {
+        const p = parseInt(savedPage, 10);
+        if (!isNaN(p) && p > 0) setCurrentPage(p);
+      }
+      const savedSelection = localStorage.getItem('archiveSelectedCards');
+      if (savedSelection) {
+        const arr = JSON.parse(savedSelection);
+        if (Array.isArray(arr)) setSelectedCards(arr);
+      }
+    } catch (e) {}
   }, []);
 
   useEffect(() => {
@@ -167,6 +186,10 @@ const Archive = ({ onLoadCard }) => {
         assignedConsultant: getUnique('assigned_consultant'),
         operatorName: getUnique('operator_name')
       });
+      try {
+        // sanitize selection to only existing card IDs
+        setSelectedCards(prev => prev.filter(id => cards.some(c => c.id === id)));
+      } catch (e) {}
     }
   }, [cards]);
 
@@ -228,6 +251,30 @@ const Archive = ({ onLoadCard }) => {
       console.error('Error fetching consultants:', error);
     }
   };
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('archiveFilters', JSON.stringify(filters));
+    } catch (e) {}
+  }, [filters]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('archiveViewMode', viewMode);
+    } catch (e) {}
+  }, [viewMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('archiveCurrentPage', String(currentPage));
+    } catch (e) {}
+  }, [currentPage]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('archiveSelectedCards', JSON.stringify(selectedCards));
+    } catch (e) {}
+  }, [selectedCards]);
 
   const deleteCard = async (id, e) => {
     e.stopPropagation(); // Prevent card click
@@ -459,7 +506,7 @@ const Archive = ({ onLoadCard }) => {
         <span className="truncate">{selected.length ? `${selected.length} selezionati` : label}</span>
         <Filter className="h-3 w-3 text-gray-400" />
       </div>
-      <div className="hidden group-hover:block absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+      <div className="hidden group-hover:block absolute z-10 w-full top-full left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
         {options.map(option => (
           <label key={option} className="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
             <input
@@ -561,6 +608,26 @@ const Archive = ({ onLoadCard }) => {
         >
           <Filter className="h-4 w-4" />
           <span className="hidden sm:inline">Filtri</span>
+        </button>
+        <button
+          onClick={() => {
+            setFilters({
+              globalSearch: '',
+              businessName: '',
+              fullName: '',
+              address: '',
+              piva: '',
+              city: [],
+              province: [],
+              mainInterest: [],
+              assignedConsultant: [],
+              operatorName: []
+            });
+            try { localStorage.removeItem('archiveFilters'); } catch (e) {}
+          }}
+          className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+        >
+          Reset Filtri
         </button>
 
         <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-1 border border-gray-200 dark:border-gray-600">
