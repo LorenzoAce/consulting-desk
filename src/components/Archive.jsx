@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search, Calendar, User, Building, Trash2, Pencil, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X } from 'lucide-react';
+import { Search, Calendar, User, Building, Trash2, Pencil, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X, ArrowRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getApiUrl } from '../utils/api';
@@ -16,6 +16,7 @@ const Archive = ({ onLoadCard }) => {
   // Selection state
   const [selectedCards, setSelectedCards] = useState([]);
   const [pdfOptions, setPdfOptions] = useState(null);
+  const [crmCardIds, setCrmCardIds] = useState(new Set());
   
   // Image Modal State
   const [showImageModal, setShowImageModal] = useState(false);
@@ -153,6 +154,7 @@ const Archive = ({ onLoadCard }) => {
     fetchCards();
     fetchConsultants();
     fetchSettings();
+    fetchCrmLeads();
   }, []);
 
   useEffect(() => {
@@ -180,6 +182,20 @@ const Archive = ({ onLoadCard }) => {
       console.error('Error fetching cards:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCrmLeads = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/crm/leads`);
+      if (response.ok) {
+        const data = await response.json();
+        const ids = new Set(data.map(l => l.card_id).filter(Boolean));
+        setCrmCardIds(ids);
+      }
+    } catch (error) {
+      console.error('Error fetching CRM leads:', error);
     }
   };
 
@@ -350,6 +366,49 @@ const Archive = ({ onLoadCard }) => {
     }
   };
 
+  const moveSelectedToCRM = async () => {
+    if (selectedCards.length === 0) return;
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/crm/import-archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardIds: selectedCards })
+      });
+      if (response.ok) {
+        setCrmCardIds(prev => new Set([...prev, ...selectedCards]));
+        alert('Schede selezionate spostate nel CRM');
+      } else {
+        const errText = await response.text();
+        alert('Errore nello spostamento nel CRM: ' + errText);
+      }
+    } catch (error) {
+      console.error('Error moving selected cards to CRM:', error);
+      alert('Errore di connessione');
+    }
+  };
+
+  const moveCardToCRM = async (cardId) => {
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/crm/import-archive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cardIds: [cardId] })
+      });
+      if (response.ok) {
+        setCrmCardIds(prev => new Set([...prev, cardId]));
+        alert('Scheda spostata nel CRM');
+      } else {
+        const errText = await response.text();
+        alert('Errore nello spostamento nel CRM: ' + errText);
+      }
+    } catch (error) {
+      console.error('Error moving card to CRM:', error);
+      alert('Errore di connessione');
+    }
+  };
+
   const exportToExcel = () => {
     const stats = {};
     
@@ -459,6 +518,14 @@ const Archive = ({ onLoadCard }) => {
             >
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">Assegna</span>
+            </button>
+
+            <button
+              onClick={moveSelectedToCRM}
+              className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-indigo-600 text-white border-transparent hover:bg-indigo-700 flex items-center gap-2"
+            >
+              <ArrowRight className="h-4 w-4" />
+              <span className="hidden sm:inline">Sposta in CRM</span>
             </button>
 
             <button
@@ -718,10 +785,11 @@ const Archive = ({ onLoadCard }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentItems.map((card) => {
             const isSelected = selectedCards.includes(card.id);
+            const isInCrm = crmCardIds.has(card.id);
             return (
             <div 
               key={card.id} 
-              className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-all relative group ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+              className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-all relative group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isInCrm ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-white dark:bg-gray-800'}`}
             >
               {/* Checkbox for Grid View */}
               <div className="absolute top-4 left-4 z-10">
@@ -776,6 +844,15 @@ const Archive = ({ onLoadCard }) => {
               </div>
 
               <div className="flex gap-2">
+                <button 
+                  onClick={() => moveCardToCRM(card.id)}
+                  disabled={isInCrm}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors text-sm font-medium ${isInCrm ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40'}`}
+                  title={isInCrm ? 'Già presente nel CRM' : 'Sposta nel CRM'}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  {isInCrm ? 'In CRM' : 'Sposta nel CRM'}
+                </button>
                 <button 
                   onClick={() => handleEditCard(card)}
                   className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
@@ -843,8 +920,9 @@ const Archive = ({ onLoadCard }) => {
               <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {currentItems.map((card) => {
                   const isSelected = selectedCards.includes(card.id);
+                  const isInCrm = crmCardIds.has(card.id);
                   return (
-                  <tr key={card.id} className={`group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''}`} onClick={() => handleEditCard(card)}>
+                  <tr key={card.id} className={`group transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-indigo-50 dark:bg-indigo-900/10' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`} onClick={() => handleEditCard(card)}>
                     <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
@@ -867,7 +945,7 @@ const Archive = ({ onLoadCard }) => {
                     {archiveOptions.availability && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.availability}</td>}
                     {archiveOptions.assigned_consultant && <td className={`px-6 py-4 whitespace-nowrap text-sm ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>{card.assigned_consultant || 'DA ASSEGNARE'}</td>}
                     {archiveOptions.operator_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.operator_name}</td>}
-                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
+                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-indigo-50 dark:bg-indigo-900/10' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
                       <div className="flex justify-end gap-2">
                         {card.has_external_image && (
                           <button 
@@ -878,6 +956,14 @@ const Archive = ({ onLoadCard }) => {
                             <Image className="h-4 w-4" />
                           </button>
                         )}
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); moveCardToCRM(card.id); }}
+                          disabled={isInCrm}
+                          className={` ${isInCrm ? 'text-gray-400 cursor-not-allowed' : 'text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'}`}
+                          title={isInCrm ? 'Già nel CRM' : 'Sposta nel CRM'}
+                        >
+                          <ArrowRight className="h-4 w-4" />
+                        </button>
                          <button 
                           onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
                           className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
