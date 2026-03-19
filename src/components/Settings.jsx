@@ -75,10 +75,7 @@ const Settings = () => {
   });
   const [marketingSettings, setMarketingSettings] = useState({
     email_provider: 'smtp',
-    smtp_host: '',
-    smtp_port: 587,
-    smtp_user: '',
-    smtp_pass: '',
+    smtp_accounts: [], // [{ id, host, port, user, pass, label }]
     sms_provider: 'mock',
     sms_api_key: ''
   });
@@ -173,6 +170,39 @@ const Settings = () => {
     setMarketingSettings(prev => ({
       ...prev,
       [field]: value
+    }));
+  };
+
+  const handleAddSmtpAccount = () => {
+    const newAccount = {
+      id: `smtp_${Date.now()}`,
+      label: 'Nuovo Account SMTP',
+      host: '',
+      port: 587,
+      user: '',
+      pass: ''
+    };
+    setMarketingSettings(prev => ({
+      ...prev,
+      smtp_accounts: [...(prev.smtp_accounts || []), newAccount]
+    }));
+  };
+
+  const handleRemoveSmtpAccount = (id) => {
+    if (window.confirm('Rimuovere questo account SMTP?')) {
+      setMarketingSettings(prev => ({
+        ...prev,
+        smtp_accounts: prev.smtp_accounts.filter(acc => acc.id !== id)
+      }));
+    }
+  };
+
+  const handleSmtpAccountChange = (id, field, value) => {
+    setMarketingSettings(prev => ({
+      ...prev,
+      smtp_accounts: prev.smtp_accounts.map(acc => 
+        acc.id === id ? { ...acc, [field]: value } : acc
+      )
     }));
   };
 
@@ -328,48 +358,86 @@ const Settings = () => {
           {activeTab === 'marketing' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                  <Mail className="h-5 w-5 text-blue-500" />
-                  Configurazione Email (SMTP)
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Server SMTP</label>
-                    <input 
-                      type="text"
-                      value={marketingSettings.smtp_host}
-                      onChange={(e) => handleMarketingSettingChange('smtp_host', e.target.value)}
-                      placeholder="es. smtp.gmail.com"
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Porta</label>
-                    <input 
-                      type="number"
-                      value={marketingSettings.smtp_port}
-                      onChange={(e) => handleMarketingSettingChange('smtp_port', parseInt(e.target.value))}
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Utente / Email</label>
-                    <input 
-                      type="text"
-                      value={marketingSettings.smtp_user}
-                      onChange={(e) => handleMarketingSettingChange('smtp_user', e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Password / App Key</label>
-                    <input 
-                      type="password"
-                      value={marketingSettings.smtp_pass}
-                      onChange={(e) => handleMarketingSettingChange('smtp_pass', e.target.value)}
-                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                    />
-                  </div>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <Mail className="h-5 w-5 text-blue-500" />
+                    Configurazione Email (SMTP)
+                  </h3>
+                  <button
+                    onClick={handleAddSmtpAccount}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Aggiungi SMTP
+                  </button>
+                </div>
+                
+                <div className="space-y-6">
+                  {(marketingSettings.smtp_accounts || []).map((account) => (
+                    <div key={account.id} className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-4 group relative">
+                      <button 
+                        onClick={() => handleRemoveSmtpAccount(account.id)}
+                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nome Account (es. Info Azienda)</label>
+                          <input 
+                            type="text"
+                            value={account.label}
+                            onChange={(e) => handleSmtpAccountChange(account.id, 'label', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-800 dark:text-white text-sm outline-none"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Server SMTP</label>
+                          <input 
+                            type="text"
+                            value={account.host}
+                            onChange={(e) => handleSmtpAccountChange(account.id, 'host', e.target.value)}
+                            placeholder="smtp.gmail.com"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-800 dark:text-white text-sm outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Porta</label>
+                          <input 
+                            type="number"
+                            value={account.port}
+                            onChange={(e) => handleSmtpAccountChange(account.id, 'port', parseInt(e.target.value))}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-800 dark:text-white text-sm outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Utente / Email</label>
+                          <input 
+                            type="text"
+                            value={account.user}
+                            onChange={(e) => handleSmtpAccountChange(account.id, 'user', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-800 dark:text-white text-sm outline-none"
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Password / App Key</label>
+                          <input 
+                            type="password"
+                            value={account.pass}
+                            onChange={(e) => handleSmtpAccountChange(account.id, 'pass', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-800 dark:text-white text-sm outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!marketingSettings.smtp_accounts || marketingSettings.smtp_accounts.length === 0) && (
+                    <div className="text-center py-8 text-gray-400 text-sm border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl">
+                      Nessun account SMTP configurato. Clicca su "Aggiungi SMTP" per iniziare.
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -79,7 +79,7 @@ const Marketing = () => {
   const [campaignType, setCampaignType] = useState('email'); // 'email' | 'sms' | 'whatsapp'
   const [campaignName, setCampaignName] = useState('');
   const [campaignFolder, setCampaignFolder] = useState('');
-  const [configSubView, setConfigSubView] = useState('main'); // 'main' | 'recipients' | 'content'
+  const [configSubView, setConfigSubView] = useState('main'); // 'main' | 'recipients' | 'content' | 'subject' | 'sender'
   
   const [leads, setLeads] = useState([]);
   const [dataSource, setDataSource] = useState('crm'); // 'crm' | 'archive'
@@ -89,6 +89,7 @@ const Marketing = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [crmStatuses, setCrmStatuses] = useState([]);
+  const [smtpAccounts, setSmtpAccounts] = useState([]);
   
   // Message content
   const [subject, setSubject] = useState('');
@@ -123,6 +124,9 @@ const Marketing = () => {
         const data = await response.json();
         if (data.crm_statuses) {
           setCrmStatuses(data.crm_statuses);
+        }
+        if (data.marketing_settings && data.marketing_settings.smtp_accounts) {
+          setSmtpAccounts(data.marketing_settings.smtp_accounts);
         }
       }
     } catch (error) {
@@ -251,6 +255,39 @@ const Marketing = () => {
       alert('Errore di connessione: ' + err.message);
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const payload = {
+        name: campaignName,
+        folder: campaignFolder,
+        type: campaignType,
+        sender: sender,
+        recipients: Array.from(selectedLeads),
+        subject: subject,
+        message: message,
+        status: 'Bozza'
+      };
+
+      const res = await fetch(`${apiUrl}/api/marketing/campaigns`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert('Bozza salvata con successo!');
+        setCampaignView('list');
+      } else {
+        const error = await res.json();
+        alert('Errore nel salvataggio della bozza: ' + (error.message || 'Errore sconosciuto'));
+      }
+    } catch (err) {
+      console.error('Error saving draft:', err);
+      alert('Errore di connessione durante il salvataggio della bozza.');
     }
   };
 
@@ -642,7 +679,7 @@ const Marketing = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <button
-                            onClick={() => { setCampaignView('list'); }}
+                            onClick={handleSaveDraft}
                             className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-bold uppercase tracking-tight hover:bg-gray-50 transition-all"
                           >
                             Salva Bozza
@@ -667,13 +704,18 @@ const Marketing = () => {
                             <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center shrink-0">
                               <Building className="h-6 w-6 text-purple-600" />
                             </div>
-                            <div>
+                            <div className="flex-1">
                               <h3 className="text-lg font-bold text-gray-900 dark:text-white">Mittente</h3>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">Chi invia questa campagna email?</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                {sender ? `Mittente selezionato: ${smtpAccounts.find(a => a.id === sender)?.label || sender}` : 'Chi invia questa campagna email?'}
+                              </p>
                             </div>
                           </div>
-                          <button className="px-6 py-2 border-2 border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-50 transition-all">
-                            Seleziona mittente
+                          <button 
+                            onClick={() => setConfigSubView('sender')}
+                            className="px-6 py-2 border-2 border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-50 transition-all"
+                          >
+                            {sender ? 'Cambia mittente' : 'Seleziona mittente'}
                           </button>
                         </div>
 
@@ -865,6 +907,48 @@ const Marketing = () => {
                         >
                           Salva Oggetto
                         </button>
+                      </div>
+                    </div>
+                  ) : configSubView === 'sender' ? (
+                    /* SENDER SUB-VIEW */
+                    <div className="max-w-2xl mx-auto py-12 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Seleziona Mittente</h3>
+                          <button 
+                            onClick={() => setConfigSubView('main')}
+                            className="text-sm font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tight"
+                          >
+                            Annulla
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {smtpAccounts.length > 0 ? (
+                            smtpAccounts.map((account) => (
+                              <button
+                                key={account.id}
+                                onClick={() => { setSender(account.id); setConfigSubView('main'); }}
+                                className={`w-full p-6 text-left rounded-2xl border-2 transition-all flex items-center justify-between group ${
+                                  sender === account.id 
+                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                                    : 'border-gray-100 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-800'
+                                }`}
+                              >
+                                <div>
+                                  <div className="font-bold text-gray-900 dark:text-white">{account.label}</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{account.user} ({account.host})</div>
+                                </div>
+                                {sender === account.id && <CheckCircle className="h-6 w-6 text-blue-500" />}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Nessun account SMTP configurato.</p>
+                              <p className="text-xs text-gray-400 mt-1">Vai in Impostazioni {'>'} Marketing per aggiungerne uno.</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ) : null}
