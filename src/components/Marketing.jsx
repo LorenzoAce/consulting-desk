@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2 } from 'lucide-react';
-import { getApiUrl } from '../utils/api';
+import { Send,import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building } from 'lucide-react';
 
 const Marketing = () => {
   const [leads, setLeads] = useState([]);
+  const [dataSource, setDataSource] = useState('crm'); // 'crm' | 'archive'
   const [selectedLeads, setSelectedLeads] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
@@ -23,16 +23,26 @@ const Marketing = () => {
 
   useEffect(() => {
     fetchLeads();
-  }, []);
+  }, [dataSource]);
 
   const fetchLeads = async () => {
     setLoading(true);
+    setSelectedLeads(new Set());
     try {
       const apiUrl = getApiUrl();
-      const res = await fetch(`${apiUrl}/api/crm/leads`);
+      const endpoint = dataSource === 'crm' ? '/api/crm/leads' : '/api/cards';
+      const res = await fetch(`${apiUrl}${endpoint}`);
       if (res.ok) {
         const data = await res.json();
-        setLeads(data);
+        // Normalizza i dati dell'archivio se necessario
+        const normalizedData = data.map(item => ({
+          ...item,
+          contact_name: item.contact_name || item.full_name || '',
+          business_name: item.business_name || '',
+          email: item.email || '',
+          phone: item.phone || ''
+        }));
+        setLeads(normalizedData);
       }
     } catch (err) {
       console.error('Error fetching leads:', err);
@@ -130,22 +140,22 @@ const Marketing = () => {
   };
 
   return (
-    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
+    <div className="w-full h-full py-8">
+      <div className="px-4 sm:px-6 lg:px-8 mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Send className="h-6 w-6 text-blue-600" />
           Marketing
         </h1>
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Invia comunicazioni massive via Email o SMS ai tuoi contatti CRM.
+          Invia comunicazioni massive via Email o SMS ai tuoi contatti.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Message Composition */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Componi Messaggio</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border-t border-gray-200 dark:border-gray-700 h-[calc(100vh-12rem)]">
+        {/* Left Column: Message Composition (4/12) */}
+        <div className="lg:col-span-4 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 p-6 overflow-y-auto">
+          <div className="space-y-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">1. Componi Messaggio</h2>
             
             <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-md mb-6">
               <button
@@ -185,7 +195,7 @@ const Marketing = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Messaggio</label>
                 <textarea
-                  rows={8}
+                  rows={12}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
@@ -218,61 +228,73 @@ const Marketing = () => {
                 )}
               </button>
             </div>
-          </div>
 
-          {/* Stats Summary */}
-          {(stats.sent > 0 || stats.failed > 0) && (
-            <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Ultimo Invio</h3>
-              <div className="grid grid-cols-2 gap-4 text-center">
-                <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-md">
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.sent}</p>
-                  <p className="text-xs text-green-700 dark:text-green-300">Inviati</p>
-                </div>
-                <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-md">
-                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.failed}</p>
-                  <p className="text-xs text-red-700 dark:text-red-300">Falliti</p>
+            {/* Stats Summary */}
+            {(stats.sent > 0 || stats.failed > 0) && (
+              <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4 border border-gray-200 dark:border-gray-700 mt-6">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Riepilogo Ultimo Invio</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-md">
+                    <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.sent}</p>
+                    <p className="text-[10px] text-green-700 dark:text-green-300 uppercase font-bold tracking-wider">Inviati</p>
+                  </div>
+                  <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-md">
+                    <p className="text-xl font-bold text-red-600 dark:text-red-400">{stats.failed}</p>
+                    <p className="text-[10px] text-red-700 dark:text-red-300 uppercase font-bold tracking-wider">Falliti</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Right Column: Recipients Selection */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-gray-800 shadow rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Seleziona Destinatari</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {selectedLeads.size} selezionati
-                  </span>
-                  <button 
-                    onClick={toggleSelectAll}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"
-                  >
-                    {selectedLeads.size === filteredLeads.length ? 'Deseleziona tutti' : 'Seleziona tutti filtrati'}
-                  </button>
-                </div>
+        {/* Right Column: Recipients Selection (8/12) */}
+        <div className="lg:col-span-8 bg-gray-50 dark:bg-gray-900/50 flex flex-col h-full">
+          <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">2. Seleziona Destinatari</h2>
+              
+              {/* Data Source Selector */}
+              <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <button
+                  onClick={() => setDataSource('crm')}
+                  className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wider ${
+                    dataSource === 'crm' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                >
+                  <Building className="h-3.5 w-3.5" />
+                  Da CRM
+                </button>
+                <button
+                  onClick={() => setDataSource('archive')}
+                  className={`flex items-center gap-2 px-4 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wider ${
+                    dataSource === 'archive' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                  }`}
+                >
+                  <FolderArchive className="h-3.5 w-3.5" />
+                  Da Archivio
+                </button>
               </div>
+            </div>
 
-              {/* Filters */}
-              <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Cerca per nome, email o telefono..."
-                    className="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
+            {/* Filters & Bulk Selection */}
+            <div className="mt-6 flex flex-col sm:flex-row items-center gap-4">
+              <div className="relative flex-1 w-full">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Cerca per nome, email o telefono..."
+                  className="block w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              
+              {dataSource === 'crm' && (
                 <select
-                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full sm:w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                 >
@@ -283,82 +305,102 @@ const Marketing = () => {
                   <option value="client">Cliente</option>
                   <option value="closed">Chiuso</option>
                 </select>
+              )}
+
+              <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 bg-blue-50 dark:bg-blue-900/20 px-4 py-2 rounded-md border border-blue-100 dark:border-blue-800">
+                <span className="text-sm font-bold text-blue-700 dark:text-blue-300">
+                  {selectedLeads.size} selezionati
+                </span>
+                <div className="h-4 w-px bg-blue-200 dark:bg-blue-800"></div>
+                <button 
+                  onClick={toggleSelectAll}
+                  className="text-sm font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 uppercase tracking-tight"
+                >
+                  {selectedLeads.size === filteredLeads.length ? 'Deseleziona' : 'Seleziona Tutti'}
+                </button>
               </div>
             </div>
+          </div>
 
-            <div className="overflow-x-auto max-h-[600px]">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
+          <div className="flex-1 overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+                <tr>
+                  <th className="px-6 py-3 text-left w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Contatto</th>
+                  <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                    {activeTab === 'email' ? 'Email' : 'Telefono'}
+                  </th>
+                  {dataSource === 'crm' && (
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Stato</th>
+                  )}
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {loading ? (
                   <tr>
-                    <th className="px-6 py-3 text-left w-10">
-                      <input
-                        type="checkbox"
-                        checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
-                        onChange={toggleSelectAll}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                      />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contatto</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                      {activeTab === 'email' ? 'Email' : 'Telefono'}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stato</th>
+                    <td colSpan={dataSource === 'crm' ? 4 : 3} className="px-6 py-24 text-center">
+                      <Loader2 className="h-10 w-10 animate-spin mx-auto text-blue-600 mb-4" />
+                      <p className="text-base font-medium text-gray-500 dark:text-gray-400">Caricamento in corso...</p>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {loading ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center">
-                        <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-                        <p className="mt-2 text-sm text-gray-500">Caricamento contatti...</p>
+                ) : filteredLeads.length === 0 ? (
+                  <tr>
+                    <td colSpan={dataSource === 'crm' ? 4 : 3} className="px-6 py-24 text-center">
+                      <div className="bg-gray-50 dark:bg-gray-700/20 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
+                        <Users className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-base font-medium text-gray-500 dark:text-gray-400">Nessun contatto trovato con i filtri correnti.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredLeads.map((lead) => (
+                    <tr 
+                      key={lead.id} 
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors border-l-4 ${selectedLeads.has(lead.id) ? 'bg-blue-50/50 dark:bg-blue-900/10 border-blue-500' : 'border-transparent'}`}
+                      onClick={() => toggleLeadSelection(lead.id)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedLeads.has(lead.id)}
+                          onChange={() => {}} // Handled by tr onClick
+                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                        />
                       </td>
-                    </tr>
-                  ) : filteredLeads.length === 0 ? (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center">
-                        <p className="text-sm text-gray-500">Nessun contatto trovato con i filtri correnti.</p>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-bold text-gray-900 dark:text-white">
+                          {lead.contact_name}
+                        </div>
+                        {lead.business_name && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-tighter">{lead.business_name}</div>
+                        )}
                       </td>
-                    </tr>
-                  ) : (
-                    filteredLeads.map((lead) => (
-                      <tr 
-                        key={lead.id} 
-                        className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${selectedLeads.has(lead.id) ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''}`}
-                        onClick={() => toggleLeadSelection(lead.id)}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <input
-                            type="checkbox"
-                            checked={selectedLeads.has(lead.id)}
-                            onChange={() => {}} // Handled by tr onClick
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {lead.contact_name || lead.business_name}
-                          </div>
-                          {lead.contact_name && lead.business_name && (
-                            <div className="text-xs text-gray-500 dark:text-gray-400">{lead.business_name}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
+                          {activeTab === 'email' ? (
+                            <>
+                              <Mail className="h-3.5 w-3.5 text-gray-400" />
+                              {lead.email || <span className="italic text-gray-400">Nessuna email</span>}
+                            </>
+                          ) : (
+                            <>
+                              <MessageSquare className="h-3.5 w-3.5 text-gray-400" />
+                              {lead.phone || <span className="italic text-gray-400">Nessun telefono</span>}
+                            </>
                           )}
-                        </td>
+                        </div>
+                      </td>
+                      {dataSource === 'crm' && (
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                            {activeTab === 'email' ? (
-                              <>
-                                <Mail className="h-3 w-3 text-gray-400" />
-                                {lead.email || '-'}
-                              </>
-                            ) : (
-                              <>
-                                <MessageSquare className="h-3 w-3 text-gray-400" />
-                                {lead.phone || '-'}
-                              </>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          <span className={`px-2.5 py-0.5 inline-flex text-[10px] leading-5 font-bold uppercase tracking-wider rounded-full ${
                             lead.status === 'client' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
                             lead.status === 'interested' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
                             'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
@@ -366,12 +408,12 @@ const Marketing = () => {
                             {lead.status}
                           </span>
                         </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

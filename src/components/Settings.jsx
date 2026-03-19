@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Check, AlertTriangle, FileText, Save, GripVertical, Plus, Trash2 } from 'lucide-react';
+import { Upload, Check, AlertTriangle, FileText, Save, GripVertical, Plus, Trash2, Send, Mail, MessageSquare } from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
 const COLOR_OPTIONS = [
@@ -60,6 +60,15 @@ const Settings = () => {
     created_at: true,
     updated_at: true
   });
+  const [marketingSettings, setMarketingSettings] = useState({
+    email_provider: 'smtp',
+    smtp_host: '',
+    smtp_port: 587,
+    smtp_user: '',
+    smtp_pass: '',
+    sms_provider: 'mock',
+    sms_api_key: ''
+  });
   const [crmStatuses, setCrmStatuses] = useState([]);
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -81,6 +90,9 @@ const Settings = () => {
         }
         if (data.archive_options) {
             setArchiveOptions(data.archive_options);
+        }
+        if (data.marketing_settings) {
+            setMarketingSettings(data.marketing_settings);
         }
         if (data.crm_statuses && data.crm_statuses.length > 0) {
           setCrmStatuses(data.crm_statuses);
@@ -144,6 +156,13 @@ const Settings = () => {
     setCrmStatuses(newStatuses);
   };
 
+  const handleMarketingSettingChange = (field, value) => {
+    setMarketingSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const saveSettings = async () => {
     setIsSavingSettings(true);
     try {
@@ -158,6 +177,7 @@ const Settings = () => {
           crmOptions,
           crmStatuses,
           archiveOptions,
+          marketingSettings,
           logo,
           logoDimensions
         }),
@@ -497,6 +517,97 @@ const Settings = () => {
               Nessuno stato configurato. Aggiungine uno per iniziare.
             </div>
           )}
+        </div>
+        </div>
+      </div>
+
+      {/* Marketing Settings Section */}
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Send className="h-5 w-5 text-blue-500" />
+          Parametri di Invio Marketing
+        </h3>
+        
+        <div className="space-y-6">
+          {/* Email Settings */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <Mail className="h-4 w-4 text-gray-400" />
+              Configurazione Email (SMTP)
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Server SMTP</label>
+                <input 
+                  type="text"
+                  value={marketingSettings.smtp_host}
+                  onChange={(e) => handleMarketingSettingChange('smtp_host', e.target.value)}
+                  placeholder="es. smtp.gmail.com"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Porta</label>
+                <input 
+                  type="number"
+                  value={marketingSettings.smtp_port}
+                  onChange={(e) => handleMarketingSettingChange('smtp_port', parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Utente / Email</label>
+                <input 
+                  type="text"
+                  value={marketingSettings.smtp_user}
+                  onChange={(e) => handleMarketingSettingChange('smtp_user', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Password / App Key</label>
+                <input 
+                  type="password"
+                  value={marketingSettings.smtp_pass}
+                  onChange={(e) => handleMarketingSettingChange('smtp_pass', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+
+          <hr className="border-gray-200 dark:border-gray-700" />
+
+          {/* SMS Settings */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-gray-400" />
+              Configurazione SMS
+            </h4>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Provider SMS</label>
+                <select 
+                  value={marketingSettings.sms_provider}
+                  onChange={(e) => handleMarketingSettingChange('sms_provider', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="mock">Simulazione (Test)</option>
+                  <option value="twilio">Twilio</option>
+                  <option value="skebby">Skebby</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">API Key / Auth Token</label>
+                <input 
+                  type="password"
+                  value={marketingSettings.sms_api_key}
+                  onChange={(e) => handleMarketingSettingChange('sms_api_key', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

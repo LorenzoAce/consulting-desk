@@ -308,6 +308,15 @@ app.get('/api/settings', async (req, res) => {
             created_at: true,
             updated_at: true
         },
+        marketing_settings: {
+            email_provider: 'smtp',
+            smtp_host: '',
+            smtp_port: 587,
+            smtp_user: '',
+            smtp_pass: '',
+            sms_provider: 'mock',
+            sms_api_key: ''
+        },
         crm_statuses: [
           { id: 'new', label: 'Nuovo', color: 'green' },
           { id: 'contacted', label: 'Contattato', color: 'blue' },
@@ -327,30 +336,32 @@ app.get('/api/settings', async (req, res) => {
 app.put('/api/settings', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { pdfOptions, crmOptions, crmStatuses, archiveOptions, logo, logoDimensions } = req.body;
+    const { pdfOptions, crmOptions, crmStatuses, archiveOptions, marketingSettings, logo, logoDimensions } = req.body;
     
     const pdfJson = pdfOptions ? JSON.stringify(pdfOptions) : null;
     const crmJson = crmOptions ? JSON.stringify(crmOptions) : null;
     const statusesJson = crmStatuses ? JSON.stringify(crmStatuses) : null;
     const archiveJson = archiveOptions ? JSON.stringify(archiveOptions) : null;
+    const marketingJson = marketingSettings ? JSON.stringify(marketingSettings) : null;
     const logoDimsJson = logoDimensions ? JSON.stringify(logoDimensions) : null;
 
     const query = `
-      INSERT INTO app_settings (id, pdf_options, crm_options, crm_statuses, archive_options, logo, logo_dimensions, updated_at)
-      VALUES (1, COALESCE($1, '{}'::jsonb), COALESCE($2, '{}'::jsonb), COALESCE($3, '[]'::jsonb), COALESCE($4, '{}'::jsonb), $5, $6::jsonb, NOW())
+      INSERT INTO app_settings (id, pdf_options, crm_options, crm_statuses, archive_options, marketing_settings, logo, logo_dimensions, updated_at)
+      VALUES (1, COALESCE($1, '{}'::jsonb), COALESCE($2, '{}'::jsonb), COALESCE($3, '[]'::jsonb), COALESCE($4, '{}'::jsonb), COALESCE($5, '{}'::jsonb), $6, $7::jsonb, NOW())
       ON CONFLICT (id) DO UPDATE
       SET 
         pdf_options = CASE WHEN $1::jsonb IS NOT NULL THEN $1::jsonb ELSE app_settings.pdf_options END,
         crm_options = CASE WHEN $2::jsonb IS NOT NULL THEN $2::jsonb ELSE app_settings.crm_options END,
         crm_statuses = CASE WHEN $3::jsonb IS NOT NULL THEN $3::jsonb ELSE app_settings.crm_statuses END,
         archive_options = CASE WHEN $4::jsonb IS NOT NULL THEN $4::jsonb ELSE app_settings.archive_options END,
-        logo = CASE WHEN $5 IS NOT NULL THEN $5 ELSE app_settings.logo END,
-        logo_dimensions = CASE WHEN $6::jsonb IS NOT NULL THEN $6::jsonb ELSE app_settings.logo_dimensions END,
+        marketing_settings = CASE WHEN $5::jsonb IS NOT NULL THEN $5::jsonb ELSE app_settings.marketing_settings END,
+        logo = CASE WHEN $6 IS NOT NULL THEN $6 ELSE app_settings.logo END,
+        logo_dimensions = CASE WHEN $7::jsonb IS NOT NULL THEN $7::jsonb ELSE app_settings.logo_dimensions END,
         updated_at = NOW()
       RETURNING *;
     `;
 
-    const result = await client.query(query, [pdfJson, crmJson, statusesJson, archiveJson, logo, logoDimsJson]);
+    const result = await client.query(query, [pdfJson, crmJson, statusesJson, archiveJson, marketingJson, logo, logoDimsJson]);
     res.json(result.rows[0]);
   } catch (err) {
     console.error('Error updating settings:', err);
