@@ -13,6 +13,14 @@ const COLOR_OPTIONS = [
   { value: 'gray', label: 'Grigio', classes: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' },
 ];
 
+const DEFAULT_CRM_STATUSES = [
+  { id: 'new', label: 'Nuovo', color: 'green' },
+  { id: 'contacted', label: 'Contattato', color: 'blue' },
+  { id: 'interested', label: 'Interessato', color: 'yellow' },
+  { id: 'client', label: 'Cliente', color: 'purple' },
+  { id: 'closed', label: 'Chiuso', color: 'red' }
+];
+
 const Settings = () => {
   const [logo, setLogo] = useState(null);
   const [logoDimensions, setLogoDimensions] = useState(null);
@@ -509,7 +517,8 @@ const Settings = () => {
                   </button>
                 </div>
               </div>
-            ))}
+            ))
+          }
           </div>
           
           {crmStatuses.length === 0 && (
@@ -517,7 +526,6 @@ const Settings = () => {
               Nessuno stato configurato. Aggiungine uno per iniziare.
             </div>
           )}
-        </div>
         </div>
       </div>
 
