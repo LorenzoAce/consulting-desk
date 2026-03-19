@@ -742,6 +742,51 @@ app.post('/api/crm/leads', async (req, res) => {
   }
 });
 
+// Marketing Endpoints
+app.post('/api/marketing/send', async (req, res) => {
+  const { type, recipients, subject, message } = req.body;
+  
+  if (!recipients || !Array.isArray(recipients)) {
+    return res.status(400).json({ error: 'No recipients provided' });
+  }
+
+  try {
+    // In a real application, you would integrate with an Email service (like SendGrid, Mailgun)
+    // or an SMS service (like Twilio, Vonage).
+    // For now, we'll simulate the sending process and log it.
+    
+    console.log(`[MARKETING] Sending ${type.toUpperCase()} campaign:`);
+    if (type === 'email') console.log(`Subject: ${subject}`);
+    console.log(`Message: ${message}`);
+    console.log(`To ${recipients.length} recipients.`);
+
+    // Simulate some success and potential failures
+    let sent = 0;
+    let failed = 0;
+
+    recipients.forEach(recipient => {
+      const contactInfo = type === 'email' ? recipient.email : recipient.phone;
+      if (contactInfo) {
+        sent++;
+        // console.log(`- Sent to: ${recipient.name} (${contactInfo})`);
+      } else {
+        failed++;
+        // console.log(`- Failed (No ${type} info): ${recipient.name}`);
+      }
+    });
+
+    res.json({ 
+      success: true, 
+      sent, 
+      failed,
+      message: `Simulated sending to ${sent} recipients, ${failed} failed.`
+    });
+  } catch (err) {
+    console.error('Error in marketing send:', err);
+    res.status(500).json({ error: 'Failed to send marketing campaign' });
+  }
+});
+
 // Start the server only if run directly (not imported by Vercel)
 if (require.main === module) {
   app.listen(PORT, () => {

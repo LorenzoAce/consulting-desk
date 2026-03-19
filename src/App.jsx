@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ConsultingForm from './components/ConsultingForm';
 import Archive from './components/Archive';
 import CRM from './components/CRM';
+import Marketing from './components/Marketing';
 import Settings from './components/Settings';
 import ConsultantsManager from './components/ConsultantsManager';
 import Layout from './components/Layout';
@@ -54,6 +55,8 @@ function App() {
         return <Archive onLoadCard={(card) => handleLoadCard(card, 'archive')} />;
       case 'crm':
         return <CRM onLoadCard={(card) => handleLoadCard(card, 'crm')} onNavigate={handleNavigate} />;
+      case 'marketing':
+        return <Marketing />;
       case 'consultants':
         return <ConsultantsManager />;
       case 'settings':
