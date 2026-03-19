@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building, FileText, Layout, Plus, FolderPlus, Calendar, Hash, BarChart2, MousePointer2, UserMinus, RefreshCw, ChevronLeft, ChevronRight, MoreVertical, Pencil } from 'lucide-react';
+import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building, FileText, Layout, Plus, FolderPlus, Calendar, Hash, BarChart2, MousePointer2, UserMinus, RefreshCw, ChevronLeft, ChevronRight, MoreVertical, Pencil, Image as ImageIcon, Type, Columns, Footprints, Save, Eye, Palette, Trash } from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
 const COLOR_OPTIONS = [
@@ -32,7 +32,21 @@ const Marketing = () => {
   const [crmStatuses, setCrmStatuses] = useState([]);
   const [smtpAccounts, setSmtpAccounts] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  const [templateView, setTemplateView] = useState('list'); // 'list' | 'editor'
+  const [currentTemplate, setCurrentTemplate] = useState({
+    id: null,
+    name: '',
+    type: 'email',
+    blocks: [], // { id, type, content }
+    settings: {
+      fontFamily: 'Inter, sans-serif',
+      backgroundColor: '#f9fafb',
+      contentWidth: '600px'
+    }
+  });
   const [editingId, setEditingId] = useState(null);
+  const [editingBlockId, setEditingBlockId] = useState(null);
   
   // Message content
   const [subject, setSubject] = useState('');
@@ -54,8 +68,83 @@ const Marketing = () => {
     fetchSettings();
     initializeMarketing();
     fetchCampaigns();
+    fetchTemplates();
     setCurrentPage(1); // Reset page on data source change
   }, [dataSource]);
+
+  const fetchTemplates = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/marketing/templates`);
+      if (res.ok) {
+        const data = await res.json();
+        setTemplates(data);
+      }
+    } catch (err) {
+      console.error('Error fetching templates:', err);
+    }
+  };
+
+  const handleAddBlock = (type) => {
+    const newBlock = {
+      id: `block_${Date.now()}`,
+      type: type,
+      content: getDefaultContent(type)
+    };
+    setCurrentTemplate(prev => ({
+      ...prev,
+      blocks: [...prev.blocks, newBlock]
+    }));
+  };
+
+  const getDefaultContent = (type) => {
+    switch (type) {
+      case 'header': return { logoUrl: '', title: 'Intestazione' };
+      case 'text': return { text: 'Inserisci il tuo testo qui...' };
+      case 'image': return { imageUrl: '', altText: 'Immagine' };
+      case 'columns': return { left: 'Colonna Sinistra', right: 'Colonna Destra' };
+      case 'footer': return { companyInfo: 'Info Azienda', socialLinks: [] };
+      default: return {};
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!currentTemplate.name) {
+      alert('Inserisci un nome per il modello');
+      return;
+    }
+    try {
+      const apiUrl = getApiUrl();
+      const isUpdate = !!currentTemplate.id;
+      const endpoint = isUpdate ? `/api/marketing/templates/${currentTemplate.id}` : '/api/marketing/templates';
+      const method = isUpdate ? 'PUT' : 'POST';
+      
+      const res = await fetch(`${apiUrl}${endpoint}`, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentTemplate)
+      });
+      
+      if (res.ok) {
+        alert('Modello salvato con successo!');
+        setTemplateView('list');
+        fetchTemplates();
+      }
+    } catch (err) {
+      console.error('Error saving template:', err);
+    }
+  };
+
+  const handleDeleteTemplate = async (id) => {
+    if (!window.confirm('Vuoi eliminare questo modello?')) return;
+    try {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/marketing/templates/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchTemplates();
+    } catch (err) {
+      console.error('Error deleting template:', err);
+    }
+  };
 
   const initializeMarketing = async () => {
     try {
@@ -1177,22 +1266,380 @@ const Marketing = () => {
       ) : (
         /* SECTION: MODELLI */
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Placeholder per i modelli */}
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center space-y-4 min-h-[300px]">
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-full h-20 w-20 flex items-center justify-center">
-                <FileText className="h-10 w-10 text-gray-300" />
+          {templateView === 'list' ? (
+            <div className="space-y-6">
+              {/* Toolbar Modelli */}
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700">
+                <button 
+                  onClick={() => {
+                    setCurrentTemplate({
+                      id: null,
+                      name: '',
+                      type: 'email',
+                      blocks: [],
+                      settings: { fontFamily: 'Inter, sans-serif', backgroundColor: '#f9fafb', contentWidth: '600px' }
+                    });
+                    setTemplateView('editor');
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+                >
+                  <Plus className="h-4 w-4" />
+                  Nuovo Modello
+                </button>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Nessun Modello</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Inizia creando il tuo primo modello di messaggio.</p>
+
+              {/* Grid Modelli */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {templates.map((template) => (
+                  <div key={template.id} className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden group hover:shadow-2xl transition-all">
+                    <div className="h-40 bg-gray-100 dark:bg-gray-900 flex items-center justify-center relative overflow-hidden">
+                      {template.thumbnail ? (
+                        <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <FileText className="h-12 w-12 text-gray-300" />
+                      )}
+                      <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/20 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+                        <button 
+                          onClick={() => { setCurrentTemplate(template); setTemplateView('editor'); }}
+                          className="p-3 bg-white text-blue-600 rounded-2xl shadow-xl hover:scale-110 transition-all"
+                        >
+                          <Pencil className="h-5 w-5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteTemplate(template.id)}
+                          className="p-3 bg-white text-red-600 rounded-2xl shadow-xl hover:scale-110 transition-all"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">{template.name}</h3>
+                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-lg">
+                          {template.type}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Ultima modifica: {new Date(template.updated_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {templates.length === 0 && (
+                  <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-center space-y-4 min-h-[300px] col-span-full">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-full h-20 w-20 flex items-center justify-center">
+                      <FileText className="h-10 w-10 text-gray-300" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900 dark:text-white">Nessun Modello</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Inizia creando il tuo primo modello di messaggio.</p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setCurrentTemplate({
+                          id: null,
+                          name: '',
+                          type: 'email',
+                          blocks: [],
+                          settings: { fontFamily: 'Inter, sans-serif', backgroundColor: '#f9fafb', contentWidth: '600px' }
+                        });
+                        setTemplateView('editor');
+                      }}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      CREA MODELLO
+                    </button>
+                  </div>
+                )}
               </div>
-              <button className="px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                CREA MODELLO
-              </button>
             </div>
-          </div>
+          ) : (
+            /* TEMPLATE EDITOR */
+            <div className="h-[calc(100vh-12rem)] flex gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
+              {/* Sidebar: Blocks & Settings */}
+              <div className="w-80 flex flex-col gap-6 overflow-auto pr-2">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Blocchi</h3>
+                    <Palette className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { type: 'header', icon: Layout, label: 'Header' },
+                      { type: 'text', icon: Type, label: 'Testo' },
+                      { type: 'image', icon: ImageIcon, label: 'Immagine' },
+                      { type: 'columns', icon: Columns, label: 'Colonne' },
+                      { type: 'footer', icon: Footprints, label: 'Footer' }
+                    ].map(b => (
+                      <button
+                        key={b.type}
+                        onClick={() => handleAddBlock(b.type)}
+                        className="flex flex-col items-center justify-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-transparent hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
+                      >
+                        <b.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
+                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-blue-600">{b.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                  <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Impostazioni</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Modello</label>
+                      <input 
+                        type="text"
+                        value={currentTemplate.name}
+                        onChange={(e) => setCurrentTemplate(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        placeholder="Nome modello..."
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Font Family</label>
+                      <select 
+                        value={currentTemplate.settings.fontFamily}
+                        onChange={(e) => setCurrentTemplate(prev => ({ ...prev, settings: { ...prev.settings, fontFamily: e.target.value } }))}
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      >
+                        <option value="Inter, sans-serif">Inter</option>
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="'Times New Roman', serif">Times New Roman</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Area: Preview / Editor Canvas */}
+              <div className="flex-1 flex flex-col gap-6">
+                {/* Editor Header */}
+                <div className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700">
+                  <button 
+                    onClick={() => setTemplateView('list')}
+                    className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-700 uppercase tracking-tight"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Indietro
+                  </button>
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={handleSaveTemplate}
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-2xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
+                    >
+                      <Save className="h-4 w-4" />
+                      Salva Modello
+                    </button>
+                  </div>
+                </div>
+
+                {/* Canvas Area */}
+                <div className="flex-1 bg-gray-200 dark:bg-gray-950 rounded-3xl overflow-auto p-12 flex flex-col items-center border border-gray-300 dark:border-gray-800 shadow-inner">
+                  <div 
+                    className="bg-white shadow-2xl min-h-full transition-all duration-500 overflow-hidden"
+                    style={{ 
+                      width: currentTemplate.settings.contentWidth,
+                      fontFamily: currentTemplate.settings.fontFamily,
+                      backgroundColor: currentTemplate.settings.backgroundColor
+                    }}
+                  >
+                    {currentTemplate.blocks.length === 0 ? (
+                      <div className="h-60 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 m-8 rounded-2xl">
+                        <Plus className="h-8 w-8 mb-2" />
+                        <p className="text-sm font-bold uppercase tracking-widest">Aggiungi blocchi dalla sidebar</p>
+                      </div>
+                    ) : (
+                      currentTemplate.blocks.map((block, index) => (
+                        <div 
+                          key={block.id} 
+                          className={`group relative border-2 border-transparent hover:border-blue-400 transition-all cursor-pointer`}
+                          onClick={() => setEditingBlockId(block.id)}
+                        >
+                          {/* Block Actions */}
+                          <div className="absolute -right-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const newBlocks = currentTemplate.blocks.filter(b => b.id !== block.id);
+                                setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                              }}
+                              className="p-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600"
+                            >
+                              <Trash className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          {/* Block Content Rendering */}
+                          <div className="p-4">
+                            {block.type === 'header' && (
+                              <div className="text-center space-y-4 py-8 border-b">
+                                {block.content.logoUrl ? (
+                                  <img src={block.content.logoUrl} alt="Logo" className="h-12 mx-auto" />
+                                ) : (
+                                  <div className="w-16 h-16 bg-gray-100 mx-auto rounded-full flex items-center justify-center">
+                                    <ImageIcon className="h-6 w-6 text-gray-300" />
+                                  </div>
+                                )}
+                                <h1 className="text-2xl font-bold">{block.content.title}</h1>
+                              </div>
+                            )}
+
+                            {block.type === 'text' && (
+                              <div className="py-4 px-4 text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                {block.content.text}
+                              </div>
+                            )}
+
+                            {block.type === 'image' && (
+                              <div className="py-4">
+                                {block.content.imageUrl ? (
+                                  <img src={block.content.imageUrl} alt={block.content.altText} className="w-full rounded-xl" />
+                                ) : (
+                                  <div className="w-full h-40 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
+                                    <ImageIcon className="h-8 w-8 mr-2" />
+                                    <span>Seleziona Immagine</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {block.type === 'columns' && (
+                              <div className="grid grid-cols-2 gap-8 py-8 border-y">
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 whitespace-pre-wrap">{block.content.left}</div>
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 whitespace-pre-wrap">{block.content.right}</div>
+                              </div>
+                            )}
+
+                            {block.type === 'footer' && (
+                              <div className="py-8 border-t mt-8 text-center text-gray-400 text-xs space-y-4">
+                                <p className="whitespace-pre-wrap">{block.content.companyInfo}</p>
+                                <div className="flex justify-center gap-4">
+                                  <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                                  <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                                  <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Block Editor Overlay (Inline-ish) */}
+                          {editingBlockId === block.id && (
+                            <div className="absolute inset-0 bg-white/98 dark:bg-gray-900/98 z-10 flex flex-col p-6 animate-in zoom-in-95 duration-200 shadow-2xl overflow-auto">
+                              <div className="flex items-center justify-between mb-6">
+                                <h4 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Modifica Blocco {block.type}</h4>
+                                <button onClick={() => setEditingBlockId(null)} className="px-4 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase tracking-tight">Chiudi</button>
+                              </div>
+                              <div className="flex-1 space-y-4">
+                                {block.type === 'header' && (
+                                  <>
+                                    <div className="space-y-2">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">URL Logo</label>
+                                      <input 
+                                        type="text" 
+                                        value={block.content.logoUrl} 
+                                        onChange={(e) => {
+                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, logoUrl: e.target.value } } : b);
+                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                        }}
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://..."
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Titolo Intestazione</label>
+                                      <input 
+                                        type="text" 
+                                        value={block.content.title} 
+                                        onChange={(e) => {
+                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, title: e.target.value } } : b);
+                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                        }}
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
+                                    </div>
+                                  </>
+                                )}
+                                {block.type === 'text' && (
+                                  <textarea 
+                                    rows={8}
+                                    value={block.content.text}
+                                    onChange={(e) => {
+                                      const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, text: e.target.value } } : b);
+                                      setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                    }}
+                                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500"
+                                  />
+                                )}
+                                {block.type === 'image' && (
+                                  <>
+                                    <div className="space-y-2">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">URL Immagine</label>
+                                      <input 
+                                        type="text" 
+                                        value={block.content.imageUrl} 
+                                        onChange={(e) => {
+                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, imageUrl: e.target.value } } : b);
+                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                        }}
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="https://..."
+                                      />
+                                    </div>
+                                  </>
+                                )}
+                                {block.type === 'columns' && (
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sinistra</label>
+                                      <textarea 
+                                        value={block.content.left}
+                                        onChange={(e) => {
+                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, left: e.target.value } } : b);
+                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                        }}
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Destra</label>
+                                      <textarea 
+                                        value={block.content.right}
+                                        onChange={(e) => {
+                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, right: e.target.value } } : b);
+                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                        }}
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                                {block.type === 'footer' && (
+                                  <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Info Azienda</label>
+                                    <textarea 
+                                      value={block.content.companyInfo}
+                                      onChange={(e) => {
+                                        const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, companyInfo: e.target.value } } : b);
+                                        setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                      }}
+                                      className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

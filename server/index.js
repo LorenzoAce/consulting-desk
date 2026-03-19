@@ -780,8 +780,23 @@ app.post('/api/marketing/init', async (req, res) => {
       `;
       await client.query(query);
       
+      // Initialize Marketing Templates Table
+      const templatesQuery = `
+        CREATE TABLE IF NOT EXISTS marketing_templates (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          type VARCHAR(50) NOT NULL,
+          content JSONB DEFAULT '[]'::jsonb,
+          settings JSONB DEFAULT '{"fontFamily": "sans-serif", "backgroundColor": "#ffffff"}'::jsonb,
+          thumbnail TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      await client.query(templatesQuery);
+      
       await client.query('COMMIT');
-      res.json({ message: 'Marketing campaigns table initialized' });
+      res.json({ message: 'Marketing tables initialized' });
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;
@@ -867,6 +882,69 @@ app.delete('/api/marketing/campaigns/:id', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete marketing campaign' });
   } finally {
     client.release();
+  }
+});
+
+// GET all Marketing templates
+app.get('/api/marketing/templates', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM marketing_templates ORDER BY updated_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching marketing templates:', err);
+    res.status(500).json({ error: 'Failed to fetch marketing templates' });
+  }
+});
+
+// POST new Marketing template
+app.post('/api/marketing/templates', async (req, res) => {
+  const { name, type, content, settings, thumbnail } = req.body;
+  try {
+    const query = `
+      INSERT INTO marketing_templates (name, type, content, settings, thumbnail)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
+    const values = [name, type, JSON.stringify(content || []), JSON.stringify(settings || {}), thumbnail];
+    const result = await pool.query(query, values);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error creating marketing template:', err);
+    res.status(500).json({ error: 'Failed to create marketing template' });
+  }
+});
+
+// PUT update Marketing template
+app.put('/api/marketing/templates/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, type, content, settings, thumbnail } = req.body;
+  try {
+    const query = `
+      UPDATE marketing_templates 
+      SET name = $1, type = $2, content = $3, settings = $4, thumbnail = $5, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $6
+      RETURNING *;
+    `;
+    const values = [name, type, JSON.stringify(content), JSON.stringify(settings), thumbnail, id];
+    const result = await pool.query(query, values);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating marketing template:', err);
+    res.status(500).json({ error: 'Failed to update marketing template' });
+  }
+});
+
+// DELETE Marketing template
+app.delete('/api/marketing/templates/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM marketing_templates WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Template not found' });
+    res.json({ message: 'Template deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting marketing template:', err);
+    res.status(500).json({ error: 'Failed to delete marketing template' });
   }
 });
 
