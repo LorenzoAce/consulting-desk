@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Database, FileSpreadsheet, Plus, Search, Check, AlertCircle, Pencil, Trash2, X, Save, Image } from 'lucide-react';
+import { 
+  Upload, Database, FileSpreadsheet, Plus, Search, Check, 
+  AlertCircle, Pencil, Trash2, X, Save, Image, Filter, 
+  RotateCcw, Download, Building, FolderArchive
+} from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { getApiUrl } from '../utils/api';
 
@@ -40,6 +44,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
   const [filterInterest, setFilterInterest] = useState('');
   const [filterAvailability, setFilterAvailability] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
 
   // CRM Options State
   const [crmOptions, setCrmOptions] = useState({
@@ -489,61 +494,134 @@ const CRM = ({ onLoadCard, onNavigate }) => {
         </div>
       )}
 
-      {/* Navigation */}
-      <div className="flex items-center space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+      {/* Toolbar Uniformata */}
+      <div className="flex flex-wrap items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6">
+        {/* Navigation Tabs as Buttons */}
+        <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+          <button
+              onClick={() => handleTabChange('list')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+              <Building className="h-3.5 w-3.5" />
+              LISTA
+          </button>
+          <button
+              onClick={() => handleTabChange('import-archive')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'import-archive' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+              <FolderArchive className="h-3.5 w-3.5" />
+              ARCHIVIO
+          </button>
+          <button
+              onClick={() => handleTabChange('import-excel')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'import-excel' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              EXCEL
+          </button>
+        </div>
+
         <button
-            onClick={() => handleTabChange('list')}
-            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${activeTab === 'list' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            onClick={handleExportCSV}
+            className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center gap-2 transition-all"
+            title="Esporta lista filtrata in Excel"
         >
-            Lista Contatti
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span className="hidden sm:inline uppercase tracking-tight">Esporta</span>
         </button>
+
         <button
-            onClick={() => handleTabChange('import-archive')}
-            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${activeTab === 'import-archive' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            onClick={() => onNavigate('form')}
+            className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-green-600 text-white border-transparent hover:bg-green-700 flex items-center gap-2 transition-all shadow-green-500/20"
         >
-            Importa da Archivio
-        </button>
-        <button
-            onClick={() => handleTabChange('import-excel')}
-            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${activeTab === 'import-excel' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
-        >
-            Importa da Excel
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline uppercase tracking-tight">Nuovo</span>
         </button>
         
         <div className="flex-grow"></div>
 
         {activeTab === 'list' && (
-          <div className="relative w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </span>
-            <input
-              type="text"
-              placeholder="Cerca contatti..."
-              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              value={listSearch}
-              onChange={(e) => setListSearch(e.target.value)}
-            />
-          </div>
+          <>
+            <div className="relative w-full sm:w-64">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </span>
+              <input
+                type="text"
+                placeholder="Cerca contatti..."
+                className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                value={listSearch}
+                onChange={(e) => setListSearch(e.target.value)}
+              />
+            </div>
+
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-4 py-2 text-sm font-bold rounded-xl shadow-sm border transition-all flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700 shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            >
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline uppercase tracking-tight">Filtri</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                setListSearch('');
+                setFilterInterest('');
+                setFilterAvailability('');
+                setFilterStatus('');
+              }}
+              className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 transition-all uppercase tracking-tight"
+            >
+              Reset
+            </button>
+          </>
         )}
-
-        <button
-            onClick={() => onNavigate('form')}
-            className="px-4 py-2 text-sm font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 flex items-center shadow-sm"
-        >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuovo Contatto
-        </button>
-
-        <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 flex items-center shadow-sm"
-            title="Esporta lista filtrata in Excel"
-        >
-            <FileSpreadsheet className="w-4 h-4 mr-2" />
-            Esporta
-        </button>
       </div>
+
+      {/* Sezione Filtri CRM */}
+      {activeTab === 'list' && showFilters && (
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-3 gap-5 transition-all mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Interesse</label>
+            <select
+              value={filterInterest}
+              onChange={(e) => setFilterInterest(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            >
+              <option value="">Tutti gli interessi</option>
+              <option value="SCOMMESSE">PVR</option>
+              <option value="UTENZE">UTENZE</option>
+              <option value="ENTRAMBI">ENTRAMBI</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Disponibilità</label>
+            <select
+              value={filterAvailability}
+              onChange={(e) => setFilterAvailability(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            >
+              <option value="">Tutte le disponibilità</option>
+              <option value="BASSA">BASSA</option>
+              <option value="MEDIA">MEDIA</option>
+              <option value="ALTA">ALTA</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Stato</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            >
+              <option value="">Tutti gli stati</option>
+              {crmStatuses.map(status => (
+                <option key={status.id} value={status.id}>{status.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* CONTENT */}
       {activeTab === 'list' && (
