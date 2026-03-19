@@ -33,6 +33,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
   const [archiveCards, setArchiveCards] = useState([]);
   const [selectedCardIds, setSelectedCardIds] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
+  const [excelData, setExcelData] = useState([]);
 
   // List Filters State
   const [listSearch, setListSearch] = useState('');
@@ -340,21 +341,22 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     setLoading(true);
     let count = 0;
     try {
+      const apiUrl = getApiUrl();
       for (const row of excelData) {
         // Map Excel columns to our fields.
-        // Assuming columns: "Business Name", "Contact Name", "Email", "Phone", "Notes"
-        // Adjust keys based on expected Excel format or make it flexible.
         const payload = {
-            businessName: row['Ragione Sociale'] || row['Business Name'] || row['Nome'] || 'Sconosciuto',
-            contactName: row['Referente'] || row['Contact Name'] || '',
-            email: row['Email'] || '',
-            phone: row['Telefono'] || row['Phone'] || '',
-            notes: row['Note'] || row['Notes'] || '',
+            businessName: row['Ragione Sociale'] || row['Business Name'] || row['Nome'] || row['business_name'] || 'Sconosciuto',
+            contactName: row['Referente'] || row['Contact Name'] || row['contact_name'] || '',
+            email: row['Email'] || row['email'] || '',
+            phone: row['Telefono'] || row['Phone'] || row['phone'] || '',
+            notes: row['Note'] || row['Notes'] || row['notes'] || '',
             piva: row['P.IVA'] || row['Partita IVA'] || row['piva'] || '',
+            address: row['Indirizzo'] || row['Address'] || row['address'] || '',
+            city: row['Città'] || row['City'] || row['city'] || '',
+            province: row['Provincia'] || row['Province'] || row['province'] || '',
             source: 'excel'
         };
 
-        const apiUrl = getApiUrl();
         await fetch(`${apiUrl}/api/crm/leads`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -371,6 +373,38 @@ const CRM = ({ onLoadCard, onNavigate }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportCSV = () => {
+    if (filteredLeads.length === 0) {
+      alert("Nessun dato da esportare");
+      return;
+    }
+
+    // Prepara i dati per l'esportazione
+    const exportData = filteredLeads.map(lead => ({
+      'Ragione Sociale': lead.business_name || '',
+      'Referente': lead.contact_name || '',
+      'Email': lead.email || '',
+      'Telefono': lead.phone || '',
+      'Indirizzo': lead.address || '',
+      'Città': lead.city || '',
+      'Provincia': lead.province || '',
+      'P.IVA': lead.piva || '',
+      'Interesse': lead.main_interest || '',
+      'Disponibilità': lead.availability || '',
+      'Stato': crmStatuses.find(s => s.id === lead.status)?.label || lead.status || '',
+      'Note': lead.notes || '',
+      'Fonte': lead.source || ''
+    }));
+
+    // Crea il foglio di lavoro
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "CRM Leads");
+
+    // Genera il file Excel (formato .xlsx è più moderno e compatibile di .csv per l'utente finale)
+    XLSX.writeFile(wb, `export_crm_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   // Filter leads (list tab)
@@ -499,6 +533,15 @@ const CRM = ({ onLoadCard, onNavigate }) => {
         >
             <Plus className="w-4 h-4 mr-2" />
             Nuovo Contatto
+        </button>
+
+        <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 flex items-center shadow-sm"
+            title="Esporta lista filtrata in Excel"
+        >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            Esporta
         </button>
       </div>
 
