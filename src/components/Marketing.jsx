@@ -650,7 +650,7 @@ const Marketing = () => {
                     <input
                       type="text"
                       placeholder="Cerca una campagna..."
-                      className="block w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      className="block w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                   </div>
                   <select className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
@@ -1125,7 +1125,7 @@ const Marketing = () => {
                               <input
                                 type="text"
                                 placeholder="Cerca contatti..."
-                                className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                               />
@@ -1388,26 +1388,26 @@ const Marketing = () => {
                   <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Impostazioni</h3>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Modello</label>
+                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Nome Modello</label>
                       <input 
                         type="text"
                         value={currentTemplate.name}
                         onChange={(e) => setCurrentTemplate(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                         placeholder="Nome modello..."
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Font Family</label>
+                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Font Family</label>
                       <select 
                         value={currentTemplate.settings.fontFamily}
                         onChange={(e) => setCurrentTemplate(prev => ({ ...prev, settings: { ...prev.settings, fontFamily: e.target.value } }))}
-                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                       >
-                        <option value="Inter, sans-serif">Inter</option>
-                        <option value="Arial, sans-serif">Arial</option>
-                        <option value="'Times New Roman', serif">Times New Roman</option>
-                        <option value="'Courier New', monospace">Courier New</option>
+                        <option value="Inter, sans-serif" className="dark:bg-gray-800">Inter</option>
+                        <option value="Arial, sans-serif" className="dark:bg-gray-800">Arial</option>
+                        <option value="'Times New Roman', serif" className="dark:bg-gray-800">Times New Roman</option>
+                        <option value="'Courier New', monospace" className="dark:bg-gray-800">Courier New</option>
                       </select>
                     </div>
                   </div>
