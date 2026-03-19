@@ -935,7 +935,7 @@ app.post('/api/marketing/send', async (req, res) => {
       if (type === 'email' && recipient.email) {
         try {
           await transporter.sendMail({
-            from: `"${smtpAccount.label || 'Consulting Desk'}" <${smtpAccount.user}>`,
+            from: `"${smtpAccount.label || smtpAccount.user}" <${smtpAccount.user}>`,
             to: recipient.email.toLowerCase(),
             subject: subject,
             html: message.replace(/\n/g, '<br>'),
