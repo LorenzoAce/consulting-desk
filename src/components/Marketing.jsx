@@ -13,65 +13,6 @@ const COLOR_OPTIONS = [
   { value: 'gray', label: 'Grigio', classes: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' },
 ];
 
-const MOCK_CAMPAIGNS = [
-  {
-    id: 7,
-    name: 'Test-4',
-    status: 'Inviata',
-    date: '19 feb 2026 16:42',
-    type: 'email',
-    stats: {
-      recipients: { count: 248, percentage: 100 },
-      opens: { count: 76, percentage: 32.2 },
-      clicks: { count: 5, percentage: 2.12 },
-      unsubscribes: { count: 3, percentage: 1.27 },
-      conversions: { count: 0, percentage: 0 }
-    }
-  },
-  {
-    id: 6,
-    name: 'Test-3',
-    status: 'Inviata',
-    date: '7 nov 2025 12:08',
-    type: 'email',
-    stats: {
-      recipients: { count: 292, percentage: 100 },
-      opens: { count: 83, percentage: 30.63 },
-      clicks: { count: 0, percentage: 0 },
-      unsubscribes: { count: 2, percentage: 0.74 },
-      conversions: { count: 0, percentage: 0 }
-    }
-  },
-  {
-    id: 3,
-    name: 'Test-2',
-    status: 'Inviata',
-    date: '24 ott 2025 17:01',
-    type: 'email',
-    stats: {
-      recipients: { count: 275, percentage: 100 },
-      opens: { count: 92, percentage: 37.55 },
-      clicks: { count: 0, percentage: 0 },
-      unsubscribes: { count: 5, percentage: 2.04 },
-      conversions: { count: 0, percentage: 0 }
-    }
-  },
-  {
-    id: 2,
-    name: 'Test',
-    status: 'Inviata',
-    date: '20 giu 2025 15:54',
-    type: 'email',
-    stats: {
-      recipients: { count: 172, percentage: 100 },
-      opens: { count: 45, percentage: 27.95 },
-      clicks: { count: 0, percentage: 0 },
-      unsubscribes: { count: 6, percentage: 3.73 },
-      conversions: { count: 0, percentage: 0 }
-    }
-  }
-];
-
 const Marketing = () => {
   const [activeTab, setActiveTab] = useState('campaigns'); // 'campaigns' | 'templates'
   const [campaignView, setCampaignView] = useState('list'); // 'list' | 'create'
@@ -90,6 +31,7 @@ const Marketing = () => {
   const [filterStatus, setFilterStatus] = useState('');
   const [crmStatuses, setCrmStatuses] = useState([]);
   const [smtpAccounts, setSmtpAccounts] = useState([]);
+  const [campaigns, setCampaigns] = useState([]);
   
   // Message content
   const [subject, setSubject] = useState('');
@@ -109,12 +51,32 @@ const Marketing = () => {
   useEffect(() => {
     fetchLeads();
     fetchSettings();
+    initializeMarketing();
+    fetchCampaigns();
     setCurrentPage(1); // Reset page on data source change
   }, [dataSource]);
 
-  useEffect(() => {
-    setCurrentPage(1); // Reset page on filter/tab change
-  }, [searchTerm, filterStatus, campaignType]);
+  const initializeMarketing = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      await fetch(`${apiUrl}/api/marketing/init`, { method: 'POST' });
+    } catch (error) {
+      console.error('Error initializing marketing:', error);
+    }
+  };
+
+  const fetchCampaigns = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/marketing/campaigns`);
+      if (res.ok) {
+        const data = await res.json();
+        setCampaigns(data);
+      }
+    } catch (err) {
+      console.error('Error fetching campaigns:', err);
+    }
+  };
 
   const fetchSettings = async () => {
     try {
@@ -133,6 +95,10 @@ const Marketing = () => {
       console.error('Error fetching settings:', error);
     }
   };
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset page on filter/tab change
+  }, [searchTerm, filterStatus, campaignType]);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -220,6 +186,7 @@ const Marketing = () => {
       
       const payload = {
         type: campaignType,
+        senderId: sender,
         recipients: selectedData.map(l => ({
           id: l.id,
           email: l.email ? l.email.toLowerCase() : '',
@@ -420,7 +387,7 @@ const Marketing = () => {
                   {/* Pagination Stats Info */}
                   <div className="flex items-center gap-4 ml-2">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">
-                      1-{MOCK_CAMPAIGNS.length} of {MOCK_CAMPAIGNS.length}
+                      1-{campaigns.length} of {campaigns.length}
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">1</span>
@@ -440,7 +407,7 @@ const Marketing = () => {
 
               {/* Lista Campagne */}
               <div className="grid grid-cols-1 gap-4">
-                {MOCK_CAMPAIGNS.map((campaign) => (
+                {campaigns.map((campaign) => (
                   <div key={campaign.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all group">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                       {/* Campaign Main Info */}
@@ -451,12 +418,16 @@ const Marketing = () => {
                         <div>
                           <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">{campaign.name}</h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 text-[10px] font-bold uppercase tracking-widest rounded-lg border border-green-200 dark:border-green-800">
+                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest rounded-lg border ${
+                              campaign.status === 'Bozza' 
+                                ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800'
+                                : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800'
+                            }`}>
                               {campaign.status}
                             </span>
                             <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              Inviata il {campaign.date}
+                              {campaign.status === 'Bozza' ? 'Creata il ' : 'Inviata il '}{new Date(campaign.created_at).toLocaleDateString('it-IT')}
                             </span>
                             <span className="text-xs font-bold text-gray-400 dark:text-gray-500 flex items-center gap-1">
                               <Hash className="h-3 w-3" />
@@ -474,8 +445,8 @@ const Marketing = () => {
                             Destinatari
                           </div>
                           <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats.recipients.count}</span>
-                            <span className="text-xs font-bold text-gray-400">{campaign.stats.recipients.percentage}%</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats?.recipients?.count || 0}</span>
+                            <span className="text-xs font-bold text-gray-400">{campaign.stats?.recipients?.percentage || 0}%</span>
                           </div>
                         </div>
 
@@ -485,8 +456,8 @@ const Marketing = () => {
                             Aperture
                           </div>
                           <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats.opens.count}</span>
-                            <span className="text-xs font-bold text-blue-500">{campaign.stats.opens.percentage}%</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats?.opens?.count || 0}</span>
+                            <span className="text-xs font-bold text-blue-500">{campaign.stats?.opens?.percentage || 0}%</span>
                           </div>
                         </div>
 
@@ -496,8 +467,8 @@ const Marketing = () => {
                             Clic
                           </div>
                           <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats.clicks.count || '-'}</span>
-                            <span className="text-xs font-bold text-blue-500">{campaign.stats.clicks.percentage}%</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats?.clicks?.count || '-'}</span>
+                            <span className="text-xs font-bold text-blue-500">{campaign.stats?.clicks?.percentage || 0}%</span>
                           </div>
                         </div>
 
@@ -507,8 +478,8 @@ const Marketing = () => {
                             Disiscrizioni
                           </div>
                           <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats.unsubscribes.count}</span>
-                            <span className="text-xs font-bold text-red-500">{campaign.stats.unsubscribes.percentage}%</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats?.unsubscribes?.count || 0}</span>
+                            <span className="text-xs font-bold text-red-500">{campaign.stats?.unsubscribes?.percentage || 0}%</span>
                           </div>
                         </div>
 
@@ -518,8 +489,8 @@ const Marketing = () => {
                             Conversioni
                           </div>
                           <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats.conversions.count || '-'}</span>
-                            <span className="text-xs font-bold text-gray-400">{campaign.stats.conversions.percentage}%</span>
+                            <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.stats?.conversions?.count || '-'}</span>
+                            <span className="text-xs font-bold text-gray-400">{campaign.stats?.conversions?.percentage || 0}%</span>
                           </div>
                         </div>
                       </div>
@@ -536,6 +507,18 @@ const Marketing = () => {
                     </div>
                   </div>
                 ))}
+                
+                {campaigns.length === 0 && (
+                  <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                    <p className="text-gray-500 dark:text-gray-400">Nessuna campagna trovata.</p>
+                    <button 
+                      onClick={() => { setCampaignView('create'); setCreationStep('select-type'); setConfigSubView('main'); }}
+                      className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all"
+                    >
+                      Crea la tua prima campagna
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

@@ -755,9 +755,80 @@ app.post('/api/crm/leads', async (req, res) => {
   }
 });
 
+// Initialize Marketing Campaigns Table
+app.post('/api/marketing/init', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      const query = `
+        CREATE TABLE IF NOT EXISTS marketing_campaigns (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          folder VARCHAR(255),
+          type VARCHAR(50) NOT NULL,
+          sender_id VARCHAR(100),
+          recipients JSONB DEFAULT '[]'::jsonb,
+          subject TEXT,
+          message TEXT,
+          status VARCHAR(50) DEFAULT 'Bozza',
+          stats JSONB DEFAULT '{"recipients": {"count": 0, "percentage": 0}, "opens": {"count": 0, "percentage": 0}, "clicks": {"count": 0, "percentage": 0}, "unsubscribes": {"count": 0, "percentage": 0}, "conversions": {"count": 0, "percentage": 0}}'::jsonb,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `;
+      await client.query(query);
+      
+      await client.query('COMMIT');
+      res.json({ message: 'Marketing campaigns table initialized' });
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    console.error('Error initializing Marketing campaigns table:', err);
+    res.status(500).json({ error: 'Failed to initialize Marketing campaigns table' });
+  }
+});
+
+// Get all Marketing campaigns
+app.get('/api/marketing/campaigns', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM marketing_campaigns ORDER BY created_at DESC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching marketing campaigns:', err);
+    res.status(500).json({ error: 'Failed to fetch marketing campaigns' });
+  }
+});
+
+// Create/Save a Marketing campaign (Bozza or Sent)
+app.post('/api/marketing/campaigns', async (req, res) => {
+  const { name, folder, type, sender, recipients, subject, message, status } = req.body;
+  const client = await pool.connect();
+  try {
+    const query = `
+      INSERT INTO marketing_campaigns (name, folder, type, sender_id, recipients, subject, message, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *;
+    `;
+    const values = [name, folder, type, sender, JSON.stringify(recipients), subject, message, status || 'Bozza'];
+    const result = await client.query(query, values);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Error saving marketing campaign:', err);
+    res.status(500).json({ error: 'Failed to save marketing campaign' });
+  } finally {
+    client.release();
+  }
+});
+
 // Marketing Endpoints
 app.post('/api/marketing/send', async (req, res) => {
-  const { type, recipients, subject, message } = req.body;
+  const { type, recipients, subject, message, senderId } = req.body;
 
   if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
     return res.status(400).json({ error: 'Nessun destinatario fornito' });
@@ -768,41 +839,46 @@ app.post('/api/marketing/send', async (req, res) => {
     const settingsRes = await pool.query('SELECT marketing_settings FROM app_settings WHERE id = 1');
     const settings = settingsRes.rows[0]?.marketing_settings;
 
-    if (!settings || !settings.smtp_host || !settings.smtp_user || !settings.smtp_pass) {
-      return res.status(500).json({ error: 'Configurazione SMTP mancante o incompleta nelle impostazioni.' });
+    if (!settings || !settings.smtp_accounts || !Array.isArray(settings.smtp_accounts)) {
+      return res.status(500).json({ error: 'Configurazione SMTP mancante nelle impostazioni.' });
     }
 
-    // 2. Configura il transporter di Nodemailer
+    // 2. Trova l'account SMTP selezionato
+    const smtpAccount = senderId 
+      ? settings.smtp_accounts.find(acc => acc.id === senderId) 
+      : settings.smtp_accounts[0]; // Predefinito se non specificato
+
+    if (!smtpAccount) {
+      return res.status(500).json({ error: 'Account SMTP non trovato o non configurato.' });
+    }
+
+    // 3. Configura il transporter di Nodemailer
     const transporter = nodemailer.createTransport({
-      host: settings.smtp_host,
-      port: parseInt(settings.smtp_port) || 587,
-      secure: (parseInt(settings.smtp_port) || 587) === 465, // true per 465 (SSL/TLS), false per altri (STARTTLS)
+      host: smtpAccount.host,
+      port: parseInt(smtpAccount.port) || 587,
+      secure: (parseInt(smtpAccount.port) || 587) === 465,
       auth: {
-        user: settings.smtp_user,
-        pass: settings.smtp_pass,
+        user: smtpAccount.user,
+        pass: smtpAccount.pass,
       },
-      // Ottimizzazioni per serverless (Vercel)
-      pool: false, // Meglio false per serverless per evitare problemi di connessioni appese
-      connectionTimeout: 10000, // 10 secondi per la connessione
-      greetingTimeout: 10000,   // 10 secondi per il saluto iniziale
-      socketTimeout: 30000,     // 30 secondi per il trasferimento dati
+      pool: false,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 30000,
       tls: {
-        // Spesso necessario per provider come Aruba/Gmail in ambienti cloud
         rejectUnauthorized: false,
         minVersion: 'TLSv1.2'
       }
     });
 
-    // Verifica la connessione prima di procedere (solo in debug o per test)
+    // Verifica la connessione
     try {
       await transporter.verify();
-      console.log('[SMTP] Connection verified successfully');
     } catch (verifyError) {
       console.error('[SMTP_VERIFY_ERROR]', verifyError);
       return res.status(500).json({ 
         error: 'Errore di connessione al server SMTP.', 
-        details: verifyError.message,
-        hint: 'Verifica che l\'host e la porta siano corretti e che il server non blocchi connessioni esterne.'
+        details: verifyError.message
       });
     }
 
@@ -810,15 +886,15 @@ app.post('/api/marketing/send', async (req, res) => {
     let failed = 0;
     const errors = [];
 
-    // 3. Itera e invia email
+    // 4. Itera e invia email
     for (const recipient of recipients) {
       if (type === 'email' && recipient.email) {
         try {
           await transporter.sendMail({
-            from: `"Consulting Desk" <${settings.smtp_user}>`,
+            from: `"${smtpAccount.label || 'Consulting Desk'}" <${smtpAccount.user}>`,
             to: recipient.email.toLowerCase(),
             subject: subject,
-            html: message.replace(/\n/g, '<br>'), // Sostituisce newline con <br> per l'HTML
+            html: message.replace(/\n/g, '<br>'),
           });
           sent++;
         } catch (emailError) {
@@ -827,18 +903,20 @@ app.post('/api/marketing/send', async (req, res) => {
           errors.push(`Destinatario: ${recipient.email}, Errore: ${emailError.message}`);
         }
       } else if (type === 'sms' && recipient.phone) {
-        // Logica SMS (attualmente simulata)
-        console.log(`Simulating SMS to ${recipient.phone}`);
+        // Logica SMS simulata
+        sent++;
+      } else if (type === 'whatsapp' && recipient.phone) {
+        // Logica WhatsApp simulata
         sent++;
       } else {
         failed++;
-        errors.push(`Destinatario: ${recipient.name}, Informazioni di contatto mancanti per ${type}`);
+        errors.push(`Destinatario: ${recipient.name || 'Sconosciuto'}, Informazioni di contatto mancanti per ${type}`);
       }
     }
 
-    // 4. Invia una risposta dettagliata
+    // 5. Invia risposta
     if (failed > 0) {
-      return res.status(207).json({ // 207 Multi-Status
+      return res.status(207).json({
         success: false,
         message: `Invio completato con ${failed} errori.`,
         sent,
