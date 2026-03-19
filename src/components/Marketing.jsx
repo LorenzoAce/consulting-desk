@@ -141,6 +141,10 @@ const Marketing = () => {
     return matchesSearch && matchesStatus && hasContactInfo;
   });
 
+  const filteredCampaigns = campaigns.filter(campaign => {
+    return campaign.type === campaignType;
+  });
+
   // Paginazione
   const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -307,21 +311,30 @@ const Marketing = () => {
         {activeTab === 'campaigns' && (
           <div className="flex items-center gap-3 ml-auto">
             <button
-                onClick={() => setDataSource('crm')}
-                className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${dataSource === 'crm' ? 'bg-blue-600 text-white border-transparent shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+                onClick={() => setCampaignType('email')}
+                className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${campaignType === 'email' ? 'bg-blue-600 text-white border-transparent shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
             >
                 <div className="flex items-center gap-2">
-                  <Building className="h-3.5 w-3.5" />
-                  SORGENTE CRM
+                  <Mail className="h-3.5 w-3.5" />
+                  EMAIL
                 </div>
             </button>
             <button
-                onClick={() => setDataSource('archive')}
-                className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${dataSource === 'archive' ? 'bg-blue-600 text-white border-transparent shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+                onClick={() => setCampaignType('sms')}
+                className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${campaignType === 'sms' ? 'bg-blue-600 text-white border-transparent shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
             >
                 <div className="flex items-center gap-2">
-                  <FolderArchive className="h-3.5 w-3.5" />
-                  SORGENTE ARCHIVIO
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  SMS
+                </div>
+            </button>
+            <button
+                onClick={() => setCampaignType('whatsapp')}
+                className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${campaignType === 'whatsapp' ? 'bg-blue-600 text-white border-transparent shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            >
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  WHATSAPP
                 </div>
             </button>
           </div>
@@ -355,15 +368,6 @@ const Marketing = () => {
                     <Plus className="h-4 w-4" />
                     Crea campagna
                   </button>
-                  <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-gray-50 border border-gray-200 dark:border-gray-700 transition-all">
-                    <Mail className="h-4 w-4" />
-                    Email
-                  </button>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-gray-50 border border-gray-200 dark:border-gray-700 transition-all">
-                    <MessageSquare className="h-4 w-4" />
-                    SMS
-                  </button>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -387,7 +391,7 @@ const Marketing = () => {
                   {/* Pagination Stats Info */}
                   <div className="flex items-center gap-4 ml-2">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">
-                      1-{campaigns.length} of {campaigns.length}
+                      1-{filteredCampaigns.length} of {filteredCampaigns.length}
                     </span>
                     <div className="flex items-center gap-1">
                       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">1</span>
@@ -407,12 +411,16 @@ const Marketing = () => {
 
               {/* Lista Campagne */}
               <div className="grid grid-cols-1 gap-4">
-                {campaigns.map((campaign) => (
+                {filteredCampaigns.map((campaign) => (
                   <div key={campaign.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-all group">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                       {/* Campaign Main Info */}
                       <div className="flex items-start gap-4 min-w-[200px]">
-                        <div className={`p-3 rounded-2xl ${campaign.type === 'email' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30' : 'bg-green-50 text-green-600 dark:bg-green-900/30'}`}>
+                        <div className={`p-3 rounded-2xl ${
+                          campaign.type === 'email' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30' : 
+                          campaign.type === 'whatsapp' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 
+                          'bg-green-50 text-green-600 dark:bg-green-900/30'
+                        }`}>
                           {campaign.type === 'email' ? <Mail className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
                         </div>
                         <div>
@@ -508,14 +516,14 @@ const Marketing = () => {
                   </div>
                 ))}
                 
-                {campaigns.length === 0 && (
+                {filteredCampaigns.length === 0 && (
                   <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-                    <p className="text-gray-500 dark:text-gray-400">Nessuna campagna trovata.</p>
+                    <p className="text-gray-500 dark:text-gray-400">Nessuna campagna {campaignType.toUpperCase()} trovata.</p>
                     <button 
                       onClick={() => { setCampaignView('create'); setCreationStep('select-type'); setConfigSubView('main'); }}
                       className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all"
                     >
-                      Crea la tua prima campagna
+                      Crea la tua prima campagna {campaignType.toUpperCase()}
                     </button>
                   </div>
                 )}
