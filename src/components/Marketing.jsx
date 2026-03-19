@@ -113,7 +113,7 @@ const Marketing = () => {
 
   useEffect(() => {
     setCurrentPage(1); // Reset page on filter/tab change
-  }, [searchTerm, filterStatus, messageType]);
+  }, [searchTerm, filterStatus, campaignType]);
 
   const fetchSettings = async () => {
     try {
@@ -166,7 +166,7 @@ const Marketing = () => {
     const matchesStatus = !filterStatus || lead.status === filterStatus;
     
     // Filter out leads without email or phone based on active tab
-    const hasContactInfo = messageType === 'email' ? lead.email : lead.phone;
+    const hasContactInfo = campaignType === 'email' ? lead.email : lead.phone;
     
     return matchesSearch && matchesStatus && hasContactInfo;
   });
@@ -204,7 +204,7 @@ const Marketing = () => {
       alert('Inserisci un messaggio');
       return;
     }
-    if (messageType === 'email' && !subject.trim()) {
+    if (campaignType === 'email' && !subject.trim()) {
       alert('Inserisci un oggetto per l\'email');
       return;
     }
@@ -215,14 +215,14 @@ const Marketing = () => {
       const selectedData = leads.filter(l => selectedLeads.has(l.id));
       
       const payload = {
-        type: messageType,
+        type: campaignType,
         recipients: selectedData.map(l => ({
           id: l.id,
           email: l.email ? l.email.toLowerCase() : '',
           phone: l.phone,
           name: l.contact_name || l.business_name
         })),
-        subject: messageType === 'email' ? subject : undefined,
+        subject: campaignType === 'email' ? subject : undefined,
         message: message
       };
 
