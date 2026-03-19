@@ -230,6 +230,72 @@ const Marketing = () => {
     }
   };
 
+  const handleDirectSend = async (campaign) => {
+    if (!campaign.recipients || campaign.recipients.length === 0) {
+      alert('Questa campagna non ha destinatari.');
+      return;
+    }
+    if (!campaign.message) {
+      alert('Questa campagna non ha un messaggio.');
+      return;
+    }
+    if (!window.confirm(`Vuoi inviare la campagna "${campaign.name}" a ${campaign.recipients.length} destinatari?`)) return;
+
+    setSending(true);
+    try {
+      const apiUrl = getApiUrl();
+      
+      // Fetch full lead data for the recipients in this campaign
+      // Note: campaign.recipients stores IDs
+      const sourceEndpoint = dataSource === 'crm' ? '/api/crm/leads' : '/api/cards';
+      const leadsRes = await fetch(`${apiUrl}${sourceEndpoint}`);
+      const allLeads = await leadsRes.json();
+      
+      const recipientIds = new Set(campaign.recipients);
+      const selectedData = allLeads.filter(l => recipientIds.has(l.id));
+
+      const payload = {
+        type: campaign.type,
+        senderId: campaign.sender_id,
+        recipients: selectedData.map(l => ({
+          id: l.id,
+          email: l.email ? l.email.toLowerCase() : '',
+          phone: l.phone,
+          name: l.contact_name || l.business_name || l.full_name
+        })),
+        subject: campaign.type === 'email' ? campaign.subject : undefined,
+        message: campaign.message
+      };
+
+      const res = await fetch(`${apiUrl}/api/marketing/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        alert(result.message || 'Invio completato con successo!');
+        // Update campaign status to 'Inviata' in DB
+        await fetch(`${apiUrl}/api/marketing/campaigns/${campaign.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...campaign, status: 'Inviata' })
+        });
+        fetchCampaigns();
+      } else {
+        const errorDetail = result.errors ? result.errors.join('\n') : (result.error || 'Dettagli non disponibili');
+        alert(`Si sono verificati degli errori durante l'invio:\n\n${errorDetail}`);
+      }
+    } catch (err) {
+      console.error('Error in direct send:', err);
+      alert('Errore di connessione durante l\'invio.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const handleSaveDraft = async () => {
     try {
       const apiUrl = getApiUrl();
@@ -560,6 +626,13 @@ const Marketing = () => {
                       <div className="flex items-center justify-end gap-2">
                         <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all" title="Statistiche">
                           <BarChart2 className="h-5 w-5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDirectSend(campaign)}
+                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-all" 
+                          title="Invia Campagna"
+                        >
+                          <Send className="h-5 w-5" />
                         </button>
                         <button 
                           onClick={() => handleEditCampaign(campaign)}
