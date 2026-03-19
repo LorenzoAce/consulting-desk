@@ -653,11 +653,11 @@ const Marketing = () => {
                       className="block w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                   </div>
-                  <select className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                    <option>Tutti gli stati</option>
-                    <option>Inviata</option>
-                    <option>Bozza</option>
-                    <option>In corso</option>
+                  <select className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <option className="dark:bg-gray-900">Tutti gli stati</option>
+                    <option className="dark:bg-gray-900">Inviata</option>
+                    <option className="dark:bg-gray-900">Bozza</option>
+                    <option className="dark:bg-gray-900">In corso</option>
                   </select>
                   
                   {/* Pagination Stats Info */}
@@ -785,7 +785,7 @@ const Marketing = () => {
                           disabled={campaign.status === 'Inviata'}
                           className={`p-2 rounded-xl transition-all ${
                             campaign.status === 'Inviata' 
-                              ? 'text-gray-200 cursor-not-allowed' 
+                              ? 'text-gray-200 dark:text-gray-700 cursor-not-allowed' 
                               : 'text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30'
                           }`}
                           title={campaign.status === 'Inviata' ? 'Campagna già inviata' : 'Invia Campagna'}
@@ -963,11 +963,11 @@ const Marketing = () => {
                             </button>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                            <span className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-1">
                               <FolderArchive className="h-3 w-3" />
                               {campaignFolder || 'Nessuna cartella'}
                             </span>
-                            <span className="text-xs font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1">
+                            <span className="text-xs font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest flex items-center gap-1">
                               {campaignType === 'email' ? <Mail className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}
                               {campaignType.toUpperCase()}
                             </span>
@@ -1143,17 +1143,17 @@ const Marketing = () => {
                           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
                               <tr>
-                                <th className="px-6 py-4 text-left w-12"><input type="checkbox" checked={selectedLeads.size === filteredLeads.length} onChange={toggleSelectAll} className="rounded border-gray-300 text-blue-600 h-5 w-5" /></th>
-                                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contatto</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Recapito</th>
+                                <th className="px-6 py-4 text-left w-12"><input type="checkbox" checked={selectedLeads.size === filteredLeads.length} onChange={toggleSelectAll} className="rounded border-gray-300 dark:border-gray-600 text-blue-600 h-5 w-5 bg-white dark:bg-gray-800" /></th>
+                                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Contatto</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Recapito</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                               {currentLeads.map((lead) => (
                                 <tr key={lead.id} onClick={() => toggleLeadSelection(lead.id)} className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${selectedLeads.has(lead.id) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
-                                  <td className="px-6 py-4"><input type="checkbox" checked={selectedLeads.has(lead.id)} onChange={() => {}} className="rounded border-gray-300 text-blue-600 h-5 w-5" /></td>
+                                  <td className="px-6 py-4"><input type="checkbox" checked={selectedLeads.has(lead.id)} onChange={() => {}} className="rounded border-gray-300 dark:border-gray-600 text-blue-600 h-5 w-5 bg-white dark:bg-gray-800" /></td>
                                   <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">{lead.contact_name}</td>
-                                  <td className="px-6 py-4 text-sm text-gray-500">{campaignType === 'email' ? lead.email : lead.phone}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{campaignType === 'email' ? lead.email : lead.phone}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -1296,7 +1296,7 @@ const Marketing = () => {
                       {template.thumbnail ? (
                         <img src={template.thumbnail} alt={template.name} className="w-full h-full object-cover" />
                       ) : (
-                        <FileText className="h-12 w-12 text-gray-300" />
+                        <FileText className="h-12 w-12 text-gray-300 dark:text-gray-600" />
                       )}
                       <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/20 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                         <button 
@@ -1437,9 +1437,9 @@ const Marketing = () => {
                 </div>
 
                 {/* Canvas Area */}
-                <div className="flex-1 bg-gray-200 dark:bg-gray-950 rounded-3xl overflow-auto p-12 flex flex-col items-center border border-gray-300 dark:border-gray-800 shadow-inner">
+                <div className="flex-1 bg-gray-100 dark:bg-gray-900 rounded-3xl overflow-auto p-12 flex flex-col items-center border border-gray-200 dark:border-gray-700 shadow-inner">
                   <div 
-                    className="bg-white shadow-2xl min-h-full transition-all duration-500 overflow-hidden"
+                    className="bg-white shadow-2xl min-h-full transition-all duration-500 overflow-hidden text-gray-900"
                     style={{ 
                       width: currentTemplate.settings.contentWidth,
                       fontFamily: currentTemplate.settings.fontFamily,
@@ -1475,15 +1475,15 @@ const Marketing = () => {
                           {/* Block Content Rendering */}
                           <div className="p-4">
                             {block.type === 'header' && (
-                              <div className="text-center space-y-4 py-8 border-b">
+                              <div className="text-center space-y-4 py-8 border-b border-gray-100">
                                 {block.content.logoUrl ? (
                                   <img src={block.content.logoUrl} alt="Logo" className="h-12 mx-auto" />
                                 ) : (
-                                  <div className="w-16 h-16 bg-gray-100 mx-auto rounded-full flex items-center justify-center">
+                                  <div className="w-16 h-16 bg-gray-50 mx-auto rounded-full flex items-center justify-center">
                                     <ImageIcon className="h-6 w-6 text-gray-300" />
                                   </div>
                                 )}
-                                <h1 className="text-2xl font-bold">{block.content.title}</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">{block.content.title}</h1>
                               </div>
                             )}
 
@@ -1498,7 +1498,7 @@ const Marketing = () => {
                                 {block.content.imageUrl ? (
                                   <img src={block.content.imageUrl} alt={block.content.altText} className="w-full rounded-xl" />
                                 ) : (
-                                  <div className="w-full h-40 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
+                                  <div className="w-full h-40 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
                                     <ImageIcon className="h-8 w-8 mr-2" />
                                     <span>Seleziona Immagine</span>
                                   </div>
@@ -1507,19 +1507,19 @@ const Marketing = () => {
                             )}
 
                             {block.type === 'columns' && (
-                              <div className="grid grid-cols-2 gap-8 py-8 border-y">
-                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 whitespace-pre-wrap">{block.content.left}</div>
-                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 whitespace-pre-wrap">{block.content.right}</div>
+                              <div className="grid grid-cols-2 gap-8 py-8 border-y border-gray-100">
+                                <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 whitespace-pre-wrap text-gray-800">{block.content.left}</div>
+                                <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 whitespace-pre-wrap text-gray-800">{block.content.right}</div>
                               </div>
                             )}
 
                             {block.type === 'footer' && (
-                              <div className="py-8 border-t mt-8 text-center text-gray-400 text-xs space-y-4">
+                              <div className="py-8 border-t border-gray-100 mt-8 text-center text-gray-400 text-xs space-y-4">
                                 <p className="whitespace-pre-wrap">{block.content.companyInfo}</p>
                                 <div className="flex justify-center gap-4">
-                                  <div className="w-6 h-6 rounded-full bg-gray-100"></div>
-                                  <div className="w-6 h-6 rounded-full bg-gray-100"></div>
-                                  <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                                  <div className="w-6 h-6 rounded-full bg-gray-50"></div>
+                                  <div className="w-6 h-6 rounded-full bg-gray-50"></div>
+                                  <div className="w-6 h-6 rounded-full bg-gray-50"></div>
                                 </div>
                               </div>
                             )}
@@ -1527,16 +1527,16 @@ const Marketing = () => {
 
                           {/* Block Editor Overlay (Inline-ish) */}
                           {editingBlockId === block.id && (
-                            <div className="absolute inset-0 bg-white/98 dark:bg-gray-900/98 z-10 flex flex-col p-6 animate-in zoom-in-95 duration-200 shadow-2xl overflow-auto">
+                            <div className="absolute inset-0 bg-white dark:bg-gray-800 z-10 flex flex-col p-6 animate-in zoom-in-95 duration-200 shadow-2xl overflow-auto">
                               <div className="flex items-center justify-between mb-6">
                                 <h4 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Modifica Blocco {block.type}</h4>
-                                <button onClick={() => setEditingBlockId(null)} className="px-4 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase tracking-tight">Chiudi</button>
+                                <button onClick={() => setEditingBlockId(null)} className="px-4 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase tracking-tight hover:bg-blue-700 transition-all">Chiudi</button>
                               </div>
                               <div className="flex-1 space-y-4">
                                 {block.type === 'header' && (
                                   <>
                                     <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">URL Logo</label>
+                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Logo</label>
                                       <input 
                                         type="text" 
                                         value={block.content.logoUrl} 
@@ -1544,12 +1544,12 @@ const Marketing = () => {
                                           const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, logoUrl: e.target.value } } : b);
                                           setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                         }}
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                         placeholder="https://..."
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Titolo Intestazione</label>
+                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Titolo Intestazione</label>
                                       <input 
                                         type="text" 
                                         value={block.content.title} 
@@ -1557,7 +1557,7 @@ const Marketing = () => {
                                           const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, title: e.target.value } } : b);
                                           setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                         }}
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                       />
                                     </div>
                                   </>
@@ -1570,13 +1570,13 @@ const Marketing = () => {
                                       const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, text: e.target.value } } : b);
                                       setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                     }}
-                                    className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                   />
                                 )}
                                 {block.type === 'image' && (
                                   <>
                                     <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">URL Immagine</label>
+                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Immagine</label>
                                       <input 
                                         type="text" 
                                         value={block.content.imageUrl} 
@@ -1584,7 +1584,7 @@ const Marketing = () => {
                                           const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, imageUrl: e.target.value } } : b);
                                           setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                         }}
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                         placeholder="https://..."
                                       />
                                     </div>
@@ -1593,39 +1593,39 @@ const Marketing = () => {
                                 {block.type === 'columns' && (
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sinistra</label>
+                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Sinistra</label>
                                       <textarea 
                                         value={block.content.left}
                                         onChange={(e) => {
                                           const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, left: e.target.value } } : b);
                                           setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                         }}
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                       />
                                     </div>
                                     <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Destra</label>
+                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Destra</label>
                                       <textarea 
                                         value={block.content.right}
                                         onChange={(e) => {
                                           const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, right: e.target.value } } : b);
                                           setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                         }}
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                       />
                                     </div>
                                   </div>
                                 )}
                                 {block.type === 'footer' && (
                                   <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Info Azienda</label>
+                                    <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Info Azienda</label>
                                     <textarea 
                                       value={block.content.companyInfo}
                                       onChange={(e) => {
                                         const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, companyInfo: e.target.value } } : b);
                                         setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
                                       }}
-                                      className="w-full px-4 py-2 bg-white dark:bg-gray-800 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                                     />
                                   </div>
                                 )}
