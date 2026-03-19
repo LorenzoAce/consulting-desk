@@ -22,9 +22,18 @@ const Marketing = () => {
     failed: 0
   });
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 25;
+
   useEffect(() => {
     fetchLeads();
+    setCurrentPage(1); // Reset page on data source change
   }, [dataSource]);
+
+  useEffect(() => {
+    setCurrentPage(1); // Reset page on filter/tab change
+  }, [searchTerm, filterStatus, activeTab]);
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -66,6 +75,12 @@ const Marketing = () => {
     
     return matchesSearch && matchesStatus && hasContactInfo;
   });
+
+  // Paginazione
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentLeads = filteredLeads.slice(indexOfFirstItem, indexOfLastItem);
 
   const toggleSelectAll = () => {
     if (selectedLeads.size === filteredLeads.length) {
@@ -141,38 +156,58 @@ const Marketing = () => {
   };
 
   return (
-    <div className="w-full flex flex-col bg-gray-50 dark:bg-gray-900 min-h-screen">
-      {/* HEADER COERENTE */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Send className="h-6 w-6 text-blue-600" />
-              Marketing
-            </h1>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Gestione campagne Email e SMS massivi per i tuoi contatti.
-            </p>
-          </div>
-          
-          {/* Stats in Header */}
-          {(stats.sent > 0 || stats.failed > 0) && (
-            <div className="flex items-center gap-3">
-              <div className="px-3 py-1 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
-                <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Inviati: {stats.sent}</span>
-              </div>
-              <div className="px-3 py-1 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">
-                <span className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Falliti: {stats.failed}</span>
-              </div>
-            </div>
-          )}
+    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* HEADER UNIFORMATO */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Send className="h-6 w-6 text-blue-600" />
+            Marketing
+          </h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Gestione campagne Email e SMS massivi per i tuoi contatti.
+          </p>
         </div>
+        
+        {/* Stats in Header */}
+        {(stats.sent > 0 || stats.failed > 0) && (
+          <div className="flex items-center gap-3">
+            <div className="px-3 py-1 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
+              <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Inviati: {stats.sent}</span>
+            </div>
+            <div className="px-3 py-1 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">
+              <span className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Falliti: {stats.failed}</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-        {/* COLONNA SINISTRA: COMPOSIZIONE (STILE FORM) */}
-        <div className="w-full lg:w-[400px] xl:w-[450px] bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col shrink-0">
-          <div className="p-6 overflow-y-auto flex-1 space-y-6">
+      {/* Navigation / Tabs */}
+      <div className="flex items-center space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+        <button
+            onClick={() => setDataSource('crm')}
+            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${dataSource === 'crm' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+        >
+            <div className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              Sorgente CRM
+            </div>
+        </button>
+        <button
+            onClick={() => setDataSource('archive')}
+            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${dataSource === 'archive' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+        >
+            <div className="flex items-center gap-2">
+              <FolderArchive className="h-4 w-4" />
+              Sorgente Archivio
+            </div>
+        </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* COLONNA SINISTRA: COMPOSIZIONE (STILE CARD) */}
+        <div className="w-full lg:w-[400px] xl:w-[450px] bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col shrink-0 overflow-hidden">
+          <div className="p-6 space-y-6">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-tight">Composizione</h2>
               <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
@@ -259,36 +294,12 @@ const Marketing = () => {
           </div>
         </div>
 
-        {/* COLONNA DESTRA: TABELLA DESTINATARI (STILE CRM/ARCHIVIO) */}
-        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 min-w-0">
+        {/* COLONNA DESTRA: TABELLA DESTINATARI (STILE CARD) */}
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-0">
           {/* BARRA FILTRI COERENTE */}
           <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 space-y-4">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3">
-                {/* SORGENTE DATI */}
-                <div className="flex p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
-                  <button
-                    onClick={() => setDataSource('crm')}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-                      dataSource === 'crm' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <Building className="h-3.5 w-3.5" />
-                    CRM
-                  </button>
-                  <button
-                    onClick={() => setDataSource('archive')}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-                      dataSource === 'archive' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <FolderArchive className="h-3.5 w-3.5" />
-                    ARCHIVIO
-                  </button>
-                </div>
-
-                <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 hidden xl:block"></div>
-
                 {/* FILTRO STATO (SOLO PER CRM) */}
                 {dataSource === 'crm' && (
                   <select
@@ -372,7 +383,7 @@ const Marketing = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredLeads.map((lead) => (
+                  currentLeads.map((lead) => (
                     <tr 
                       key={lead.id} 
                       className={`group hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all ${selectedLeads.has(lead.id) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
@@ -421,6 +432,72 @@ const Marketing = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
+              <div className="flex-1 flex justify-between sm:hidden">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Precedente
+                </button>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                >
+                  Successivo
+                </button>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, filteredLeads.length)}</span> di <span className="font-medium">{filteredLeads.length}</span> risultati
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                    >
+                      &larr;
+                    </button>
+                    {[...Array(totalPages)].map((_, i) => {
+                      if (totalPages > 5 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
+                        if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-800 border-gray-300 text-gray-500">...</span>;
+                        return null;
+                      }
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            currentPage === i + 1
+                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
+                              : 'bg-white dark:bg-gray-700 border-gray-300 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                    >
+                      &rarr;
+                    </button>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
