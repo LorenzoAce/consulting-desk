@@ -826,6 +826,50 @@ app.post('/api/marketing/campaigns', async (req, res) => {
   }
 });
 
+// Update a Marketing campaign
+app.put('/api/marketing/campaigns/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, folder, type, sender, recipients, subject, message, status } = req.body;
+  const client = await pool.connect();
+  try {
+    const query = `
+      UPDATE marketing_campaigns 
+      SET name = $1, folder = $2, type = $3, sender_id = $4, recipients = $5, subject = $6, message = $7, status = $8, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $9
+      RETURNING *;
+    `;
+    const values = [name, folder, type, sender, JSON.stringify(recipients), subject, message, status, id];
+    const result = await client.query(query, values);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating marketing campaign:', err);
+    res.status(500).json({ error: 'Failed to update marketing campaign' });
+  } finally {
+    client.release();
+  }
+});
+
+// Delete a Marketing campaign
+app.delete('/api/marketing/campaigns/:id', async (req, res) => {
+  const { id } = req.params;
+  const client = await pool.connect();
+  try {
+    const result = await client.query('DELETE FROM marketing_campaigns WHERE id = $1 RETURNING *', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Campaign not found' });
+    }
+    res.json({ message: 'Campaign deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting marketing campaign:', err);
+    res.status(500).json({ error: 'Failed to delete marketing campaign' });
+  } finally {
+    client.release();
+  }
+});
+
 // Marketing Endpoints
 app.post('/api/marketing/send', async (req, res) => {
   const { type, recipients, subject, message, senderId } = req.body;

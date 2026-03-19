@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building, FileText, Layout, Plus, FolderPlus, Calendar, Hash, BarChart2, MousePointer2, UserMinus, RefreshCw, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
+import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building, FileText, Layout, Plus, FolderPlus, Calendar, Hash, BarChart2, MousePointer2, UserMinus, RefreshCw, ChevronLeft, ChevronRight, MoreVertical, Pencil } from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
 const COLOR_OPTIONS = [
@@ -32,6 +32,7 @@ const Marketing = () => {
   const [crmStatuses, setCrmStatuses] = useState([]);
   const [smtpAccounts, setSmtpAccounts] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   
   // Message content
   const [subject, setSubject] = useState('');
@@ -243,23 +244,79 @@ const Marketing = () => {
         status: 'Bozza'
       };
 
-      const res = await fetch(`${apiUrl}/api/marketing/campaigns`, {
-        method: 'POST',
+      const endpoint = editingId 
+        ? `${apiUrl}/api/marketing/campaigns/${editingId}`
+        : `${apiUrl}/api/marketing/campaigns`;
+      
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(endpoint, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        alert('Bozza salvata con successo!');
+        alert(editingId ? 'Campagna aggiornata con successo!' : 'Bozza salvata con successo!');
         setCampaignView('list');
+        fetchCampaigns();
+        resetCreationState();
       } else {
         const error = await res.json();
-        alert('Errore nel salvataggio della bozza: ' + (error.message || 'Errore sconosciuto'));
+        alert('Errore nel salvataggio: ' + (error.message || 'Errore sconosciuto'));
       }
     } catch (err) {
       console.error('Error saving draft:', err);
-      alert('Errore di connessione durante il salvataggio della bozza.');
+      alert('Errore di connessione durante il salvataggio.');
     }
+  };
+
+  const handleDeleteCampaign = async (id) => {
+    if (!window.confirm('Sei sicuro di voler eliminare questa campagna?')) return;
+    try {
+      const apiUrl = getApiUrl();
+      const res = await fetch(`${apiUrl}/api/marketing/campaigns/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchCampaigns();
+      } else {
+        alert('Errore durante l\'eliminazione della campagna.');
+      }
+    } catch (err) {
+      console.error('Error deleting campaign:', err);
+    }
+  };
+
+  const handleEditCampaign = (campaign) => {
+    setEditingId(campaign.id);
+    setCampaignName(campaign.name);
+    setCampaignFolder(campaign.folder || '');
+    setCampaignType(campaign.type);
+    setSender(campaign.sender_id || '');
+    setSubject(campaign.subject || '');
+    setMessage(campaign.message || '');
+    
+    // Convert recipients from stored JSON (ids) to Set
+    const recipientIds = Array.isArray(campaign.recipients) ? campaign.recipients : [];
+    setSelectedLeads(new Set(recipientIds));
+    
+    setCampaignView('create');
+    setCreationStep('configure'); // Go directly to configuration or details? Configure seems better for editing.
+    setConfigSubView('main');
+  };
+
+  const resetCreationState = () => {
+    setEditingId(null);
+    setCampaignName('');
+    setCampaignFolder('');
+    setCampaignType('email');
+    setSender('');
+    setSubject('');
+    setMessage('');
+    setSelectedLeads(new Set());
+    setCreationStep('select-type');
+    setConfigSubView('main');
   };
 
   return (
@@ -357,12 +414,8 @@ const Marketing = () => {
               {/* Toolbar Campagne */}
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700">
                 <div className="flex flex-wrap items-center gap-2">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-gray-200 transition-all border border-gray-200 dark:border-gray-600">
-                    <FolderPlus className="h-4 w-4" />
-                    Crea cartella
-                  </button>
                   <button 
-                    onClick={() => { setCampaignView('create'); setCreationStep('select-type'); setConfigSubView('main'); }}
+                    onClick={() => { resetCreationState(); setCampaignView('create'); }}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                   >
                     <Plus className="h-4 w-4" />
@@ -505,11 +558,22 @@ const Marketing = () => {
 
                       {/* Actions */}
                       <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all">
+                        <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-all" title="Statistiche">
                           <BarChart2 className="h-5 w-5" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all">
-                          <MoreVertical className="h-5 w-5" />
+                        <button 
+                          onClick={() => handleEditCampaign(campaign)}
+                          className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl transition-all" 
+                          title="Modifica"
+                        >
+                          <Pencil className="h-5 w-5" />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteCampaign(campaign.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-all" 
+                          title="Elimina"
+                        >
+                          <Trash2 className="h-5 w-5" />
                         </button>
                       </div>
                     </div>
@@ -537,6 +601,7 @@ const Marketing = () => {
                 <button 
                   onClick={() => {
                     if (creationStep === 'select-type') {
+                      resetCreationState();
                       setCampaignView('list');
                     } else if (creationStep === 'details') {
                       setCreationStep('select-type');
