@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, Check, AlertTriangle, FileText, Save, GripVertical, Plus, Trash2, Send, Mail, MessageSquare } from 'lucide-react';
+import { 
+  Upload, Check, AlertTriangle, FileText, Save, GripVertical, 
+  Plus, Trash2, Send, Mail, MessageSquare, Layout, 
+  Settings as SettingsIcon, Database, Image as ImageIcon
+} from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
 const COLOR_OPTIONS = [
@@ -22,6 +26,7 @@ const DEFAULT_CRM_STATUSES = [
 ];
 
 const Settings = () => {
+  const [activeTab, setActiveTab] = useState('marketing');
   const [logo, setLogo] = useState(null);
   const [logoDimensions, setLogoDimensions] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -256,464 +261,405 @@ const Settings = () => {
     }
   };
 
+  const tabs = [
+    { id: 'marketing', label: 'Marketing', icon: <Send className="h-4 w-4" />, description: 'Email e SMS' },
+    { id: 'crm', label: 'CRM', icon: <Layout className="h-4 w-4" />, description: 'Tabelle e Stati' },
+    { id: 'archive', label: 'Archivio', icon: <Database className="h-4 w-4" />, description: 'Campi PDF e Liste' },
+    { id: 'logo', label: 'Logo', icon: <ImageIcon className="h-4 w-4" />, description: 'Identità Visiva' }
+  ];
+
   return (
-    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Impostazioni</h2>
-        <p className="text-gray-500 dark:text-gray-400">Gestisci le configurazioni globali dell'applicazione.</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* PDF Options Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-red-500" />
-            Opzioni PDF Globali
-          </h3>
-          
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Seleziona quali sezioni includere nel PDF generato per tutte le schede.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={pdfOptions.anagrafica} 
-                  onChange={() => handlePdfOptionChange('anagrafica')}
-                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                />
-                <span className="text-gray-700 dark:text-gray-200">Anagrafica Cliente</span>
-              </label>
-
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={pdfOptions.dettagli} 
-                  onChange={() => handlePdfOptionChange('dettagli')}
-                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                />
-                <span className="text-gray-700 dark:text-gray-200">Dettagli Servizio</span>
-              </label>
-
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={pdfOptions.note} 
-                  onChange={() => handlePdfOptionChange('note')}
-                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                />
-                <span className="text-gray-700 dark:text-gray-200">Note e Richieste</span>
-              </label>
-
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={pdfOptions.assegnazione} 
-                  onChange={() => handlePdfOptionChange('assegnazione')}
-                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                />
-                <span className="text-gray-700 dark:text-gray-200">Assegnazione Consulente</span>
-              </label>
-
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={pdfOptions.firma} 
-                  onChange={() => handlePdfOptionChange('firma')}
-                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                />
-                <span className="text-gray-700 dark:text-gray-200">Sezione Firme</span>
-              </label>
-
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  checked={pdfOptions.disclaimer} 
-                  onChange={() => handlePdfOptionChange('disclaimer')}
-                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                />
-                <span className="text-gray-700 dark:text-gray-200">Disclaimer Legale</span>
-              </label>
-            </div>
-          </div>
+    <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <SettingsIcon className="h-6 w-6 text-gray-500" />
+            Impostazioni
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">Configura il comportamento globale dell'applicazione.</p>
         </div>
 
-        {/* CRM Column Options Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-500" />
-            Visibilità Colonne CRM
-          </h3>
-          
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Seleziona quali colonne visualizzare nella tabella CRM.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { id: 'business_name', label: 'R.Sociale - Insegna' },
-                { id: 'contact_name', label: 'Contatto' },
-                { id: 'address', label: 'Indirizzo' },
-                { id: 'city', label: 'Città' },
-                { id: 'province', label: 'Provincia' },
-                { id: 'phone', label: 'Telefono' },
-                { id: 'email', label: 'Email' },
-                { id: 'piva', label: 'P.IVA' },
-                { id: 'main_interest', label: 'Interesse' },
-                { id: 'availability', label: 'Disponibilità' },
-                { id: 'services', label: 'Servizi Attivi' },
-                { id: 'status', label: 'Stato' },
-                { id: 'source', label: 'Fonte' },
-                { id: 'notes', label: 'Note' },
-                { id: 'assigned_consultant', label: 'Consulente' }
-              ].map((col) => (
-                <label key={col.id} className="flex items-center space-x-3 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={crmOptions[col.id]} 
-                    onChange={() => handleCrmOptionChange(col.id)}
-                    className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
-                </label>
-              ))}
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Larghezza Colonna Stato CRM (px)
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="100"
-                  max="400"
-                  step="10"
-                  value={crmOptions.status_width || 160}
-                  onChange={(e) => setCrmOptions(prev => ({ ...prev, status_width: parseInt(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-xl appearance-none cursor-pointer dark:bg-gray-700"
-                />
-                <span className="text-sm font-medium text-gray-900 dark:text-white min-w-[3rem]">
-                  {crmOptions.status_width || 160}px
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Archive Column Options Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <FileText className="h-5 w-5 text-green-500" />
-            Visibilità Colonne Archivio Schede
-          </h3>
-          
-          <div className="space-y-4">
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Seleziona quali colonne visualizzare nella tabella Archivio Schede.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                { id: 'business_name', label: 'R.Sociale' },
-                { id: 'full_name', label: 'Nome e Cognome' },
-                { id: 'address', label: 'Indirizzo' },
-                { id: 'city', label: 'Città' },
-                { id: 'province', label: 'Provincia' },
-                { id: 'phone', label: 'Telefono' },
-                { id: 'email', label: 'Email' },
-                { id: 'piva', label: 'P.IVA' },
-                { id: 'main_interest', label: 'Interesse' },
-                { id: 'availability', label: 'Disponibilità' },
-                { id: 'assigned_consultant', label: 'Consulente' },
-                { id: 'operator_name', label: 'Operatore' },
-                { id: 'created_at', label: 'Data Creazione' },
-                { id: 'updated_at', label: 'Ultima Modifica' }
-              ].map((col) => (
-                <label key={col.id} className="flex items-center space-x-3 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={archiveOptions[col.id]} 
-                    onChange={() => handleArchiveOptionChange(col.id)}
-                    className="rounded-md border-gray-300 text-green-600 focus:ring-green-500 h-5 w-5"
-                  />
-                  <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CRM Statuses Configuration */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
-            <GripVertical className="h-5 w-5 text-purple-500" />
-            Configurazione Stati CRM
-          </h3>
-          <button
-            onClick={handleAddStatus}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-purple-600 rounded-xl hover:bg-purple-700"
-          >
-            <Plus className="h-4 w-4" />
-            Aggiungi Stato
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Personalizza gli stati disponibili nel CRM. Puoi modificare il nome e il colore di ogni stato.
-          </p>
-          
-          <div className="grid grid-cols-1 gap-4">
-            {crmStatuses.map((status, index) => (
-              <div key={status.id || index} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-700">
-                <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nome Stato</label>
-                    <input
-                      type="text"
-                      value={status.label}
-                      onChange={(e) => handleStatusChange(index, 'label', e.target.value)}
-                      className="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                      placeholder="Nome dello stato"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Colore</label>
-                    <select
-                      value={status.color}
-                      onChange={(e) => handleStatusChange(index, 'color', e.target.value)}
-                      className="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                    >
-                      {COLOR_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="flex-shrink-0 flex items-end">
-                   <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${
-                      COLOR_OPTIONS.find(c => c.value === status.color)?.classes.split(' ').filter(c => c.startsWith('bg-') || c.startsWith('text-')).join(' ') || 'bg-gray-100'
-                   }`}>
-                      <span className="text-xs font-bold">Aa</span>
-                   </div>
-                </div>
-
-                <div className="flex-shrink-0">
-                  <button
-                    onClick={() => handleRemoveStatus(index)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                    title="Rimuovi stato"
-                  >
-                    <Trash2 className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            ))
-          }
-          </div>
-          
-          {crmStatuses.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600">
-              Nessuno stato configurato. Aggiungine uno per iniziare.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Marketing Settings Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <Send className="h-5 w-5 text-blue-500" />
-          Parametri di Invio Marketing
-        </h3>
-        
-        <div className="space-y-6">
-          {/* Email Settings */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-              <Mail className="h-4 w-4 text-gray-400" />
-              Configurazione Email (SMTP)
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Server SMTP</label>
-                <input 
-                  type="text"
-                  value={marketingSettings.smtp_host}
-                  onChange={(e) => handleMarketingSettingChange('smtp_host', e.target.value)}
-                  placeholder="es. smtp.gmail.com"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Porta</label>
-                <input 
-                  type="number"
-                  value={marketingSettings.smtp_port}
-                  onChange={(e) => handleMarketingSettingChange('smtp_port', parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Utente / Email</label>
-                <input 
-                  type="text"
-                  value={marketingSettings.smtp_user}
-                  onChange={(e) => handleMarketingSettingChange('smtp_user', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Password / App Key</label>
-                <input 
-                  type="password"
-                  value={marketingSettings.smtp_pass}
-                  onChange={(e) => handleMarketingSettingChange('smtp_pass', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <hr className="border-gray-200 dark:border-gray-700" />
-
-          {/* SMS Settings */}
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-gray-400" />
-              Configurazione SMS
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Provider SMS</label>
-                <select 
-                  value={marketingSettings.sms_provider}
-                  onChange={(e) => handleMarketingSettingChange('sms_provider', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="mock">Simulazione (Test)</option>
-                  <option value="twilio">Twilio</option>
-                  <option value="skebby">Skebby</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">API Key / Auth Token</label>
-                <input 
-                  type="password"
-                  value={marketingSettings.sms_api_key}
-                  onChange={(e) => handleMarketingSettingChange('sms_api_key', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <Upload className="h-5 w-5 text-blue-500" />
-          Logo Globale
-        </h3>
-        
-        <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                    Caricando un logo qui e cliccando su "Applica a tutte", aggiornerai il logo presente su <strong>tutte le schede salvate in archivio</strong>.
-                    Questa operazione sovrascriverà eventuali loghi diversi caricati precedentemente sulle singole schede.
-                </p>
-            </div>
-
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
-                {logo ? (
-                <div className="relative">
-                    <img 
-                    src={logo} 
-                    alt="Logo Preview" 
-                    className="max-h-32 object-contain mx-auto"
-                    />
-                    <button 
-                    onClick={() => { setLogo(null); setLogoDimensions(null); }}
-                    className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200"
-                    >
-                    <span className="sr-only">Rimuovi</span>
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    </button>
-                </div>
-                ) : (
-                <label className="cursor-pointer flex flex-col items-center">
-                    <Upload className="h-12 w-12 text-gray-400 mb-2" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Clicca per caricare un logo</span>
-                    <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handleLogoUpload}
-                    className="hidden" 
-                    />
-                </label>
-                )}
-            </div>
-
-            <div className="flex justify-end pt-4">
-                <button
-                onClick={applyLogoToAll}
-                disabled={!logo || isUploading}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
-                    !logo || isUploading
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
-                }`}
-                >
-                {isUploading ? (
-                    <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Applicazione in corso...
-                    </>
-                ) : (
-                    <>
-                    <Check className="h-4 w-4" />
-                    Applica a tutte le schede
-                    </>
-                )}
-                </button>
-            </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end sticky bottom-6 z-10">
         <button
           onClick={saveSettings}
           disabled={isSavingSettings}
-          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-colors transform hover:-translate-y-0.5 ${
+          className={`flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-white shadow-lg transition-all transform active:scale-95 ${
             isSavingSettings
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
-              : 'bg-green-600 text-white hover:bg-green-700'
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-green-600 hover:bg-green-700 shadow-green-500/20'
           }`}
         >
           {isSavingSettings ? (
-            <>
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-              Salvataggio...
-            </>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
           ) : (
-            <>
-              <Save className="h-5 w-5" />
-              Salva Tutte le Impostazioni
-            </>
+            <Save className="h-5 w-5" />
           )}
+          Salva Tutto
         </button>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Navigation Sidebar */}
+        <div className="w-full lg:w-64 flex-shrink-0">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-5 py-4 text-left transition-colors border-l-4 ${
+                  activeTab === tab.id
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-600 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                }`}
+              >
+                <div className={`p-2 rounded-lg ${activeTab === tab.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                  {tab.icon}
+                </div>
+                <div>
+                  <div className="font-bold text-sm leading-tight">{tab.label}</div>
+                  <div className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">{tab.description}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="flex-1 space-y-8">
+          {activeTab === 'marketing' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <Mail className="h-5 w-5 text-blue-500" />
+                  Configurazione Email (SMTP)
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Server SMTP</label>
+                    <input 
+                      type="text"
+                      value={marketingSettings.smtp_host}
+                      onChange={(e) => handleMarketingSettingChange('smtp_host', e.target.value)}
+                      placeholder="es. smtp.gmail.com"
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Porta</label>
+                    <input 
+                      type="number"
+                      value={marketingSettings.smtp_port}
+                      onChange={(e) => handleMarketingSettingChange('smtp_port', parseInt(e.target.value))}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Utente / Email</label>
+                    <input 
+                      type="text"
+                      value={marketingSettings.smtp_user}
+                      onChange={(e) => handleMarketingSettingChange('smtp_user', e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Password / App Key</label>
+                    <input 
+                      type="password"
+                      value={marketingSettings.smtp_pass}
+                      onChange={(e) => handleMarketingSettingChange('smtp_pass', e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-green-500" />
+                  Configurazione SMS
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Provider SMS</label>
+                    <select 
+                      value={marketingSettings.sms_provider}
+                      onChange={(e) => handleMarketingSettingChange('sms_provider', e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    >
+                      <option value="mock">Simulazione (Test)</option>
+                      <option value="twilio">Twilio</option>
+                      <option value="skebby">Skebby</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">API Key / Auth Token</label>
+                    <input 
+                      type="password"
+                      value={marketingSettings.sms_api_key}
+                      onChange={(e) => handleMarketingSettingChange('sms_api_key', e.target.value)}
+                      className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'crm' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <GripVertical className="h-5 w-5 text-purple-500" />
+                    Stati del CRM
+                  </h3>
+                  <button
+                    onClick={handleAddStatus}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-white bg-purple-600 rounded-xl hover:bg-purple-700 transition-all shadow-md shadow-purple-500/20"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Aggiungi
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {crmStatuses.map((status, index) => (
+                    <div key={status.id || index} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-700 group">
+                      <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Etichetta</label>
+                          <input
+                            type="text"
+                            value={status.label}
+                            onChange={(e) => handleStatusChange(index, 'label', e.target.value)}
+                            className="block w-full px-3 py-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 text-sm dark:bg-gray-800 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Colore</label>
+                          <select
+                            value={status.color}
+                            onChange={(e) => handleStatusChange(index, 'color', e.target.value)}
+                            className="block w-full px-3 py-2 border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 text-sm dark:bg-gray-800 dark:text-white"
+                          >
+                            {COLOR_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-shrink-0 flex items-end">
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shadow-sm ${
+                            COLOR_OPTIONS.find(c => c.value === status.color)?.classes || 'bg-gray-100'
+                        }`}>
+                            <span className="text-xs font-bold">Aa</span>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleRemoveStatus(index)}
+                        className="p-2 text-gray-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <Layout className="h-5 w-5 text-blue-500" />
+                  Visualizzazione Tabella CRM
+                </h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { id: 'business_name', label: 'R.Sociale' },
+                    { id: 'contact_name', label: 'Contatto' },
+                    { id: 'address', label: 'Indirizzo' },
+                    { id: 'city', label: 'Città' },
+                    { id: 'province', label: 'Provincia' },
+                    { id: 'phone', label: 'Telefono' },
+                    { id: 'email', label: 'Email' },
+                    { id: 'piva', label: 'P.IVA' },
+                    { id: 'main_interest', label: 'Interesse' },
+                    { id: 'availability', label: 'Disponibilità' },
+                    { id: 'services', label: 'Servizi' },
+                    { id: 'status', label: 'Stato' },
+                    { id: 'source', label: 'Fonte' },
+                    { id: 'notes', label: 'Note' },
+                    { id: 'assigned_consultant', label: 'Consulente' }
+                  ].map((col) => (
+                    <label key={col.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors border border-transparent hover:border-blue-200 dark:hover:border-blue-800">
+                      <input 
+                        type="checkbox" 
+                        checked={crmOptions[col.id]} 
+                        onChange={() => handleCrmOptionChange(col.id)}
+                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{col.label}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">
+                    Larghezza Colonna Stato ({crmOptions.status_width}px)
+                  </label>
+                  <input
+                    type="range"
+                    min="100"
+                    max="400"
+                    step="10"
+                    value={crmOptions.status_width || 160}
+                    onChange={(e) => setCrmOptions(prev => ({ ...prev, status_width: parseInt(e.target.value) }))}
+                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-xl appearance-none cursor-pointer accent-blue-600"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'archive' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-red-500" />
+                  Sezioni PDF Esportabile
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[
+                    { id: 'anagrafica', label: 'Anagrafica Cliente' },
+                    { id: 'dettagli', label: 'Dettagli Servizio' },
+                    { id: 'note', label: 'Note e Richieste' },
+                    { id: 'assegnazione', label: 'Assegnazione' },
+                    { id: 'firma', label: 'Sezione Firme' },
+                    { id: 'disclaimer', label: 'Disclaimer Legale' }
+                  ].map((opt) => (
+                    <label key={opt.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors border border-transparent hover:border-red-200 dark:hover:border-red-800">
+                      <input 
+                        type="checkbox" 
+                        checked={pdfOptions[opt.id]} 
+                        onChange={() => handlePdfOptionChange(opt.id)}
+                        className="rounded-md border-gray-300 text-red-600 focus:ring-red-500 h-5 w-5"
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{opt.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <Database className="h-5 w-5 text-green-500" />
+                  Colonne Tabella Archivio
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { id: 'business_name', label: 'R.Sociale' },
+                    { id: 'full_name', label: 'Nome e Cognome' },
+                    { id: 'city', label: 'Città' },
+                    { id: 'province', label: 'Provincia' },
+                    { id: 'phone', label: 'Telefono' },
+                    { id: 'email', label: 'Email' },
+                    { id: 'piva', label: 'P.IVA' },
+                    { id: 'main_interest', label: 'Interesse' },
+                    { id: 'availability', label: 'Disponibilità' },
+                    { id: 'assigned_consultant', label: 'Consulente' },
+                    { id: 'operator_name', label: 'Operatore' },
+                    { id: 'created_at', label: 'Creazione' }
+                  ].map((col) => (
+                    <label key={col.id} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/30 rounded-xl cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors border border-transparent hover:border-green-200 dark:hover:border-green-800">
+                      <input 
+                        type="checkbox" 
+                        checked={archiveOptions[col.id]} 
+                        onChange={() => handleArchiveOptionChange(col.id)}
+                        className="rounded-md border-gray-300 text-green-600 focus:ring-green-500 h-5 w-5"
+                      />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{col.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'logo' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="bg-white dark:bg-gray-800 shadow-sm rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-blue-500" />
+                  Logo Globale dell'Agenzia
+                </h3>
+                
+                <div className="space-y-6">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-5 flex items-start gap-4">
+                    <AlertTriangle className="h-6 w-6 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                      Il logo caricato qui sarà utilizzato come <strong>predefinito</strong> per tutte le nuove schede e per i PDF.
+                      Puoi anche forzare l'aggiornamento su tutte le schede già esistenti.
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-10 hover:border-blue-500 dark:hover:border-blue-500 transition-all bg-gray-50 dark:bg-gray-900/50 group">
+                    {logo ? (
+                      <div className="relative group/image">
+                        <img 
+                          src={logo} 
+                          alt="Logo Preview" 
+                          className="max-h-48 object-contain mx-auto transition-transform group-hover/image:scale-105"
+                        />
+                        <button 
+                          onClick={() => { setLogo(null); setLogoDimensions(null); }}
+                          className="absolute -top-4 -right-4 bg-white dark:bg-gray-800 text-red-500 rounded-full p-2 shadow-xl border border-gray-100 dark:border-gray-700 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer flex flex-col items-center">
+                        <div className="p-5 bg-white dark:bg-gray-800 rounded-2xl shadow-sm mb-4 group-hover:scale-110 transition-transform">
+                          <Upload className="h-10 w-10 text-blue-500" />
+                        </div>
+                        <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Trascina o clicca per caricare</span>
+                        <span className="text-xs text-gray-400 mt-1 uppercase tracking-widest font-medium">PNG, JPG fino a 2MB</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleLogoUpload}
+                          className="hidden" 
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  <div className="flex justify-center">
+                    <button
+                      onClick={applyLogoToAll}
+                      disabled={!logo || isUploading}
+                      className={`flex items-center gap-3 px-8 py-3 rounded-2xl font-bold transition-all shadow-lg ${
+                        !logo || isUploading
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20 active:scale-95'
+                      }`}
+                    >
+                      {isUploading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      ) : (
+                        <Check className="h-5 w-5" />
+                      )}
+                      Applica a tutto l'archivio
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
