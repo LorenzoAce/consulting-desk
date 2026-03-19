@@ -213,9 +213,37 @@ const Marketing = () => {
       if (res.ok && result.success) {
         alert(result.message || `Invio completato! Inviati: ${result.sent}, Falliti: ${result.failed}`);
         setStats({ sent: result.sent, failed: result.failed });
-        setMessage('');
-        setSubject('');
-        setSelectedLeads(new Set());
+        
+        // Salva o aggiorna la campagna nel database come "Inviata"
+        try {
+          const campaignPayload = {
+            name: campaignName,
+            folder: campaignFolder,
+            type: campaignType,
+            sender: sender,
+            recipients: Array.from(selectedLeads),
+            subject: subject,
+            message: message,
+            status: 'Inviata'
+          };
+
+          const endpoint = editingId 
+            ? `${apiUrl}/api/marketing/campaigns/${editingId}`
+            : `${apiUrl}/api/marketing/campaigns`;
+          
+          await fetch(endpoint, {
+            method: editingId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(campaignPayload)
+          });
+          
+          fetchCampaigns();
+        } catch (saveErr) {
+          console.error('Error saving sent campaign:', saveErr);
+        }
+
+        resetCreationState();
+        setCampaignView('list');
       } else {
         // Gestisce sia errori di rete/server che errori di invio parziali
         const errorDetail = result.errors ? result.errors.join('\n') : (result.error || 'Dettagli non disponibili');
