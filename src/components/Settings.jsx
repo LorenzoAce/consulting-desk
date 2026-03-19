@@ -265,7 +265,7 @@ const Settings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* PDF Options Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5 text-red-500" />
             Opzioni PDF Globali
@@ -282,7 +282,7 @@ const Settings = () => {
                   type="checkbox" 
                   checked={pdfOptions.anagrafica} 
                   onChange={() => handlePdfOptionChange('anagrafica')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                 />
                 <span className="text-gray-700 dark:text-gray-200">Anagrafica Cliente</span>
               </label>
@@ -292,7 +292,7 @@ const Settings = () => {
                   type="checkbox" 
                   checked={pdfOptions.dettagli} 
                   onChange={() => handlePdfOptionChange('dettagli')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                 />
                 <span className="text-gray-700 dark:text-gray-200">Dettagli Servizio</span>
               </label>
@@ -302,7 +302,7 @@ const Settings = () => {
                   type="checkbox" 
                   checked={pdfOptions.note} 
                   onChange={() => handlePdfOptionChange('note')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                 />
                 <span className="text-gray-700 dark:text-gray-200">Note e Richieste</span>
               </label>
@@ -312,7 +312,7 @@ const Settings = () => {
                   type="checkbox" 
                   checked={pdfOptions.assegnazione} 
                   onChange={() => handlePdfOptionChange('assegnazione')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                 />
                 <span className="text-gray-700 dark:text-gray-200">Assegnazione Consulente</span>
               </label>
@@ -322,7 +322,7 @@ const Settings = () => {
                   type="checkbox" 
                   checked={pdfOptions.firma} 
                   onChange={() => handlePdfOptionChange('firma')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                 />
                 <span className="text-gray-700 dark:text-gray-200">Sezione Firme</span>
               </label>
@@ -332,7 +332,7 @@ const Settings = () => {
                   type="checkbox" 
                   checked={pdfOptions.disclaimer} 
                   onChange={() => handlePdfOptionChange('disclaimer')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                 />
                 <span className="text-gray-700 dark:text-gray-200">Disclaimer Legale</span>
               </label>
@@ -341,7 +341,7 @@ const Settings = () => {
         </div>
 
         {/* CRM Column Options Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-500" />
             Visibilità Colonne CRM
@@ -375,7 +375,7 @@ const Settings = () => {
                     type="checkbox" 
                     checked={crmOptions[col.id]} 
                     onChange={() => handleCrmOptionChange(col.id)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                    className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                   />
                   <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
                 </label>
@@ -394,7 +394,7 @@ const Settings = () => {
                   step="10"
                   value={crmOptions.status_width || 160}
                   onChange={(e) => setCrmOptions(prev => ({ ...prev, status_width: parseInt(e.target.value) }))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                  className="w-full h-2 bg-gray-200 rounded-xl appearance-none cursor-pointer dark:bg-gray-700"
                 />
                 <span className="text-sm font-medium text-gray-900 dark:text-white min-w-[3rem]">
                   {crmOptions.status_width || 160}px
@@ -405,7 +405,7 @@ const Settings = () => {
         </div>
 
         {/* Archive Column Options Section */}
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <FileText className="h-5 w-5 text-green-500" />
             Visibilità Colonne Archivio Schede
@@ -438,7 +438,7 @@ const Settings = () => {
                     type="checkbox" 
                     checked={archiveOptions[col.id]} 
                     onChange={() => handleArchiveOptionChange(col.id)}
-                    className="rounded border-gray-300 text-green-600 focus:ring-green-500 h-5 w-5"
+                    className="rounded-md border-gray-300 text-green-600 focus:ring-green-500 h-5 w-5"
                   />
                   <span className="text-gray-700 dark:text-gray-200">{col.label}</span>
                 </label>
@@ -449,7 +449,7 @@ const Settings = () => {
       </div>
 
       {/* CRM Statuses Configuration */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
             <GripVertical className="h-5 w-5 text-purple-500" />
@@ -457,7 +457,7 @@ const Settings = () => {
           </h3>
           <button
             onClick={handleAddStatus}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-purple-600 rounded-xl hover:bg-purple-700"
           >
             <Plus className="h-4 w-4" />
             Aggiungi Stato
@@ -471,7 +471,7 @@ const Settings = () => {
           
           <div className="grid grid-cols-1 gap-4">
             {crmStatuses.map((status, index) => (
-              <div key={status.id || index} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div key={status.id || index} className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-200 dark:border-gray-700">
                 <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Nome Stato</label>
@@ -479,7 +479,7 @@ const Settings = () => {
                       type="text"
                       value={status.label}
                       onChange={(e) => handleStatusChange(index, 'label', e.target.value)}
-                      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                      className="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                       placeholder="Nome dello stato"
                     />
                   </div>
@@ -488,7 +488,7 @@ const Settings = () => {
                     <select
                       value={status.color}
                       onChange={(e) => handleStatusChange(index, 'color', e.target.value)}
-                      className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                      className="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
                     >
                       {COLOR_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -522,7 +522,7 @@ const Settings = () => {
           </div>
           
           {crmStatuses.length === 0 && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+            <div className="text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded-2xl border border-dashed border-gray-300 dark:border-gray-600">
               Nessuno stato configurato. Aggiungine uno per iniziare.
             </div>
           )}
@@ -530,7 +530,7 @@ const Settings = () => {
       </div>
 
       {/* Marketing Settings Section */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Send className="h-5 w-5 text-blue-500" />
           Parametri di Invio Marketing
@@ -551,7 +551,7 @@ const Settings = () => {
                   value={marketingSettings.smtp_host}
                   onChange={(e) => handleMarketingSettingChange('smtp_host', e.target.value)}
                   placeholder="es. smtp.gmail.com"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -560,7 +560,7 @@ const Settings = () => {
                   type="number"
                   value={marketingSettings.smtp_port}
                   onChange={(e) => handleMarketingSettingChange('smtp_port', parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -569,7 +569,7 @@ const Settings = () => {
                   type="text"
                   value={marketingSettings.smtp_user}
                   onChange={(e) => handleMarketingSettingChange('smtp_user', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -578,7 +578,7 @@ const Settings = () => {
                   type="password"
                   value={marketingSettings.smtp_pass}
                   onChange={(e) => handleMarketingSettingChange('smtp_pass', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -598,7 +598,7 @@ const Settings = () => {
                 <select 
                   value={marketingSettings.sms_provider}
                   onChange={(e) => handleMarketingSettingChange('sms_provider', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="mock">Simulazione (Test)</option>
                   <option value="twilio">Twilio</option>
@@ -611,7 +611,7 @@ const Settings = () => {
                   type="password"
                   value={marketingSettings.sms_api_key}
                   onChange={(e) => handleMarketingSettingChange('sms_api_key', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -619,14 +619,14 @@ const Settings = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <Upload className="h-5 w-5 text-blue-500" />
           Logo Globale
         </h3>
         
         <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4 flex items-start gap-3">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-800 dark:text-blue-200">
                     Caricando un logo qui e cliccando su "Applica a tutte", aggiornerai il logo presente su <strong>tutte le schede salvate in archivio</strong>.
@@ -634,7 +634,7 @@ const Settings = () => {
                 </p>
             </div>
 
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 hover:border-blue-500 dark:hover:border-blue-500 transition-colors">
                 {logo ? (
                 <div className="relative">
                     <img 
@@ -670,7 +670,7 @@ const Settings = () => {
                 <button
                 onClick={applyLogoToAll}
                 disabled={!logo || isUploading}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
                     !logo || isUploading
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
                     : 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
@@ -696,7 +696,7 @@ const Settings = () => {
         <button
           onClick={saveSettings}
           disabled={isSavingSettings}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-lg shadow-lg transition-colors transform hover:-translate-y-0.5 ${
+          className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-lg shadow-lg transition-colors transform hover:-translate-y-0.5 ${
             isSavingSettings
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
               : 'bg-green-600 text-white hover:bg-green-700'

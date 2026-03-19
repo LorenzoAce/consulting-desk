@@ -35,7 +35,7 @@ const Sidebar = ({ currentView, onNavigate, isOpen, onClose }) => {
               <button
                 key={item.id}
                 onClick={() => handleNavigate(item.id)}
-                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors ${
                   currentView === item.id
                     ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
                     : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -59,7 +59,7 @@ const Header = ({ darkMode, toggleDarkMode, onNavigate, isSidebarOpen, toggleSid
         <div className="flex items-center gap-3">
           <button
             onClick={toggleSidebar}
-            className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors focus:outline-none"
+            className="p-2 -ml-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors focus:outline-none"
             aria-label="Toggle Menu"
           >
             {isSidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}

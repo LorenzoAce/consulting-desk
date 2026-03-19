@@ -449,7 +449,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded flex items-center">
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl flex items-center">
             <AlertCircle className="h-5 w-5 mr-2" />
             {error}
         </div>
@@ -459,19 +459,19 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       <div className="flex items-center space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
         <button
             onClick={() => handleTabChange('list')}
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors duration-150 ${activeTab === 'list' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${activeTab === 'list' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
         >
             Lista Contatti
         </button>
         <button
             onClick={() => handleTabChange('import-archive')}
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors duration-150 ${activeTab === 'import-archive' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${activeTab === 'import-archive' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
         >
             Importa da Archivio
         </button>
         <button
             onClick={() => handleTabChange('import-excel')}
-            className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors duration-150 ${activeTab === 'import-excel' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            className={`px-4 py-2 text-sm font-medium rounded-xl shadow-sm border transition-colors duration-150 ${activeTab === 'import-excel' ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
         >
             Importa da Excel
         </button>
@@ -486,7 +486,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
             <input
               type="text"
               placeholder="Cerca contatti..."
-              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               value={listSearch}
               onChange={(e) => setListSearch(e.target.value)}
             />
@@ -495,7 +495,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
 
         <button
             onClick={() => onNavigate('form')}
-            className="px-4 py-2 text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 flex items-center"
+            className="px-4 py-2 text-sm font-medium rounded-xl text-white bg-green-600 hover:bg-green-700 flex items-center shadow-sm"
         >
             <Plus className="w-4 h-4 mr-2" />
             Nuovo Contatto
@@ -507,19 +507,19 @@ const CRM = ({ onLoadCard, onNavigate }) => {
         <>
             {/* Top Pagination Controls */}
             {totalPages > 1 && (
-              <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mb-4 rounded-md">
+              <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mb-4 rounded-2xl shadow-sm">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
                     Precedente
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
                     Successivo
                   </button>
@@ -531,11 +531,11 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                       >
                         <span className="sr-only">Precedente</span>
                         &larr;
@@ -565,7 +565,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                       >
                         <span className="sr-only">Successivo</span>
                         &rarr;
@@ -576,7 +576,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
               </div>
             )}
 
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
+        <div className="bg-white dark:bg-gray-800 shadow-lg overflow-hidden sm:rounded-2xl border border-gray-200 dark:border-gray-700">
             <div className="overflow-x-auto h-4 mb-2" ref={topScrollRef} onScroll={handleTopScroll}>
                 <div style={{ width: scrollWidth, height: 1 }} />
             </div>
@@ -754,14 +754,14 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
                     Precedente
                   </button>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                     disabled={currentPage === totalPages}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
                     Successivo
                   </button>
@@ -773,11 +773,11 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
                       <button
                         onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                       >
                         <span className="sr-only">Precedente</span>
                         &larr;
@@ -807,7 +807,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                       <button
                         onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                         disabled={currentPage === totalPages}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                       >
                         <span className="sr-only">Successivo</span>
                         &rarr;
@@ -827,100 +827,100 @@ const CRM = ({ onLoadCard, onNavigate }) => {
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={handleCloseModal}></div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-200 dark:border-gray-700">
               <form onSubmit={handleModalSubmit}>
                 <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl leading-6 font-bold text-gray-900 dark:text-white" id="modal-title">
                       Modifica Contatto
                     </h3>
-                    <button type="button" onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500">
+                    <button type="button" onClick={handleCloseModal} className="text-gray-400 hover:text-gray-500 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
                       <X className="h-6 w-6" />
                     </button>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 gap-5">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Ragione Sociale</label>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Ragione Sociale</label>
                       <input
                         type="text"
                         required
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                         value={formData.businessName}
                         onChange={(e) => setFormData({...formData, businessName: e.target.value})}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Referente</label>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Referente</label>
                       <input
                         type="text"
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                         value={formData.contactName}
                         onChange={(e) => setFormData({...formData, contactName: e.target.value})}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">P.IVA</label>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">P.IVA</label>
                       <input
                         type="text"
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                         value={formData.piva}
                         onChange={(e) => setFormData({...formData, piva: e.target.value})}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Email</label>
                         <input
                           type="email"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                           value={formData.email}
                           onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Telefono</label>
+                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Telefono</label>
                         <input
                           type="text"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                           value={formData.phone}
                           onChange={(e) => setFormData({...formData, phone: e.target.value})}
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Indirizzo</label>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Indirizzo</label>
                       <input
                         type="text"
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                         value={formData.address}
                         onChange={(e) => setFormData({...formData, address: e.target.value})}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Città</label>
+                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Città</label>
                         <input
                           type="text"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                           value={formData.city}
                           onChange={(e) => setFormData({...formData, city: e.target.value})}
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Provincia</label>
+                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Provincia</label>
                         <input
                           type="text"
-                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all"
                           value={formData.province}
                           onChange={(e) => setFormData({...formData, province: e.target.value})}
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Stato</label>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Stato</label>
                       <select
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all appearance-none bg-no-repeat bg-right"
                         value={formData.status}
                         onChange={(e) => setFormData({...formData, status: e.target.value})}
                       >
@@ -930,27 +930,27 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Note</label>
+                      <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Note</label>
                       <textarea
-                        rows={3}
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                        rows={4}
+                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm dark:bg-gray-700 dark:text-white transition-all resize-none"
                         value={formData.notes}
                         onChange={(e) => setFormData({...formData, notes: e.target.value})}
                       />
                     </div>
                   </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div className="bg-gray-50 dark:bg-gray-700 px-4 py-4 sm:px-6 sm:flex sm:flex-row-reverse gap-3">
                   <button
                     type="submit"
-                    className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-lg px-6 py-2.5 bg-blue-600 text-base font-bold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm transition-all"
                   >
-                    Salva
+                    Salva Modifiche
                   </button>
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:bg-gray-600 dark:text-white dark:border-gray-500 dark:hover:bg-gray-500"
+                    className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 dark:border-gray-600 shadow-sm px-6 py-2.5 bg-white text-base font-bold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:bg-gray-600 dark:text-white dark:hover:bg-gray-500 transition-all"
                   >
                     Annulla
                   </button>
@@ -962,29 +962,29 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       )}
 
       {activeTab === 'import-archive' && (
-        <div className="bg-white dark:bg-gray-800 shadow rounded-md p-6">
-            <div className="mb-4">
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="mb-6">
                 <input
                     type="text"
                     placeholder="Cerca per ragione sociale o email..."
-                    className="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-md mb-4">
+            <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl mb-6 shadow-inner">
                 {filteredArchiveCards.map(card => (
                     <div 
                         key={card.id} 
                         onClick={() => toggleCardSelection(card.id)}
-                        className={`p-3 flex items-center cursor-pointer border-b last:border-b-0 ${selectedCardIds.has(card.id) ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                        className={`p-4 flex items-center cursor-pointer border-b last:border-b-0 transition-all ${selectedCardIds.has(card.id) ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                     >
-                        <div className={`w-5 h-5 rounded border mr-3 flex items-center justify-center ${selectedCardIds.has(card.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-                            {selectedCardIds.has(card.id) && <Check className="h-3 w-3 text-white" />}
+                        <div className={`w-6 h-6 rounded-xl border-2 mr-4 flex items-center justify-center transition-all ${selectedCardIds.has(card.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+                            {selectedCardIds.has(card.id) && <Check className="h-4 w-4 text-white" />}
                         </div>
                         <div>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">{card.business_name}</p>
-                            <p className="text-xs text-gray-500">{card.email} - {card.phone}</p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-white">{card.business_name}</p>
+                            <p className="text-xs text-gray-500 font-medium tracking-tight mt-0.5">{card.email} - {card.phone}</p>
                         </div>
                     </div>
                 ))}
@@ -992,7 +992,7 @@ const CRM = ({ onLoadCard, onNavigate }) => {
             <button
                 onClick={handleImportFromArchive}
                 disabled={loading || selectedCardIds.size === 0}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
+                className="w-full flex justify-center py-4 px-6 border border-transparent rounded-2xl shadow-xl text-lg font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50 transition-all transform active:scale-95"
             >
                 {loading ? 'Importazione...' : `Importa Selezionati (${selectedCardIds.size})`}
             </button>
@@ -1000,8 +1000,8 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       )}
 
       {activeTab === 'import-excel' && (
-        <div className="bg-white dark:bg-gray-800 shadow rounded-md p-6">
-            <div className="mb-6 text-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg p-12">
+        <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-6 border border-gray-200 dark:border-gray-700">
+            <div className="mb-6 text-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-12">
                 <input
                     type="file"
                     accept=".xlsx, .xls"
@@ -1009,26 +1009,26 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                     className="hidden"
                     id="excel-upload"
                 />
-                <label htmlFor="excel-upload" className="cursor-pointer">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
-                        Clicca per selezionare un file Excel
+                <label htmlFor="excel-upload" className="cursor-pointer group">
+                    <Upload className="mx-auto h-16 w-16 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                    <span className="mt-4 block text-base font-bold text-gray-900 dark:text-white">
+                        Trascina o clicca per caricare Excel
                     </span>
-                    <span className="mt-1 block text-xs text-gray-500">
-                        Formato atteso: Ragione Sociale, Referente, Email, Telefono, Note
+                    <span className="mt-2 block text-xs text-gray-500 uppercase tracking-widest">
+                        Formato: Ragione Sociale, Referente, Email, Telefono, Note
                     </span>
                 </label>
             </div>
 
             {excelData.length > 0 && (
                 <div className="mb-4">
-                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Anteprima ({excelData.length} righe):</h4>
-                    <div className="max-h-60 overflow-y-auto border rounded text-xs">
+                    <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-widest">Anteprima ({excelData.length} righe)</h4>
+                    <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-xl text-xs shadow-inner">
                         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead className="bg-gray-50 dark:bg-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-700 sticky top-0">
                                 <tr>
                                     {Object.keys(excelData[0] || {}).map(key => (
-                                        <th key={key} className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">{key}</th>
+                                        <th key={key} className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest">{key}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -1036,19 +1036,19 @@ const CRM = ({ onLoadCard, onNavigate }) => {
                                 {excelData.slice(0, 5).map((row, idx) => (
                                     <tr key={idx}>
                                         {Object.values(row).map((val, vIdx) => (
-                                            <td key={vIdx} className="px-3 py-2 whitespace-nowrap text-gray-500 dark:text-gray-400">{val}</td>
+                                            <td key={vIdx} className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">{val}</td>
                                         ))}
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                        {excelData.length > 5 && <div className="p-2 text-center text-gray-500 italic">...e altre {excelData.length - 5} righe</div>}
+                        {excelData.length > 5 && <div className="p-3 text-center text-gray-400 font-bold uppercase tracking-tighter bg-gray-50 dark:bg-gray-900/50">...e altre {excelData.length - 5} righe</div>}
                     </div>
                     
                     <button
                         onClick={handleImportExcel}
                         disabled={loading}
-                        className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:opacity-50"
+                        className="mt-6 w-full flex justify-center py-4 px-6 border border-transparent rounded-2xl shadow-xl text-lg font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:opacity-50 transition-all transform active:scale-95"
                     >
                         {loading ? 'Importazione...' : 'Conferma Importazione'}
                     </button>
@@ -1058,18 +1058,18 @@ const CRM = ({ onLoadCard, onNavigate }) => {
       )}
       {/* Image Preview Modal */}
       {showImageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4" onClick={() => setShowImageModal(false)}>
-          <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4 backdrop-blur-sm transition-all" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-3xl p-2 shadow-2xl" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setShowImageModal(false)}
-              className="absolute -top-4 -right-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none"
+              className="absolute -top-4 -right-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full p-2.5 shadow-2xl hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none transition-all"
             >
               <X className="h-6 w-6" />
             </button>
             <img 
               src={selectedImage} 
               alt="Anteprima" 
-              className="max-w-full max-h-[85vh] object-contain rounded" 
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl" 
             />
           </div>
         </div>

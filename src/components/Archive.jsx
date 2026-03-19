@@ -502,18 +502,18 @@ const Archive = ({ onLoadCard }) => {
 
   const FilterDropdown = ({ label, options, selected, onChange, category }) => (
     <div className="relative group">
-      <div className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer flex justify-between items-center group-hover:border-blue-500">
+      <div className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white cursor-pointer flex justify-between items-center group-hover:border-blue-500 transition-all">
         <span className="truncate">{selected.length ? `${selected.length} selezionati` : label}</span>
         <Filter className="h-3 w-3 text-gray-400" />
       </div>
-      <div className="hidden group-hover:block absolute z-10 w-full top-full left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+      <div className="hidden group-hover:block absolute z-10 w-full top-full left-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-60 overflow-y-auto mt-1">
         {options.map(option => (
           <label key={option} className="flex items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
             <input
               type="checkbox"
               checked={selected.includes(option)}
               onChange={() => onChange(category, option)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
+              className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"
             />
             <span className="text-sm text-gray-700 dark:text-gray-200">{option}</span>
           </label>
@@ -540,55 +540,55 @@ const Archive = ({ onLoadCard }) => {
         <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           Gestione completa delle schede clienti.
           {selectedCards.length > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+            <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full dark:bg-blue-900 dark:text-blue-300 uppercase tracking-wider">
                {selectedCards.length} selezionati
             </span>
           )}
         </p>
       </div>
 
-      <div className="flex items-center space-x-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+      <div className="flex flex-wrap items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6">
         {/* Buttons Group */}
         <button
             onClick={exportToExcel}
-            className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center gap-2"
+            className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center gap-2 transition-all"
         >
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Excel</span>
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span className="hidden sm:inline uppercase tracking-tight">Excel</span>
         </button>
 
         {selectedCards.length > 0 && (
-          <>
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
             <button
               onClick={() => setShowAssignModal(true)}
-              className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-purple-600 text-white border-transparent hover:bg-purple-700 flex items-center gap-2"
+              className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-purple-600 text-white border-transparent hover:bg-purple-700 flex items-center gap-2 transition-all shadow-purple-500/20"
             >
               <User className="h-4 w-4" />
-              <span className="hidden sm:inline">Assegna</span>
+              <span className="hidden sm:inline uppercase tracking-tight">Assegna</span>
             </button>
 
             <button
               onClick={moveSelectedToCRM}
-              className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-indigo-600 text-white border-transparent hover:bg-indigo-700 flex items-center gap-2"
+              className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-indigo-600 text-white border-transparent hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-indigo-500/20"
             >
               <ArrowRight className="h-4 w-4" />
-              <span className="hidden sm:inline">Sposta in CRM</span>
+              <span className="hidden sm:inline uppercase tracking-tight">Sposta in CRM</span>
             </button>
 
             <button
               onClick={handleBatchPrint}
-              className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-blue-600 text-white border-transparent hover:bg-blue-700 flex items-center gap-2"
+              className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-blue-600 text-white border-transparent hover:bg-blue-700 flex items-center gap-2 transition-all shadow-blue-500/20"
             >
               <FileDown className="h-4 w-4" />
-              <span className="hidden sm:inline">PDF</span>
+              <span className="hidden sm:inline uppercase tracking-tight">PDF</span>
             </button>
-          </>
+          </div>
         )}
         
         <div className="flex-grow"></div>
 
         {/* Search Bar */}
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-64">
             <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search className="h-4 w-4 text-gray-400" />
             </span>
@@ -596,7 +596,7 @@ const Archive = ({ onLoadCard }) => {
               type="text"
               name="globalSearch"
               placeholder="Cerca ovunque..."
-              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               value={filters.globalSearch}
               onChange={handleFilterChange}
             />
@@ -604,11 +604,12 @@ const Archive = ({ onLoadCard }) => {
 
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className={`px-4 py-2 text-sm font-medium rounded-md shadow-sm border transition-colors flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+          className={`px-4 py-2 text-sm font-bold rounded-xl shadow-sm border transition-all flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700 shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
         >
           <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline">Filtri</span>
+          <span className="hidden sm:inline uppercase tracking-tight">Filtri</span>
         </button>
+        
         <button
           onClick={() => {
             setFilters({
@@ -625,22 +626,22 @@ const Archive = ({ onLoadCard }) => {
             });
             try { localStorage.removeItem('archiveFilters'); } catch (e) {}
           }}
-          className="px-4 py-2 text-sm font-medium rounded-md shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700"
+          className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 transition-all uppercase tracking-tight"
         >
-          Reset Filtri
+          Reset
         </button>
 
-        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-1 border border-gray-200 dark:border-gray-600">
+        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 border border-gray-200 dark:border-gray-600">
           <button
             onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            className={`p-1.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             title="Griglia"
           >
             <LayoutGrid className="h-4 w-4" />
           </button>
           <button
             onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+            className={`p-1.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
             title="Elenco"
           >
             <List className="h-4 w-4" />
@@ -650,111 +651,136 @@ const Archive = ({ onLoadCard }) => {
 
       {/* Filters Section */}
       {showFilters && (
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all">
-          <input
-            type="text"
-            name="businessName"
-            placeholder="Ragione Sociale"
-            value={filters.businessName}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Referente"
-            value={filters.fullName}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <input
-            type="text"
-            name="address"
-            placeholder="Indirizzo"
-            value={filters.address}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-          <input
-            type="text"
-            name="piva"
-            placeholder="P.IVA"
-            value={filters.piva}
-            onChange={handleFilterChange}
-            className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 transition-all mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Ragione Sociale</label>
+            <input
+              type="text"
+              name="businessName"
+              placeholder="Filtra per nome..."
+              value={filters.businessName}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Referente</label>
+            <input
+              type="text"
+              name="fullName"
+              placeholder="Filtra referente..."
+              value={filters.fullName}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Indirizzo</label>
+            <input
+              type="text"
+              name="address"
+              placeholder="Filtra indirizzo..."
+              value={filters.address}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">P.IVA</label>
+            <input
+              type="text"
+              name="piva"
+              placeholder="Filtra P.IVA..."
+              value={filters.piva}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            />
+          </div>
           
-          <FilterDropdown 
-            label="Comune" 
-            options={uniqueValues.city} 
-            selected={filters.city} 
-            onChange={handleCheckboxChange} 
-            category="city" 
-          />
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Comune</label>
+            <FilterDropdown 
+              label="Tutti i comuni" 
+              options={uniqueValues.city} 
+              selected={filters.city} 
+              onChange={handleCheckboxChange} 
+              category="city" 
+            />
+          </div>
           
-          <FilterDropdown 
-            label="Provincia" 
-            options={uniqueValues.province} 
-            selected={filters.province} 
-            onChange={handleCheckboxChange} 
-            category="province" 
-          />
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Provincia</label>
+            <FilterDropdown 
+              label="Tutte le province" 
+              options={uniqueValues.province} 
+              selected={filters.province} 
+              onChange={handleCheckboxChange} 
+              category="province" 
+            />
+          </div>
           
-          <FilterDropdown 
-            label="Interesse" 
-            options={uniqueValues.mainInterest} 
-            selected={filters.mainInterest} 
-            onChange={handleCheckboxChange} 
-            category="mainInterest" 
-          />
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Interesse</label>
+            <FilterDropdown 
+              label="Tutti gli interessi" 
+              options={uniqueValues.mainInterest} 
+              selected={filters.mainInterest} 
+              onChange={handleCheckboxChange} 
+              category="mainInterest" 
+            />
+          </div>
           
-          <FilterDropdown 
-            label="Consulente" 
-            options={consultantFilterOptions} 
-            selected={filters.assignedConsultant} 
-            onChange={handleCheckboxChange} 
-            category="assignedConsultant" 
-          />
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Consulente</label>
+            <FilterDropdown 
+              label="Tutti i consulenti" 
+              options={consultantFilterOptions} 
+              selected={filters.assignedConsultant} 
+              onChange={handleCheckboxChange} 
+              category="assignedConsultant" 
+            />
+          </div>
         </div>
       )}
 
       {/* Assign Consultant Modal - Fixed */}
       {showAssignModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              Assegna Consulente a {selectedCards.length} schede
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full p-8 border border-gray-200 dark:border-gray-700 animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
+              Assegna Consulente
+              <span className="block text-xs text-gray-500 font-medium mt-1">Stai assegnando {selectedCards.length} schede</span>
             </h3>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <div className="mb-8">
+              <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">
                 Seleziona Consulente
               </label>
               <select
                 value={consultantToAssign}
-                onChange={(e) => setConsultantToAssign(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                onChange={(e) => setSnapshotConsultant(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all appearance-none"
               >
-                <option value="">Seleziona un consulente...</option>
+                <option value="">Scegli un consulente...</option>
                 {consultantsList.map(c => (
                   <option key={c.id} value={c.name}>{c.name}</option>
                 ))}
               </select>
             </div>
 
-            <div className="flex justify-end gap-3">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowAssignModal(false)}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                className="flex-1 px-4 py-3 text-sm font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all uppercase tracking-tight"
               >
                 Annulla
               </button>
               <button
                 onClick={handleBatchAssign}
                 disabled={!consultantToAssign.trim()}
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-[2] px-4 py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-purple-500/20 uppercase tracking-tight"
               >
-                Conferma
+                Conferma Assegnazione
               </button>
             </div>
           </div>
@@ -762,14 +788,14 @@ const Archive = ({ onLoadCard }) => {
       )}
 
       {/* Results Count and Select All */}
-      <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
-        <div>
+      <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-4 px-2">
+        <div className="font-bold uppercase tracking-widest text-[10px]">
            Trovate {filteredCards.length} schede
         </div>
         {selectedCards.length === filteredCards.length && filteredCards.length > 0 && (
           <button 
             onClick={handleSelectAll}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold uppercase tracking-tighter text-[10px]"
           >
             Deseleziona Tutto
           </button>
@@ -778,19 +804,19 @@ const Archive = ({ onLoadCard }) => {
 
       {/* Top Pagination Controls */}
       {totalPages > 1 && (
-        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mb-4 rounded-md">
+        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mb-4 rounded-2xl shadow-sm">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
             >
               Precedente
             </button>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
             >
               Successivo
             </button>
@@ -798,15 +824,15 @@ const Archive = ({ onLoadCard }) => {
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-medium">{filteredCards.length}</span> risultati
+                Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-bold">{filteredCards.length}</span> risultati
               </p>
             </div>
             <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   <span className="sr-only">Precedente</span>
                   &larr;
@@ -823,7 +849,7 @@ const Archive = ({ onLoadCard }) => {
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
                           aria-current={currentPage === i + 1 ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold ${
                               currentPage === i + 1
                                   ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
                                   : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -836,7 +862,7 @@ const Archive = ({ onLoadCard }) => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   <span className="sr-only">Successivo</span>
                   &rarr;
@@ -849,200 +875,212 @@ const Archive = ({ onLoadCard }) => {
 
       {viewMode === 'grid' ? (
         /* GRID VIEW */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {currentItems.map((card) => {
             const isSelected = selectedCards.includes(card.id);
             const isInCrm = crmCardIds.has(card.id);
             return (
             <div 
               key={card.id} 
-              className={`rounded-lg shadow-md p-6 hover:shadow-lg transition-all relative group ${isSelected ? 'ring-2 ring-blue-500' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'}`}
+              className={`rounded-2xl shadow-md p-6 hover:shadow-2xl transition-all relative group border ${isSelected ? 'ring-2 ring-blue-500 border-transparent shadow-blue-500/10' : 'border-gray-100 dark:border-gray-700'} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'}`}
             >
               {/* Checkbox for Grid View */}
               <div className="absolute top-4 left-4 z-10">
                 <button
                    onClick={(e) => { e.stopPropagation(); handleSelectCard(card.id); }}
-                   className={`p-1 rounded-md transition-colors ${isSelected ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-600 bg-gray-50'}`}
+                   className={`p-1.5 rounded-xl transition-all ${isSelected ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-300 hover:text-gray-500 bg-gray-50 dark:bg-gray-700/50'}`}
                 >
                   {isSelected ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5" />}
                 </button>
               </div>
 
               <div className="flex items-start justify-end mb-4 pl-8">
-                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   {new Date(card.created_at).toLocaleDateString()}
                 </span>
               </div>
               
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 truncate">{card.business_name}</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 truncate leading-tight">{card.business_name}</h3>
               
               {card.piva && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 truncate">
+                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-1 truncate uppercase tracking-tighter">
                   P.IVA: {card.piva}
                 </p>
               )}
               
-              {/* Address in Grid View */}
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate italic">
                 {card.address}
               </p>
 
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1">
-                <User className="h-3 w-3" />
+              <p className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-4 flex items-center gap-1.5">
+                <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <User className="h-3 w-3 text-gray-400" />
+                </div>
                 {card.full_name}
               </p>
 
-              <div className="space-y-2 border-t border-gray-100 dark:border-gray-700 pt-4 mb-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Città:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{card.city} ({card.province})</span>
+              <div className="space-y-3 border-t border-gray-100 dark:border-gray-700 pt-4 mb-6">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Città</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{card.city} ({card.province})</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Interesse:</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{card.main_interest}</span>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Interesse</span>
+                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold">{card.main_interest}</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-500 dark:text-gray-400">Consulente:</span>
-                  <span className={`font-medium truncate max-w-[120px] ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Consulente</span>
+                  <span className={`font-bold truncate max-w-[120px] ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
                     {card.assigned_consultant || 'DA ASSEGNARE'}
                   </span>
                 </div>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button 
                   onClick={() => moveCardToCRM(card.id)}
                   disabled={isInCrm}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors text-sm font-medium ${isInCrm ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/40'}`}
-                  title={isInCrm ? 'Già presente nel CRM' : 'Sposta nel CRM'}
+                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all text-xs font-bold uppercase tracking-tight ${isInCrm ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white shadow-lg shadow-indigo-500/10'}`}
                 >
-                  <ArrowRight className="h-4 w-4" />
-                  {isInCrm ? 'In CRM' : 'Sposta nel CRM'}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  {isInCrm ? 'In CRM' : 'Sposta'}
                 </button>
                 <button 
                   onClick={() => handleEditCard(card)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-sm font-medium"
-                  title="Modifica"
+                  className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-blue-500/10"
                 >
-                  <Pencil className="h-4 w-4" />
-                  Modifica
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
                 </button>
-                {card.has_external_image && (
+                <div className="flex gap-2 w-full mt-1">
+                  {card.has_external_image && (
+                    <button 
+                      onClick={(e) => handleViewImage(card, e)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-2 rounded-xl hover:bg-green-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-green-500/10"
+                    >
+                      <Image className="h-3.5 w-3.5" />
+                      Foto
+                    </button>
+                  )}
                   <button 
-                    onClick={(e) => handleViewImage(card, e)}
-                    className="flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-2 rounded-md hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors text-sm font-medium"
-                    title="Vedi Foto"
+                    onClick={(e) => deleteCard(card.id, e)}
+                    className="flex-1 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-xl hover:bg-red-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-red-500/10"
                   >
-                    <Image className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete
                   </button>
-                )}
-                <button 
-                  onClick={(e) => deleteCard(card.id, e)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors text-sm font-medium"
-                  title="Elimina"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Elimina
-                </button>
+                </div>
               </div>
             </div>
           )})}
         </div>
       ) : (
         /* LIST VIEW */
-        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md">
-            <div className="overflow-x-auto h-4 mb-2" ref={topScrollRef} onScroll={handleTopScroll}>
+        <div className="bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-2xl border border-gray-200 dark:border-gray-700">
+            <div className="overflow-x-auto h-4 mb-2 bg-gray-50 dark:bg-gray-900/50" ref={topScrollRef} onScroll={handleTopScroll}>
                 <div style={{ width: scrollWidth, height: 1 }} />
             </div>
             <div className="overflow-x-auto" ref={bottomScrollRef} onScroll={handleBottomScroll}>
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-separate border-spacing-0">
+                    <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-20">
                 <tr>
-                  <th scope="col" className="px-6 py-3 w-10">
+                  <th scope="col" className="px-6 py-4 w-12 border-b border-gray-200 dark:border-gray-700">
                     <input
                       type="checkbox"
                       checked={selectedCards.length === filteredCards.length && filteredCards.length > 0}
                       onChange={handleSelectAll}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                     />
                   </th>
-                  {archiveOptions.created_at && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data</th>}
-                  {archiveOptions.updated_at && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Modifica</th>}
-                  {archiveOptions.business_name && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ragione Sociale</th>}
-                  {archiveOptions.full_name && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Contatto</th>}
-                  {archiveOptions.piva && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">P.IVA</th>}
-                  {archiveOptions.address && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Indirizzo</th>}
-                  {archiveOptions.city && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Comune</th>}
-                  {archiveOptions.province && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pr</th>}
-                  {archiveOptions.phone && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Telefono</th>}
-                  {archiveOptions.email && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Email</th>}
-                  {archiveOptions.main_interest && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Interesse</th>}
-                  {archiveOptions.availability && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Disp.</th>}
-                  {archiveOptions.assigned_consultant && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Consulente</th>}
-                  {archiveOptions.operator_name && <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Operatore</th>}
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider w-[100px] sticky right-0 z-10 bg-gray-50 dark:bg-gray-700 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
+                  {archiveOptions.created_at && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Data</th>}
+                  {archiveOptions.updated_at && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Modifica</th>}
+                  {archiveOptions.business_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Ragione Sociale</th>}
+                  {archiveOptions.full_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Contatto</th>}
+                  {archiveOptions.piva && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">P.IVA</th>}
+                  {archiveOptions.address && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Indirizzo</th>}
+                  {archiveOptions.city && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Comune</th>}
+                  {archiveOptions.province && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Pr</th>}
+                  {archiveOptions.phone && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Telefono</th>}
+                  {archiveOptions.email && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Email</th>}
+                  {archiveOptions.main_interest && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Interesse</th>}
+                  {archiveOptions.availability && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Disp.</th>}
+                  {archiveOptions.assigned_consultant && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Consulente</th>}
+                  {archiveOptions.operator_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Operatore</th>}
+                  <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest w-[120px] sticky right-0 z-30 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-[-5px_0_15px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
                 </tr>
               </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                 {currentItems.map((card) => {
                   const isSelected = selectedCards.includes(card.id);
                   const isInCrm = crmCardIds.has(card.id);
                   return (
-                  <tr key={card.id} className={`group transition-colors cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`} onClick={() => handleEditCard(card)}>
-                    <td className="px-6 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                  <tr key={card.id} className={`group transition-all cursor-pointer ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => handleEditCard(card)}>
+                    <td className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectCard(card.id)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5 transition-transform group-hover:scale-110"
                       />
                     </td>
-                    {archiveOptions.created_at && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{new Date(card.created_at).toLocaleDateString()}</td>}
-                    {archiveOptions.updated_at && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.updated_at ? new Date(card.updated_at).toLocaleDateString() : '-'}</td>}
+                    {archiveOptions.created_at && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{new Date(card.created_at).toLocaleDateString()}</td>}
+                    {archiveOptions.updated_at && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{card.updated_at ? new Date(card.updated_at).toLocaleDateString() : '-'}</td>}
                     {archiveOptions.business_name && (
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                      <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
                         <div className="flex items-center gap-2">
-                          <span>{card.business_name}</span>
+                          <span className="group-hover:text-blue-600 transition-colors">{card.business_name}</span>
                           {isInCrm && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-yellow-300 text-yellow-900">
+                            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-xl bg-yellow-300 text-yellow-900 shadow-sm">
                               In CRM
                             </span>
                           )}
                         </div>
                       </td>
                     )}
-                    {archiveOptions.full_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.full_name}</td>}
-                    {archiveOptions.piva && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.piva}</td>}
-                    {archiveOptions.address && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.address}</td>}
-                    {archiveOptions.city && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.city}</td>}
-                    {archiveOptions.province && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.province}</td>}
-                    {archiveOptions.phone && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.phone}</td>}
-                    {archiveOptions.email && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.email}</td>}
-                    {archiveOptions.main_interest && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.main_interest}</td>}
-                    {archiveOptions.availability && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.availability}</td>}
-                    {archiveOptions.assigned_consultant && <td className={`px-6 py-4 whitespace-nowrap text-sm ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>{card.assigned_consultant || 'DA ASSEGNARE'}</td>}
-                    {archiveOptions.operator_name && <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{card.operator_name}</td>}
-                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-medium w-[100px] sticky right-0 z-10 shadow-[-5px_0_5px_-5px_rgba(0,0,0,0.1)] ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
-                      <div className="flex justify-end gap-2">
+                    {archiveOptions.full_name && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">{card.full_name}</td>}
+                    {archiveOptions.piva && <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">{card.piva}</td>}
+                    {archiveOptions.address && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400 italic">{card.address}</td>}
+                    {archiveOptions.city && <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-700 dark:text-gray-200">{card.city}</td>}
+                    {archiveOptions.province && <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-400 dark:text-gray-500">{card.province}</td>}
+                    {archiveOptions.phone && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300 font-mono tracking-tight">{card.phone}</td>}
+                    {archiveOptions.email && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400 underline decoration-blue-500/30 underline-offset-4">{card.email}</td>}
+                    {archiveOptions.main_interest && (
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold uppercase tracking-tighter">
+                          {card.main_interest}
+                        </span>
+                      </td>
+                    )}
+                    {archiveOptions.availability && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{card.availability}</td>}
+                    {archiveOptions.assigned_consultant && (
+                      <td className={`px-6 py-5 whitespace-nowrap text-sm font-bold ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-200'}`}>
+                        {card.assigned_consultant || 'DA ASSEGNARE'}
+                      </td>
+                    )}
+                    {archiveOptions.operator_name && <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">{card.operator_name}</td>}
+                    <td className={`px-6 py-5 whitespace-nowrap text-right text-sm font-medium w-[120px] sticky right-0 z-10 shadow-[-5px_0_15px_-5px_rgba(0,0,0,0.1)] transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
+                      <div className="flex justify-end gap-3">
                         {card.has_external_image && (
                           <button 
                             onClick={(e) => handleViewImage(card, e)}
-                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                            title="Vedi Foto Locale"
+                            className="p-1.5 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                            title="Vedi Foto"
                           >
                             <Image className="h-4 w-4" />
                           </button>
                         )}
                         <button 
                           onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
-                          className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                          className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                          title="Modifica"
                         >
                           <Pencil className="h-4 w-4" />
                         </button>
                         <button 
                           onClick={(e) => deleteCard(card.id, e)}
-                          className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          className="p-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                          title="Elimina"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -1058,19 +1096,19 @@ const Archive = ({ onLoadCard }) => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6 mt-4 rounded-md shadow-sm">
+        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mt-6 rounded-2xl shadow-lg">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
             >
               Precedente
             </button>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
             >
               Successivo
             </button>
@@ -1078,22 +1116,21 @@ const Archive = ({ onLoadCard }) => {
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-medium">{filteredCards.length}</span> risultati
+                Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-bold">{filteredCards.length}</span> risultati
               </p>
             </div>
             <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
                 >
                   <span className="sr-only">Precedente</span>
                   &larr;
                 </button>
                 {/* Page Numbers */}
                 {[...Array(totalPages)].map((_, i) => {
-                    // Show max 5 pages logic or simple list if small
                     if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
                       if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
                       return null;
@@ -1103,9 +1140,9 @@ const Archive = ({ onLoadCard }) => {
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
                           aria-current={currentPage === i + 1 ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold transition-all ${
                               currentPage === i + 1
-                                  ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
+                                  ? 'z-10 bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30'
                                   : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
                           }`}
                       >
@@ -1116,7 +1153,7 @@ const Archive = ({ onLoadCard }) => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
                 >
                   <span className="sr-only">Successivo</span>
                   &rarr;
@@ -1129,18 +1166,18 @@ const Archive = ({ onLoadCard }) => {
 
       {/* Image Preview Modal */}
       {showImageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60] p-4" onClick={() => setShowImageModal(false)}>
-          <div className="relative max-w-4xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg p-2 shadow-xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[60] p-4 backdrop-blur-md transition-all animate-in fade-in duration-300" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-5xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-3xl p-3 shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <button
               onClick={() => setShowImageModal(false)}
-              className="absolute -top-4 -right-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full p-2 shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none"
+              className="absolute -top-4 -right-4 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-full p-2.5 shadow-2xl hover:bg-red-500 hover:text-white focus:outline-none transition-all border border-gray-100 dark:border-gray-600"
             >
               <X className="h-6 w-6" />
             </button>
             <img 
               src={selectedImage} 
               alt="Anteprima" 
-              className="max-w-full max-h-[85vh] object-contain rounded" 
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-inner" 
             />
           </div>
         </div>

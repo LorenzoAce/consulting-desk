@@ -158,10 +158,10 @@ const Marketing = () => {
           {/* Stats in Header */}
           {(stats.sent > 0 || stats.failed > 0) && (
             <div className="flex items-center gap-3">
-              <div className="px-3 py-1 bg-green-50 dark:bg-green-900/20 rounded-md border border-green-100 dark:border-green-800">
+              <div className="px-3 py-1 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-100 dark:border-green-800">
                 <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase tracking-wider">Inviati: {stats.sent}</span>
               </div>
-              <div className="px-3 py-1 bg-red-50 dark:bg-red-900/20 rounded-md border border-red-100 dark:border-red-800">
+              <div className="px-3 py-1 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-100 dark:border-red-800">
                 <span className="text-xs font-bold text-red-700 dark:text-red-400 uppercase tracking-wider">Falliti: {stats.failed}</span>
               </div>
             </div>
@@ -175,10 +175,10 @@ const Marketing = () => {
           <div className="p-6 overflow-y-auto flex-1 space-y-6">
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
               <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-tight">Composizione</h2>
-              <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
                 <button
                   onClick={() => { setActiveTab('email'); setSelectedLeads(new Set()); }}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     activeTab === 'email' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'
                   }`}
                   title="Email"
@@ -187,7 +187,7 @@ const Marketing = () => {
                 </button>
                 <button
                   onClick={() => { setActiveTab('sms'); setSelectedLeads(new Set()); }}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     activeTab === 'sms' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'
                   }`}
                   title="SMS"
@@ -269,7 +269,7 @@ const Marketing = () => {
                 <div className="flex p-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm">
                   <button
                     onClick={() => setDataSource('crm')}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
                       dataSource === 'crm' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -278,7 +278,7 @@ const Marketing = () => {
                   </button>
                   <button
                     onClick={() => setDataSource('archive')}
-                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                    className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
                       dataSource === 'archive' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
@@ -342,7 +342,7 @@ const Marketing = () => {
                       type="checkbox"
                       checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
                       onChange={toggleSelectAll}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                      className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
                     />
                   </th>
                   <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Contatto</th>
@@ -383,7 +383,7 @@ const Marketing = () => {
                           type="checkbox"
                           checked={selectedLeads.has(lead.id)}
                           onChange={() => {}} 
-                          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5 transition-transform group-hover:scale-110"
+                          className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5 transition-transform group-hover:scale-110"
                         />
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap">
@@ -406,7 +406,7 @@ const Marketing = () => {
                       </td>
                       {dataSource === 'crm' && (
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <span className={`px-3 py-1 inline-flex text-[10px] leading-5 font-bold uppercase tracking-wider rounded-lg border ${
+                          <span className={`px-3 py-1 inline-flex text-[10px] leading-5 font-bold uppercase tracking-wider rounded-xl border ${
                             lead.status === 'client' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' :
                             lead.status === 'interested' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800' :
                             'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600'

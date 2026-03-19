@@ -467,7 +467,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
         {onBack && (
           <button 
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-lg"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
           >
             <ArrowLeft className="h-4 w-4" />
             Indietro
@@ -477,7 +477,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Main Form Column */}
-        <div className="xl:col-span-3 bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+        <div className="xl:col-span-3 bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden transition-colors duration-200">
           <div className="p-6 space-y-6">
             
             {/* Anagrafica */}
@@ -491,7 +491,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="businessName"
                 value={formData.businessName}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div>
@@ -501,7 +501,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div>
@@ -511,7 +511,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="piva"
                 value={formData.piva}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div className="relative">
@@ -523,11 +523,11 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 onChange={handleChange}
                 onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 200)}
                 autoComplete="off"
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
                 placeholder={isAddressLoading ? "Ricerca indirizzo..." : ""}
               />
               {showAddressSuggestions && filteredAddresses.length > 0 && (
-                <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
+                <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-auto mt-1">
                   {filteredAddresses.map((item, index) => (
                     <li
                       key={`${item.place_id}-${index}`}
@@ -553,11 +553,11 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
                 onFocus={() => formData.city.length > 1 && setShowCitySuggestions(true)}
                 autoComplete="off"
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
                 placeholder={isCityLoading ? "Caricamento comuni..." : ""}
               />
               {showCitySuggestions && filteredCities.length > 0 && (
-                <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg max-h-60 overflow-auto mt-1">
+                <ul className="absolute z-10 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl shadow-lg max-h-60 overflow-auto mt-1">
                   {filteredCities.map((city, index) => (
                     <li
                       key={`${city.codice}-${index}`}
@@ -577,7 +577,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="province"
                 value={formData.province}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div>
@@ -587,7 +587,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div>
@@ -597,7 +597,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div>
@@ -606,7 +606,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="source"
                 value={formData.source}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               >
                 <option value="TELEFONO">TELEFONO</option>
                 <option value="WEB">WEB</option>
@@ -627,7 +627,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="availability"
                 value={formData.availability}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               >
                 <option value="BASSA">BASSA</option>
                 <option value="MEDIA">MEDIA</option>
@@ -640,7 +640,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="mainInterest"
                 value={formData.mainInterest}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               >
                 <option value="SCOMMESSE">PVR</option>
                 <option value="UTENZE">UTENZE</option>
@@ -653,13 +653,13 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="bettingActive"
                 value={formData.bettingActive}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               >
                 <option value="SI">SI</option>
                 <option value="NO">NO</option>
               </select>
               {formData.bettingActive === 'SI' && (
-                <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-800">
+                <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800">
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Aggiungi Partner PVR</label>
                   <div className="flex gap-2 mb-2">
                     <input
@@ -667,12 +667,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
                       value={newBettingPartner}
                       onChange={(e) => setNewBettingPartner(e.target.value.toUpperCase())}
                       placeholder="Nome Partner"
-                      className="flex-1 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-1 bg-white dark:bg-gray-700 dark:text-white"
+                      className="flex-1 rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-1 bg-white dark:bg-gray-700 dark:text-white"
                       onKeyPress={(e) => e.key === 'Enter' && addPartner('betting')}
                     />
                     <button
                       onClick={() => addPartner('betting')}
-                      className="bg-blue-600 dark:bg-blue-500 text-white p-1 rounded hover:bg-blue-700 dark:hover:bg-blue-600"
+                      className="bg-blue-600 dark:bg-blue-500 text-white p-1 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600"
                       title="Aggiungi"
                     >
                       <Plus className="h-4 w-4" />
@@ -681,7 +681,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                   {bettingPartners.length > 0 && (
                     <ul className="space-y-1">
                       {bettingPartners.map((partner, index) => (
-                        <li key={index} className="flex justify-between items-center text-sm bg-white dark:bg-gray-800 p-1 rounded border border-gray-200 dark:border-gray-700">
+                        <li key={index} className="flex justify-between items-center text-sm bg-white dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
                           <span className="truncate dark:text-gray-300">{partner}</span>
                           <button
                             onClick={() => removePartner('betting', index)}
@@ -702,13 +702,13 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 name="utilitiesActive"
                 value={formData.utilitiesActive}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               >
                 <option value="SI">SI</option>
                 <option value="NO">NO</option>
               </select>
               {formData.utilitiesActive === 'SI' && (
-                <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-800">
+                <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800">
                   <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Aggiungi Partner Utenze</label>
                   <div className="flex gap-2 mb-2">
                     <input
@@ -716,12 +716,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
                       value={newUtilityPartner}
                       onChange={(e) => setNewUtilityPartner(e.target.value.toUpperCase())}
                       placeholder="Nome Partner"
-                      className="flex-1 rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-1 bg-white dark:bg-gray-700 dark:text-white"
+                      className="flex-1 rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm p-1 bg-white dark:bg-gray-700 dark:text-white"
                       onKeyPress={(e) => e.key === 'Enter' && addPartner('utility')}
                     />
                     <button
                       onClick={() => addPartner('utility')}
-                      className="bg-blue-600 dark:bg-blue-500 text-white p-1 rounded hover:bg-blue-700 dark:hover:bg-blue-600"
+                      className="bg-blue-600 dark:bg-blue-500 text-white p-1 rounded-xl hover:bg-blue-700 dark:hover:bg-blue-600"
                       title="Aggiungi"
                     >
                       <Plus className="h-4 w-4" />
@@ -730,7 +730,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                   {utilityPartners.length > 0 && (
                     <ul className="space-y-1">
                       {utilityPartners.map((partner, index) => (
-                        <li key={index} className="flex justify-between items-center text-sm bg-white dark:bg-gray-800 p-1 rounded border border-gray-200 dark:border-gray-700">
+                        <li key={index} className="flex justify-between items-center text-sm bg-white dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
                           <span className="truncate dark:text-gray-300">{partner}</span>
                           <button
                             onClick={() => removePartner('utility', index)}
@@ -759,7 +759,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 value={formData.requests}
                 onChange={handleChange}
                 rows={1}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
             <div>
@@ -769,7 +769,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 value={formData.notes}
                 onChange={handleChange}
                 rows={1}
-                className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+                className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
               />
             </div>
           </div>
@@ -783,7 +783,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
               name="assignedConsultant"
               value={formData.assignedConsultant}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
+              className="mt-1 block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700 dark:text-white border p-2"
             >
               <option value="">Seleziona un consulente...</option>
               {consultantsList.map((consultant) => (
@@ -804,7 +804,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
             <div className="flex gap-2">
               <button
                 onClick={() => setSignatureType('draw')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                   signatureType === 'draw'
                     ? 'bg-blue-600 text-white dark:bg-blue-500'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -814,7 +814,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
               </button>
               <button
                 onClick={() => setSignatureType('type')}
-                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                className={`px-3 py-1 text-sm rounded-lg transition-colors ${
                   signatureType === 'type'
                     ? 'bg-blue-600 text-white dark:bg-blue-500'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
@@ -826,12 +826,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
           </div>
 
           {signatureType === 'draw' ? (
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-4 bg-gray-50 dark:bg-gray-700">
               <SignatureCanvas
                 ref={sigCanvas}
                 penColor="black"
                 canvasProps={{
-                  className: 'w-full h-40 bg-white border border-gray-200 rounded-md cursor-crosshair'
+                  className: 'w-full h-40 bg-white border border-gray-200 rounded-xl cursor-crosshair'
                 }}
               />
               <div className="mt-2 flex justify-end">
@@ -844,7 +844,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
               </div>
             </div>
           ) : (
-            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-4 bg-gray-50 dark:bg-gray-700">
                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Inserisci nome operatore</label>
                <input
                 type="text"
@@ -852,7 +852,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
                 value={formData.operatorName}
                 onChange={handleChange}
                 placeholder="Nome e Cognome"
-                className="block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white border p-2"
+                className="block w-full rounded-xl border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-white dark:bg-gray-800 dark:text-white border p-2"
               />
             </div>
           )}
@@ -862,7 +862,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
         <div className="pt-6 flex flex-col sm:flex-row gap-4 border-t dark:border-gray-700 mt-6">
           <button
             onClick={generatePDF}
-            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
           >
             <FileDown className="h-5 w-5" />
             Genera PDF
@@ -870,7 +870,7 @@ const ConsultingForm = ({ initialData, onBack }) => {
 
           <button
             onClick={handleSave}
-            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+            className="flex-1 flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
           >
             <Save className="h-5 w-5" />
             Salva in Archivio
@@ -882,12 +882,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
     {/* Right Column - Uploads */}
     <div className="xl:col-span-1 space-y-6">
       {/* Logo Upload Card */}
-      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden transition-colors duration-200">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Logo Agenzia</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Carica il logo per il PDF (opzionale)</p>
           
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             {!logo ? (
               <label className="flex flex-col items-center cursor-pointer">
                 <Upload className="h-10 w-10 text-gray-400 mb-2" />
@@ -901,12 +901,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
               </label>
             ) : (
               <div className="relative w-full">
-                <div className="h-32 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden mb-2">
+                <div className="h-32 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden mb-2">
                   <img src={logo} alt="Logo Preview" className="max-h-full max-w-full object-contain" />
                 </div>
                 <button
                   onClick={() => setLogo(null)}
-                  className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 py-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <X className="h-4 w-4" /> Rimuovi Logo
                 </button>
@@ -917,12 +917,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
       </div>
 
       {/* External Photo Upload Card */}
-      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-lg overflow-hidden transition-colors duration-200">
+      <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden transition-colors duration-200">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 border-b dark:border-gray-700 pb-2 mb-4">Foto Locale Esterno</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Foto del locale per archivio</p>
           
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             {!externalImage ? (
               <label className="flex flex-col items-center cursor-pointer">
                 <Upload className="h-10 w-10 text-gray-400 mb-2" />
@@ -936,12 +936,12 @@ const ConsultingForm = ({ initialData, onBack }) => {
               </label>
             ) : (
               <div className="relative w-full">
-                <div className="h-48 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden mb-2">
+                <div className="h-48 w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden mb-2">
                   <img src={externalImage} alt="Locale Esterno" className="max-h-full max-w-full object-contain" />
                 </div>
                 <button
                   onClick={() => setExternalImage(null)}
-                  className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 py-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-red-700 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <X className="h-4 w-4" /> Rimuovi Foto
                 </button>
