@@ -75,19 +75,25 @@ const MOCK_CAMPAIGNS = [
 const Marketing = () => {
   const [activeTab, setActiveTab] = useState('campaigns'); // 'campaigns' | 'templates'
   const [campaignView, setCampaignView] = useState('list'); // 'list' | 'create'
+  const [creationStep, setCreationStep] = useState('select-type'); // 'select-type' | 'details' | 'configure'
+  const [campaignType, setCampaignType] = useState('email'); // 'email' | 'sms' | 'whatsapp'
+  const [campaignName, setCampaignName] = useState('');
+  const [campaignFolder, setCampaignFolder] = useState('');
+  const [configSubView, setConfigSubView] = useState('main'); // 'main' | 'recipients' | 'content'
+  
   const [leads, setLeads] = useState([]);
   const [dataSource, setDataSource] = useState('crm'); // 'crm' | 'archive'
   const [selectedLeads, setSelectedLeads] = useState(new Set());
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [messageType, setMessageType] = useState('email'); // 'email', 'sms'
   const [filterStatus, setFilterStatus] = useState('');
   const [crmStatuses, setCrmStatuses] = useState([]);
   
   // Message content
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
+  const [sender, setSender] = useState('');
   
   // Stats
   const [stats, setStats] = useState({
@@ -339,7 +345,7 @@ const Marketing = () => {
                     Crea cartella
                   </button>
                   <button 
-                    onClick={() => setCampaignView('create')}
+                    onClick={() => { setCampaignView('create'); setCreationStep('select-type'); setConfigSubView('main'); }}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
                   >
                     <Plus className="h-4 w-4" />
@@ -496,311 +502,374 @@ const Marketing = () => {
               </div>
             </div>
           ) : (
-            /* CREATE VIEW - Existing UI */
-            <div className="flex flex-col lg:flex-row gap-6">
-              <div className="w-full flex items-center mb-4">
+            /* CREATE VIEW - Step-by-step flow */
+            <div className="space-y-8">
+              {/* Back Button and Progress */}
+              <div className="flex items-center justify-between">
                 <button 
-                  onClick={() => setCampaignView('list')}
+                  onClick={() => {
+                    if (creationStep === 'select-type') {
+                      setCampaignView('list');
+                    } else if (creationStep === 'details') {
+                      setCreationStep('select-type');
+                    } else if (creationStep === 'configure') {
+                      setCreationStep('details');
+                    }
+                  }}
                   className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tight"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Torna alla lista
+                  {creationStep === 'select-type' ? 'Torna alla lista' : 'Indietro'}
                 </button>
+                
+                {/* Progress Indicators */}
+                <div className="flex items-center gap-4">
+                  {[
+                    { step: 'select-type', label: 'Tipo' },
+                    { step: 'details', label: 'Dettagli' },
+                    { step: 'configure', label: 'Configura' }
+                  ].map((s, idx) => (
+                    <React.Fragment key={s.step}>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          creationStep === s.step ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${
+                          creationStep === s.step ? 'text-blue-600' : 'text-gray-400'
+                        }`}>
+                          {s.label}
+                        </span>
+                      </div>
+                      {idx < 2 && <div className="w-8 h-px bg-gray-200"></div>}
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-col lg:flex-row gap-6 w-full">
-                {/* COLONNA SINISTRA: COMPOSIZIONE (STILE CARD) */}
-                <div className="w-full lg:w-[400px] xl:w-[450px] bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col shrink-0 overflow-hidden">
-                  <div className="p-6 space-y-6">
-                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-3">
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white uppercase tracking-tight">Composizione</h2>
-                      <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-xl">
-                        <button
-                          onClick={() => { setMessageType('email'); setSelectedLeads(new Set()); }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                            messageType === 'email' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'
-                          }`}
-                          title="Email"
+
+              {creationStep === 'select-type' && (
+                <div className="max-w-4xl mx-auto py-12 animate-in fade-in zoom-in-95 duration-300">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">Che tipo di campagna vuoi creare?</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {[
+                      { id: 'email', label: 'Email', icon: Mail, desc: 'Invia newsletter e comunicazioni ricche.', color: 'blue' },
+                      { id: 'sms', label: 'SMS', icon: MessageSquare, desc: 'Messaggi rapidi e diretti sul cellulare.', color: 'green' },
+                      { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, desc: 'Ingaggia i clienti su WhatsApp.', color: 'emerald' }
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => { setCampaignType(t.id); setCreationStep('details'); }}
+                        className="group bg-white dark:bg-gray-800 p-8 rounded-3xl border-2 border-transparent hover:border-blue-500 shadow-xl hover:shadow-2xl transition-all text-center space-y-4"
+                      >
+                        <div className={`w-20 h-20 mx-auto rounded-2xl bg-${t.color}-50 dark:bg-${t.color}-900/20 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                          <t.icon className={`h-10 w-10 text-${t.color}-600 dark:text-${t.color}-400`} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t.label}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t.desc}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {creationStep === 'details' && (
+                <div className="max-w-xl mx-auto py-12 animate-in fade-in slide-in-from-right-4 duration-300">
+                  <div className="bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-2xl border border-gray-200 dark:border-gray-700 space-y-8">
+                    <div className="text-center">
+                      <div className="inline-flex p-3 bg-blue-50 dark:bg-blue-900/20 rounded-2xl text-blue-600 mb-4">
+                        {campaignType === 'email' ? <Mail className="h-8 w-8" /> : <MessageSquare className="h-8 w-8" />}
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dettagli Campagna {campaignType.toUpperCase()}</h2>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest px-1">Nome della campagna</label>
+                        <input
+                          type="text"
+                          value={campaignName}
+                          onChange={(e) => setCampaignName(e.target.value)}
+                          placeholder="es. Promozione Primavera 2026"
+                          className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest px-1">Seleziona cartella</label>
+                        <select
+                          value={campaignFolder}
+                          onChange={(e) => setCampaignFolder(e.target.value)}
+                          className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none"
                         >
-                          <Mail className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => { setMessageType('sms'); setSelectedLeads(new Set()); }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                            messageType === 'sms' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'
-                          }`}
-                          title="SMS"
-                        >
-                          <MessageSquare className="h-4 w-4" />
-                        </button>
+                          <option value="">Nessuna cartella (Root)</option>
+                          <option value="promozioni">Promozioni</option>
+                          <option value="newsletter">Newsletter</option>
+                          <option value="test">Test</option>
+                        </select>
                       </div>
                     </div>
 
-                    <div className="space-y-5">
-                      {messageType === 'email' && (
+                    <button
+                      onClick={() => { if (campaignName.trim()) setCreationStep('configure'); }}
+                      disabled={!campaignName.trim()}
+                      className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-blue-500/20 transition-all transform active:scale-95"
+                    >
+                      Continua alla configurazione
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {creationStep === 'configure' && (
+                <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  {configSubView === 'main' ? (
+                    <div className="grid grid-cols-1 gap-6">
+                      {/* Config Header */}
+                      <div className="flex items-center justify-between mb-2">
                         <div>
-                          <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Oggetto Email</label>
+                          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{campaignName}</h2>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                              <FolderArchive className="h-3 w-3" />
+                              {campaignFolder || 'Nessuna cartella'}
+                            </span>
+                            <span className="text-xs font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1">
+                              {campaignType === 'email' ? <Mail className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}
+                              {campaignType.toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => { setCampaignView('list'); }}
+                            className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-bold uppercase tracking-tight hover:bg-gray-50 transition-all"
+                          >
+                            Salva Bozza
+                          </button>
+                          <button
+                            onClick={handleSend}
+                            disabled={sending || selectedLeads.size === 0 || !message.trim()}
+                            className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-tight hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all flex items-center gap-2"
+                          >
+                            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                            Invia Campagna
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* CONFIGURATION SECTIONS */}
+                      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
+                        
+                        {/* Mittente */}
+                        <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:bg-gray-50/50 dark:hover:bg-gray-900/20 transition-colors">
+                          <div className="flex gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center shrink-0">
+                              <Building className="h-6 w-6 text-purple-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Mittente</h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Chi invia questa campagna email?</p>
+                            </div>
+                          </div>
+                          <button className="px-6 py-2 border-2 border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-50 transition-all">
+                            Seleziona mittente
+                          </button>
+                        </div>
+
+                        {/* Destinatari */}
+                        <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:bg-gray-50/50 dark:hover:bg-gray-900/20 transition-colors">
+                          <div className="flex gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0">
+                              <Users className="h-6 w-6 text-blue-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Destinatari</h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Le persone che ricevono la tua campagna ({selectedLeads.size} selezionati)</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => setConfigSubView('recipients')}
+                            className="px-6 py-2 border-2 border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-50 transition-all"
+                          >
+                            Aggiungi destinatari
+                          </button>
+                        </div>
+
+                        {/* Oggetto (Solo Email) */}
+                        {campaignType === 'email' && (
+                          <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:bg-gray-50/50 dark:hover:bg-gray-900/20 transition-colors">
+                            <div className="flex gap-4">
+                              <div className="w-12 h-12 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center shrink-0">
+                                <FileText className="h-6 w-6 text-yellow-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Oggetto</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  {subject ? `Oggetto: ${subject}` : 'Aggiungi un oggetto a questa campagna.'}
+                                </p>
+                              </div>
+                            </div>
+                            <button 
+                              onClick={() => setConfigSubView('subject')}
+                              className="px-6 py-2 border-2 border-blue-100 dark:border-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-50 transition-all"
+                            >
+                              {subject ? 'Modifica oggetto' : 'Aggiungi oggetto'}
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Ideazione / Contenuto */}
+                        <div className="p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:bg-gray-50/50 dark:hover:bg-gray-900/20 transition-colors">
+                          <div className="flex gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center shrink-0">
+                              <Layout className="h-6 w-6 text-indigo-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Ideazione</h3>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Crea contenuto email</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => setConfigSubView('content')}
+                            className="px-6 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all"
+                          >
+                            Inizia a progettare
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : configSubView === 'recipients' ? (
+                    /* RECIPIENTS SUB-VIEW */
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="flex items-center justify-between">
+                        <button 
+                          onClick={() => setConfigSubView('main')}
+                          className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tight"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Torna alla configurazione
+                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                              onClick={() => setDataSource('crm')}
+                              className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${dataSource === 'crm' ? 'bg-blue-600 text-white border-transparent' : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-200'}`}
+                          >
+                              SORGENTE CRM
+                          </button>
+                          <button
+                              onClick={() => setDataSource('archive')}
+                              className={`px-4 py-2 text-xs font-bold rounded-xl shadow-sm border transition-all ${dataSource === 'archive' ? 'bg-blue-600 text-white border-transparent' : 'bg-white text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-200'}`}
+                          >
+                              SORGENTE ARCHIVIO
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        {/* Filters and Table (Same as before but inside config) */}
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-3">
+                            <div className="relative flex-1">
+                              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Search className="h-4 w-4 text-gray-400" />
+                              </span>
+                              <input
+                                type="text"
+                                placeholder="Cerca contatti..."
+                                className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                              />
+                            </div>
+                            <button 
+                              onClick={toggleSelectAll}
+                              className="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-100 transition-all"
+                            >
+                              {selectedLeads.size === filteredLeads.length ? 'Deseleziona' : 'Seleziona Tutti'}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="max-h-[500px] overflow-auto">
+                          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0">
+                              <tr>
+                                <th className="px-6 py-4 text-left w-12"><input type="checkbox" checked={selectedLeads.size === filteredLeads.length} onChange={toggleSelectAll} className="rounded border-gray-300 text-blue-600 h-5 w-5" /></th>
+                                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Contatto</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">Recapito</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                              {currentLeads.map((lead) => (
+                                <tr key={lead.id} onClick={() => toggleLeadSelection(lead.id)} className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 ${selectedLeads.has(lead.id) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}>
+                                  <td className="px-6 py-4"><input type="checkbox" checked={selectedLeads.has(lead.id)} onChange={() => {}} className="rounded border-gray-300 text-blue-600 h-5 w-5" /></td>
+                                  <td className="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">{lead.contact_name}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-500">{campaignType === 'email' ? lead.email : lead.phone}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  ) : configSubView === 'content' ? (
+                    /* CONTENT SUB-VIEW */
+                    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="flex items-center justify-between">
+                        <button 
+                          onClick={() => setConfigSubView('main')}
+                          className="flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tight"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                          Torna alla configurazione
+                        </button>
+                      </div>
+                      <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Contenuto del messaggio ({campaignType})</label>
+                        <textarea
+                          rows={15}
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all resize-none"
+                          placeholder={`Inserisci il testo per la tua campagna ${campaignType}...`}
+                        />
+                        <div className="mt-4 flex justify-end">
+                          <button 
+                            onClick={() => setConfigSubView('main')}
+                            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold uppercase tracking-tight hover:bg-blue-700"
+                          >
+                            Salva e torna
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : configSubView === 'subject' ? (
+                    /* SUBJECT SUB-VIEW */
+                    <div className="max-w-xl mx-auto py-12 animate-in fade-in slide-in-from-right-4 duration-300">
+                      <div className="bg-white dark:bg-gray-800 p-10 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Oggetto della Campagna</h3>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Inserisci l'oggetto</label>
                           <input
                             type="text"
                             value={subject}
                             onChange={(e) => setSubject(e.target.value)}
-                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                            placeholder="Oggetto della campagna..."
+                            className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                            placeholder="es. Scopri le nuove offerte di Marzo"
                           />
                         </div>
-                      )}
-
-                      <div>
-                        <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">
-                          Messaggio {messageType === 'email' ? 'Email' : 'SMS'}
-                        </label>
-                        <textarea
-                          rows={14}
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
-                          placeholder={messageType === 'email' ? "Corpo dell'email..." : "Testo dell'SMS..."}
-                        />
-                        <div className="mt-2 flex justify-between items-center px-1">
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                            {messageType === 'sms' ? `${message.length} caratteri / ${Math.ceil(message.length / 160)} SMS` : ""}
-                          </span>
-                          <span className="text-[10px] font-bold text-blue-500 uppercase tracking-tighter">
-                            {selectedLeads.size} Destinatari Selezionati
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-                    <button
-                      onClick={handleSend}
-                      disabled={sending || selectedLeads.size === 0}
-                      className={`w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl text-white font-bold text-lg shadow-xl transition-all transform active:scale-95 ${
-                        sending || selectedLeads.size === 0 
-                          ? 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed text-gray-500' 
-                          : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-500/20'
-                      }`}
-                    >
-                      {sending ? (
-                        <>
-                          <Loader2 className="h-6 w-6 animate-spin" />
-                          Invio in corso...
-                        </>
-                      ) : (
-                        <>
-                          <Send className="h-6 w-6" />
-                          Esegui Campagna
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* COLONNA DESTRA: TABELLA DESTINATARI (STILE CARD) */}
-                <div className="flex-1 flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden min-w-0">
-                  {/* BARRA FILTRI COERENTE */}
-                  <div className="p-4 bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-700 space-y-4">
-                    <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
-                      <div className="flex flex-wrap items-center gap-3">
-                        {/* FILTRO STATO (SOLO PER CRM) */}
-                        {dataSource === 'crm' && (
-                          <select
-                            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                            value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value)}
-                          >
-                            <option value="">Tutti gli stati</option>
-                            {crmStatuses.map(status => (
-                              <option key={status.id} value={status.id}>
-                                {status.label}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        {/* RICERCA */}
-                        <div className="relative flex-1 sm:min-w-[300px]">
-                          <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Search className="h-4 w-4 text-gray-400" />
-                          </span>
-                          <input
-                            type="text"
-                            placeholder="Cerca contatti..."
-                            className="block w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                          />
-                        </div>
-
-                        {/* SELEZIONE RAPIDA */}
                         <button 
-                          onClick={toggleSelectAll}
-                          className="px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800 rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all whitespace-nowrap shadow-sm"
+                          onClick={() => setConfigSubView('main')}
+                          className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-tight hover:bg-blue-700"
                         >
-                          {selectedLeads.size === filteredLeads.length ? 'Deseleziona' : 'Seleziona Tutti'}
+                          Salva Oggetto
                         </button>
                       </div>
                     </div>
-                  </div>
-
-                  {/* TABELLA COERENTE */}
-                  <div className="flex-1 overflow-auto">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-separate border-spacing-0">
-                      <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-20">
-                        <tr>
-                          <th className="px-6 py-4 text-left w-12 border-b border-gray-200 dark:border-gray-700">
-                            <input
-                              type="checkbox"
-                              checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
-                              onChange={toggleSelectAll}
-                              className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                            />
-                          </th>
-                          <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Contatto</th>
-                          <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">
-                            {messageType === 'email' ? 'Recapito Email' : 'Recapito SMS'}
-                          </th>
-                          {dataSource === 'crm' && (
-                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Stato</th>
-                          )}
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-                        {loading ? (
-                          <tr>
-                            <td colSpan={dataSource === 'crm' ? 4 : 3} className="px-6 py-32 text-center">
-                              <Loader2 className="h-12 w-12 animate-spin mx-auto text-blue-600 mb-4" />
-                              <p className="text-gray-500 font-medium">Sincronizzazione contatti...</p>
-                            </td>
-                          </tr>
-                        ) : filteredLeads.length === 0 ? (
-                          <tr>
-                            <td colSpan={dataSource === 'crm' ? 4 : 3} className="px-6 py-32 text-center">
-                              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
-                                <Users className="h-10 w-10 text-gray-300" />
-                              </div>
-                              <p className="text-gray-500 font-medium">Nessun contatto trovato per i criteri impostati.</p>
-                            </td>
-                          </tr>
-                        ) : (
-                          currentLeads.map((lead) => (
-                            <tr 
-                              key={lead.id} 
-                              className={`group hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-all ${selectedLeads.has(lead.id) ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
-                              onClick={() => toggleLeadSelection(lead.id)}
-                            >
-                              <td className="px-6 py-5 whitespace-nowrap">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedLeads.has(lead.id)}
-                                  onChange={() => {}} 
-                                  className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5 transition-transform group-hover:scale-110"
-                                />
-                              </td>
-                              <td className="px-6 py-5 whitespace-nowrap">
-                                <div className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
-                                  {lead.contact_name}
-                                </div>
-                                {lead.business_name && (
-                                  <div className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tighter mt-0.5">{lead.business_name}</div>
-                                )}
-                              </td>
-                              <td className="px-6 py-5 whitespace-nowrap">
-                                <div className="flex items-center gap-2">
-                                  <div className={`p-1.5 rounded-lg ${messageType === 'email' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30' : 'bg-green-50 text-green-600 dark:bg-green-900/30'}`}>
-                                    {messageType === 'email' ? <Mail className="h-3.5 w-3.5" /> : <MessageSquare className="h-3.5 w-3.5" />}
-                                  </div>
-                                  <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                                    {messageType === 'email' ? (lead.email || '-') : (lead.phone || '-')}
-                                  </span>
-                                </div>
-                              </td>
-                              {dataSource === 'crm' && (
-                                <td className="px-6 py-5 whitespace-nowrap">
-                                  <span className={`px-3 py-1 inline-flex text-[10px] leading-5 font-bold uppercase tracking-wider rounded-xl border ${
-                                    COLOR_OPTIONS.find(c => c.value === crmStatuses.find(s => s.id === lead.status)?.color)?.classes || 'bg-gray-100 text-gray-800 border-gray-200'
-                                  }`}>
-                                    {crmStatuses.find(s => s.id === lead.status)?.label || lead.status}
-                                  </span>
-                                </td>
-                              )}
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-                      <div className="flex-1 flex justify-between sm:hidden">
-                        <button
-                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                          disabled={currentPage === 1}
-                          className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
-                        >
-                          Precedente
-                        </button>
-                        <button
-                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                          disabled={currentPage === totalPages}
-                          className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
-                        >
-                          Successivo
-                        </button>
-                      </div>
-                      <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                          <p className="text-sm text-gray-700 dark:text-gray-300">
-                            Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredLeads.length)}</span> di <span className="font-bold">{filteredLeads.length}</span> risultati
-                          </p>
-                        </div>
-                        <div>
-                          <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
-                            <button
-                              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                              disabled={currentPage === 1}
-                              className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
-                            >
-                              &larr;
-                            </button>
-                            {[...Array(totalPages)].map((_, i) => {
-                              if (totalPages > 5 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
-                                if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-800 border-gray-300 text-gray-500">...</span>;
-                                return null;
-                              }
-                              return (
-                                <button
-                                  key={i}
-                                  onClick={() => setCurrentPage(i + 1)}
-                                  className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold transition-all ${
-                                    currentPage === i + 1
-                                      ? 'z-10 bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                      : 'bg-white dark:bg-gray-700 border-gray-300 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                                  }`}
-                                >
-                                  {i + 1}
-                                </button>
-                              );
-                            })}
-                            <button
-                              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                              disabled={currentPage === totalPages}
-                              className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
-                            >
-                              &rarr;
-                            </button>
-                          </nav>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  ) : null}
                 </div>
-              </div>
+              )}
             </div>
           )}
         </div>
