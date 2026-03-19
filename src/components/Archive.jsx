@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search, Calendar, User, Building, Trash2, Pencil, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X, ArrowRight } from 'lucide-react';
+import { Search, Calendar, User, Building, Trash2, Pencil, LayoutGrid, List, Filter, Download, CheckSquare, Square, FileDown, Image, X, ArrowRight, FileSpreadsheet, Upload, FolderArchive } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { generatePDF } from '../utils/pdfGenerator';
 import { getApiUrl } from '../utils/api';
@@ -8,6 +8,8 @@ const Archive = ({ onLoadCard }) => {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('list'); // 'grid' | 'list'
+  const [activeTab, setActiveTab] = useState('list'); // 'list' | 'import-excel'
+  const [excelData, setExcelData] = useState([]);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,6 +112,76 @@ const Archive = ({ onLoadCard }) => {
     } catch (error) {
       console.error("Error fetching full card:", error);
       alert("Errore di connessione");
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const bstr = evt.target.result;
+      const wb = XLSX.read(bstr, { type: 'binary' });
+      const wsname = wb.SheetNames[0];
+      const ws = wb.Sheets[wsname];
+      const data = XLSX.utils.sheet_to_json(ws);
+      setExcelData(data);
+    };
+    reader.readAsBinaryString(file);
+  };
+
+  const handleImportExcel = async () => {
+    if (excelData.length === 0) return;
+    setLoading(true);
+    let count = 0;
+    try {
+      const apiUrl = getApiUrl();
+      for (const row of excelData) {
+        // Map Excel columns to our fields for Archive
+        const payload = {
+            businessName: row['Ragione Sociale'] || row['Business Name'] || row['Nome'] || row['business_name'] || 'Sconosciuto',
+            fullName: row['Referente'] || row['Contact Name'] || row['full_name'] || '',
+            email: row['Email'] || row['email'] || '',
+            phone: row['Telefono'] || row['Phone'] || row['phone'] || '',
+            notes: row['Note'] || row['Notes'] || row['notes'] || '',
+            piva: row['P.IVA'] || row['Partita IVA'] || row['piva'] || '',
+            address: row['Indirizzo'] || row['Address'] || row['address'] || '',
+            city: row['Città'] || row['City'] || row['city'] || '',
+            province: row['Provincia'] || row['Province'] || row['province'] || '',
+            availability: row['Disponibilità'] || row['Availability'] || 'MEDIA',
+            mainInterest: row['Interesse'] || row['Interest'] || 'ENTRAMBI',
+            source: row['Fonte'] || row['Source'] || 'excel',
+            bettingActive: row['PVR Attivo'] || 'NO',
+            utilitiesActive: row['Utenze Attive'] || 'NO',
+            bettingPartners: [],
+            utilityPartners: [],
+            requests: '',
+            assignedConsultant: row['Consulente'] || '',
+            operatorName: row['Operatore'] || '',
+            signatureType: 'type',
+            signatureData: '',
+            logo: null,
+            logoDimensions: null,
+            externalImage: null
+        };
+
+        await fetch(`${apiUrl}/api/cards`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        count++;
+      }
+      alert(`Importate ${count} schede da Excel`);
+      setActiveTab('list');
+      fetchCards();
+      setExcelData([]);
+    } catch (err) {
+      console.error('Errore durante importazione Excel:', err);
+      alert('Errore durante importazione Excel: ' + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -548,109 +620,135 @@ const Archive = ({ onLoadCard }) => {
       </div>
 
       <div className="flex flex-wrap items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700 pb-6">
-        {/* Buttons Group */}
-        <button
-            onClick={exportToExcel}
-            className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center gap-2 transition-all"
-        >
-            <Download className="h-4 w-4 text-emerald-500" />
-            <span className="hidden sm:inline uppercase tracking-tight">Excel</span>
-        </button>
+        {/* Navigation Tabs as Buttons */}
+        <div className="flex p-1 bg-gray-100 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+          <button
+              onClick={() => setActiveTab('list')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+              <FolderArchive className="h-3.5 w-3.5" />
+              LISTA
+          </button>
+          <button
+              onClick={() => setActiveTab('import-excel')}
+              className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${activeTab === 'import-excel' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+          >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              IMPORTA
+          </button>
+        </div>
 
-        {selectedCards.length > 0 && (
-          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+        {activeTab === 'list' && (
+          <>
+            {/* Buttons Group */}
             <button
-              onClick={() => setShowAssignModal(true)}
-              className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-purple-600 text-white border-transparent hover:bg-purple-700 flex items-center gap-2 transition-all shadow-purple-500/20"
+                onClick={exportToExcel}
+                className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 flex items-center gap-2 transition-all"
             >
-              <User className="h-4 w-4" />
-              <span className="hidden sm:inline uppercase tracking-tight">Assegna</span>
+                <Download className="h-4 w-4 text-emerald-500" />
+                <span className="hidden sm:inline uppercase tracking-tight">Excel</span>
             </button>
 
-            <button
-              onClick={moveSelectedToCRM}
-              className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-indigo-600 text-white border-transparent hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-indigo-500/20"
-            >
-              <ArrowRight className="h-4 w-4" />
-              <span className="hidden sm:inline uppercase tracking-tight">Sposta in CRM</span>
-            </button>
+            {selectedCards.length > 0 && (
+              <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+                <button
+                  onClick={() => setShowAssignModal(true)}
+                  className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-purple-600 text-white border-transparent hover:bg-purple-700 flex items-center gap-2 transition-all shadow-purple-500/20"
+                >
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline uppercase tracking-tight">Assegna</span>
+                </button>
 
-            <button
-              onClick={handleBatchPrint}
-              className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-blue-600 text-white border-transparent hover:bg-blue-700 flex items-center gap-2 transition-all shadow-blue-500/20"
-            >
-              <FileDown className="h-4 w-4" />
-              <span className="hidden sm:inline uppercase tracking-tight">PDF</span>
-            </button>
-          </div>
+                <button
+                  onClick={moveSelectedToCRM}
+                  className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-indigo-600 text-white border-transparent hover:bg-indigo-700 flex items-center gap-2 transition-all shadow-indigo-500/20"
+                >
+                  <ArrowRight className="h-4 w-4" />
+                  <span className="hidden sm:inline uppercase tracking-tight">Sposta in CRM</span>
+                </button>
+
+                <button
+                  onClick={handleBatchPrint}
+                  className="px-4 py-2 text-sm font-bold rounded-xl shadow-lg bg-blue-600 text-white border-transparent hover:bg-blue-700 flex items-center gap-2 transition-all shadow-blue-500/20"
+                >
+                  <FileDown className="h-4 w-4" />
+                  <span className="hidden sm:inline uppercase tracking-tight">PDF</span>
+                </button>
+              </div>
+            )}
+          </>
         )}
         
         <div className="flex-grow"></div>
 
-        {/* Search Bar */}
-        <div className="relative w-full sm:w-64">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-4 w-4 text-gray-400" />
-            </span>
-            <input
-              type="text"
-              name="globalSearch"
-              placeholder="Cerca ovunque..."
-              className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-              value={filters.globalSearch}
-              onChange={handleFilterChange}
-            />
-        </div>
+        {activeTab === 'list' && (
+          <>
+            {/* Search Bar */}
+            <div className="relative w-full sm:w-64">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </span>
+                <input
+                  type="text"
+                  name="globalSearch"
+                  placeholder="Cerca ovunque..."
+                  className="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                  value={filters.globalSearch}
+                  onChange={handleFilterChange}
+                />
+            </div>
 
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className={`px-4 py-2 text-sm font-bold rounded-xl shadow-sm border transition-all flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700 shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
-        >
-          <Filter className="h-4 w-4" />
-          <span className="hidden sm:inline uppercase tracking-tight">Filtri</span>
-        </button>
-        
-        <button
-          onClick={() => {
-            setFilters({
-              globalSearch: '',
-              businessName: '',
-              fullName: '',
-              address: '',
-              piva: '',
-              city: [],
-              province: [],
-              mainInterest: [],
-              assignedConsultant: [],
-              operatorName: []
-            });
-            try { localStorage.removeItem('archiveFilters'); } catch (e) {}
-          }}
-          className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 transition-all uppercase tracking-tight"
-        >
-          Reset
-        </button>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`px-4 py-2 text-sm font-bold rounded-xl shadow-sm border transition-all flex items-center gap-2 ${showFilters ? 'bg-blue-600 text-white border-transparent hover:bg-blue-700 shadow-blue-500/20' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700'}`}
+            >
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline uppercase tracking-tight">Filtri</span>
+            </button>
+            
+            <button
+              onClick={() => {
+                setFilters({
+                  globalSearch: '',
+                  businessName: '',
+                  fullName: '',
+                  address: '',
+                  piva: '',
+                  city: [],
+                  province: [],
+                  mainInterest: [],
+                  assignedConsultant: [],
+                  operatorName: []
+                });
+                try { localStorage.removeItem('archiveFilters'); } catch (e) {}
+              }}
+              className="px-4 py-2 text-sm font-bold rounded-xl shadow-sm border bg-white text-gray-700 border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-700 transition-all uppercase tracking-tight"
+            >
+              Reset
+            </button>
 
-        <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 border border-gray-200 dark:border-gray-600">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`p-1.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            title="Griglia"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => setViewMode('list')}
-            className={`p-1.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-            title="Elenco"
-          >
-            <List className="h-4 w-4" />
-          </button>
-        </div>
+            <div className="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 border border-gray-200 dark:border-gray-600">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 rounded-xl transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                title="Griglia"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 rounded-xl transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                title="Elenco"
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Filters Section */}
-      {showFilters && (
+      {/* Sezione Filtri Archivio */}
+      {activeTab === 'list' && showFilters && (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 transition-all mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Ragione Sociale</label>
@@ -758,7 +856,7 @@ const Archive = ({ onLoadCard }) => {
               </label>
               <select
                 value={consultantToAssign}
-                onChange={(e) => setSnapshotConsultant(e.target.value)}
+                onChange={(e) => setConsultantToAssign(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all appearance-none"
               >
                 <option value="">Scegli un consulente...</option>
@@ -787,379 +885,506 @@ const Archive = ({ onLoadCard }) => {
         </div>
       )}
 
-      {/* Results Count and Select All */}
-      <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-4 px-2">
-        <div className="font-bold uppercase tracking-widest text-[10px]">
-           Trovate {filteredCards.length} schede
-        </div>
-        {selectedCards.length === filteredCards.length && filteredCards.length > 0 && (
-          <button 
-            onClick={handleSelectAll}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold uppercase tracking-tighter text-[10px]"
-          >
-            Deseleziona Tutto
-          </button>
-        )}
-      </div>
-
-      {/* Top Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mb-4 rounded-2xl shadow-sm">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Precedente
-            </button>
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Successivo
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-bold">{filteredCards.length}</span> risultati
-              </p>
+      {/* Content Tabs */}
+      {activeTab === 'list' ? (
+        <>
+          {/* Results Count and Select All */}
+          <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 mb-4 px-2">
+            <div className="font-bold uppercase tracking-widest text-[10px]">
+              Trovate {filteredCards.length} schede
             </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
+            {selectedCards.length === filteredCards.length && filteredCards.length > 0 && (
+              <button 
+                onClick={handleSelectAll}
+                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-bold uppercase tracking-tighter text-[10px]"
+              >
+                Deseleziona Tutto
+              </button>
+            )}
+          </div>
+
+          {/* Top Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mb-4 rounded-2xl shadow-sm">
+              <div className="flex-1 flex justify-between sm:hidden">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
-                  <span className="sr-only">Precedente</span>
-                  &larr;
+                  Precedente
                 </button>
-                {/* Page Numbers */}
-                {[...Array(totalPages)].map((_, i) => {
-                    // Show max 5 pages logic or simple list if small
-                    if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
-                      if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
-                      return null;
-                    }
-                    return (
-                      <button
-                          key={i}
-                          onClick={() => setCurrentPage(i + 1)}
-                          aria-current={currentPage === i + 1 ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold ${
-                              currentPage === i + 1
-                                  ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
-                                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
-                          }`}
-                      >
-                          {i + 1}
-                      </button>
-                    );
-                })}
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
-                  <span className="sr-only">Successivo</span>
-                  &rarr;
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {viewMode === 'grid' ? (
-        /* GRID VIEW */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {currentItems.map((card) => {
-            const isSelected = selectedCards.includes(card.id);
-            const isInCrm = crmCardIds.has(card.id);
-            return (
-            <div 
-              key={card.id} 
-              className={`rounded-2xl shadow-md p-6 hover:shadow-2xl transition-all relative group border ${isSelected ? 'ring-2 ring-blue-500 border-transparent shadow-blue-500/10' : 'border-gray-100 dark:border-gray-700'} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'}`}
-            >
-              {/* Checkbox for Grid View */}
-              <div className="absolute top-4 left-4 z-10">
-                <button
-                   onClick={(e) => { e.stopPropagation(); handleSelectCard(card.id); }}
-                   className={`p-1.5 rounded-xl transition-all ${isSelected ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-300 hover:text-gray-500 bg-gray-50 dark:bg-gray-700/50'}`}
-                >
-                  {isSelected ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5" />}
+                  Successivo
                 </button>
               </div>
-
-              <div className="flex items-start justify-end mb-4 pl-8">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {new Date(card.created_at).toLocaleDateString()}
-                </span>
-              </div>
-              
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 truncate leading-tight">{card.business_name}</h3>
-              
-              {card.piva && (
-                <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-1 truncate uppercase tracking-tighter">
-                  P.IVA: {card.piva}
-                </p>
-              )}
-              
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate italic">
-                {card.address}
-              </p>
-
-              <p className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-4 flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
-                  <User className="h-3 w-3 text-gray-400" />
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-bold">{filteredCards.length}</span> risultati
+                  </p>
                 </div>
-                {card.full_name}
-              </p>
-
-              <div className="space-y-3 border-t border-gray-100 dark:border-gray-700 pt-4 mb-6">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Città</span>
-                  <span className="font-bold text-gray-900 dark:text-white">{card.city} ({card.province})</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Interesse</span>
-                  <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold">{card.main_interest}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Consulente</span>
-                  <span className={`font-bold truncate max-w-[120px] ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
-                    {card.assigned_consultant || 'DA ASSEGNARE'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <button 
-                  onClick={() => moveCardToCRM(card.id)}
-                  disabled={isInCrm}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all text-xs font-bold uppercase tracking-tight ${isInCrm ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white shadow-lg shadow-indigo-500/10'}`}
-                >
-                  <ArrowRight className="h-3.5 w-3.5" />
-                  {isInCrm ? 'In CRM' : 'Sposta'}
-                </button>
-                <button 
-                  onClick={() => handleEditCard(card)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-blue-500/10"
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit
-                </button>
-                <div className="flex gap-2 w-full mt-1">
-                  {card.has_external_image && (
-                    <button 
-                      onClick={(e) => handleViewImage(card, e)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-2 rounded-xl hover:bg-green-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-green-500/10"
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                     >
-                      <Image className="h-3.5 w-3.5" />
-                      Foto
+                      <span className="sr-only">Precedente</span>
+                      &larr;
                     </button>
-                  )}
-                  <button 
-                    onClick={(e) => deleteCard(card.id, e)}
-                    className="flex-1 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-xl hover:bg-red-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-red-500/10"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </button>
+                    {/* Page Numbers */}
+                    {[...Array(totalPages)].map((_, i) => {
+                        // Show max 5 pages logic or simple list if small
+                        if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
+                          if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
+                          return null;
+                        }
+                        return (
+                          <button
+                              key={i}
+                              onClick={() => setCurrentPage(i + 1)}
+                              aria-current={currentPage === i + 1 ? 'page' : undefined}
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold ${
+                                  currentPage === i + 1
+                                      ? 'z-10 bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900 dark:border-blue-500 dark:text-blue-200'
+                                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                          >
+                              {i + 1}
+                          </button>
+                        );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
+                    >
+                      <span className="sr-only">Successivo</span>
+                      &rarr;
+                    </button>
+                  </nav>
                 </div>
               </div>
             </div>
-          )})}
-        </div>
-      ) : (
-        /* LIST VIEW */
-        <div className="bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-2xl border border-gray-200 dark:border-gray-700">
-            <div className="overflow-x-auto h-4 mb-2 bg-gray-50 dark:bg-gray-900/50" ref={topScrollRef} onScroll={handleTopScroll}>
-                <div style={{ width: scrollWidth, height: 1 }} />
-            </div>
-            <div className="overflow-x-auto" ref={bottomScrollRef} onScroll={handleBottomScroll}>
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-separate border-spacing-0">
-                    <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-20">
-                <tr>
-                  <th scope="col" className="px-6 py-4 w-12 border-b border-gray-200 dark:border-gray-700">
-                    <input
-                      type="checkbox"
-                      checked={selectedCards.length === filteredCards.length && filteredCards.length > 0}
-                      onChange={handleSelectAll}
-                      className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
-                    />
-                  </th>
-                  {archiveOptions.created_at && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Data</th>}
-                  {archiveOptions.updated_at && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Modifica</th>}
-                  {archiveOptions.business_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Ragione Sociale</th>}
-                  {archiveOptions.full_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Contatto</th>}
-                  {archiveOptions.piva && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">P.IVA</th>}
-                  {archiveOptions.address && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Indirizzo</th>}
-                  {archiveOptions.city && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Comune</th>}
-                  {archiveOptions.province && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Pr</th>}
-                  {archiveOptions.phone && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Telefono</th>}
-                  {archiveOptions.email && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Email</th>}
-                  {archiveOptions.main_interest && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Interesse</th>}
-                  {archiveOptions.availability && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Disp.</th>}
-                  {archiveOptions.assigned_consultant && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Consulente</th>}
-                  {archiveOptions.operator_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Operatore</th>}
-                  <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest w-[120px] sticky right-0 z-30 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-[-5px_0_15px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
-                {currentItems.map((card) => {
-                  const isSelected = selectedCards.includes(card.id);
-                  const isInCrm = crmCardIds.has(card.id);
-                  return (
-                  <tr key={card.id} className={`group transition-all cursor-pointer ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => handleEditCard(card)}>
-                    <td className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleSelectCard(card.id)}
-                        className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5 transition-transform group-hover:scale-110"
-                      />
-                    </td>
-                    {archiveOptions.created_at && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{new Date(card.created_at).toLocaleDateString()}</td>}
-                    {archiveOptions.updated_at && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{card.updated_at ? new Date(card.updated_at).toLocaleDateString() : '-'}</td>}
-                    {archiveOptions.business_name && (
-                      <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
-                        <div className="flex items-center gap-2">
-                          <span className="group-hover:text-blue-600 transition-colors">{card.business_name}</span>
-                          {isInCrm && (
-                            <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-xl bg-yellow-300 text-yellow-900 shadow-sm">
-                              In CRM
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                    {archiveOptions.full_name && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">{card.full_name}</td>}
-                    {archiveOptions.piva && <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">{card.piva}</td>}
-                    {archiveOptions.address && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400 italic">{card.address}</td>}
-                    {archiveOptions.city && <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-700 dark:text-gray-200">{card.city}</td>}
-                    {archiveOptions.province && <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-400 dark:text-gray-500">{card.province}</td>}
-                    {archiveOptions.phone && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300 font-mono tracking-tight">{card.phone}</td>}
-                    {archiveOptions.email && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400 underline decoration-blue-500/30 underline-offset-4">{card.email}</td>}
-                    {archiveOptions.main_interest && (
-                      <td className="px-6 py-5 whitespace-nowrap">
-                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold uppercase tracking-tighter">
-                          {card.main_interest}
-                        </span>
-                      </td>
-                    )}
-                    {archiveOptions.availability && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{card.availability}</td>}
-                    {archiveOptions.assigned_consultant && (
-                      <td className={`px-6 py-5 whitespace-nowrap text-sm font-bold ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-200'}`}>
-                        {card.assigned_consultant || 'DA ASSEGNARE'}
-                      </td>
-                    )}
-                    {archiveOptions.operator_name && <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">{card.operator_name}</td>}
-                    <td className={`px-6 py-5 whitespace-nowrap text-right text-sm font-medium w-[120px] sticky right-0 z-10 shadow-[-5px_0_15px_-5px_rgba(0,0,0,0.1)] transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
-                      <div className="flex justify-end gap-3">
-                        {card.has_external_image && (
-                          <button 
-                            onClick={(e) => handleViewImage(card, e)}
-                            className="p-1.5 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
-                            title="Vedi Foto"
-                          >
-                            <Image className="h-4 w-4" />
-                          </button>
-                        )}
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
-                          className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                          title="Modifica"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button 
-                          onClick={(e) => deleteCard(card.id, e)}
-                          className="p-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                          title="Elimina"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );})}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+          )}
 
-      {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mt-6 rounded-2xl shadow-lg">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
-            >
-              Precedente
-            </button>
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
-            >
-              Successivo
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm text-gray-700 dark:text-gray-300">
-                Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-bold">{filteredCards.length}</span> risultati
-              </p>
+          {viewMode === 'grid' ? (
+            /* GRID VIEW */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {currentItems.map((card) => {
+                const isSelected = selectedCards.includes(card.id);
+                const isInCrm = crmCardIds.has(card.id);
+                return (
+                <div 
+                  key={card.id} 
+                  className={`rounded-2xl shadow-md p-6 hover:shadow-2xl transition-all relative group border ${isSelected ? 'ring-2 ring-blue-500 border-transparent shadow-blue-500/10' : 'border-gray-100 dark:border-gray-700'} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'}`}
+                >
+                  {/* Checkbox for Grid View */}
+                  <div className="absolute top-4 left-4 z-10">
+                    <button
+                       onClick={(e) => { e.stopPropagation(); handleSelectCard(card.id); }}
+                       className={`p-1.5 rounded-xl transition-all ${isSelected ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/30' : 'text-gray-300 hover:text-gray-500 bg-gray-50 dark:bg-gray-700/50'}`}
+                    >
+                      {isSelected ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5" />}
+                    </button>
+                  </div>
+
+                  <div className="flex items-start justify-end mb-4 pl-8">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(card.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 truncate leading-tight">{card.business_name}</h3>
+                  
+                  {card.piva && (
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-1 truncate uppercase tracking-tighter">
+                      P.IVA: {card.piva}
+                    </p>
+                  )}
+                  
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 truncate italic">
+                    {card.address}
+                  </p>
+
+                  <p className="text-sm font-bold text-gray-600 dark:text-gray-300 mb-4 flex items-center gap-1.5">
+                    <div className="w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                      <User className="h-3 w-3 text-gray-400" />
+                    </div>
+                    {card.full_name}
+                  </p>
+
+                  <div className="space-y-3 border-t border-gray-100 dark:border-gray-700 pt-4 mb-6">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Città</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{card.city} ({card.province})</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Interesse</span>
+                      <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl font-bold">{card.main_interest}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Consulente</span>
+                      <span className={`font-bold truncate max-w-[120px] ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+                        {card.assigned_consultant || 'DA ASSEGNARE'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <button 
+                      onClick={() => moveCardToCRM(card.id)}
+                      disabled={isInCrm}
+                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all text-xs font-bold uppercase tracking-tight ${isInCrm ? 'bg-gray-100 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white shadow-lg shadow-indigo-500/10'}`}
+                    >
+                      <ArrowRight className="h-3.5 w-3.5" />
+                      {isInCrm ? 'In CRM' : 'Sposta'}
+                    </button>
+                    <button 
+                      onClick={() => handleEditCard(card)}
+                      className="flex-1 flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 py-2.5 rounded-xl hover:bg-blue-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-blue-500/10"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
+                    <div className="flex gap-2 w-full mt-1">
+                      {card.has_external_image && (
+                        <button 
+                          onClick={(e) => handleViewImage(card, e)}
+                          className="flex-1 flex items-center justify-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-3 py-2 rounded-xl hover:bg-green-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-green-500/10"
+                        >
+                          <Image className="h-3.5 w-3.5" />
+                          Foto
+                        </button>
+                      )}
+                      <button 
+                        onClick={(e) => deleteCard(card.id, e)}
+                        className="flex-1 flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 py-2 rounded-xl hover:bg-red-600 hover:text-white transition-all text-xs font-bold uppercase tracking-tight shadow-lg shadow-red-500/10"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )})}
             </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
+          ) : (
+            /* LIST VIEW */
+            <div className="bg-white dark:bg-gray-800 shadow-xl overflow-hidden sm:rounded-2xl border border-gray-200 dark:border-gray-700">
+                <div className="overflow-x-auto h-4 mb-2 bg-gray-50 dark:bg-gray-900/50" ref={topScrollRef} onScroll={handleTopScroll}>
+                    <div style={{ width: scrollWidth, height: 1 }} />
+                </div>
+                <div className="overflow-x-auto" ref={bottomScrollRef} onScroll={handleBottomScroll}>
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-separate border-spacing-0">
+                        <thead className="bg-gray-50 dark:bg-gray-900 sticky top-0 z-20">
+                    <tr>
+                      <th scope="col" className="px-6 py-4 w-12 border-b border-gray-200 dark:border-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={selectedCards.length === filteredCards.length && filteredCards.length > 0}
+                          onChange={handleSelectAll}
+                          className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5"
+                        />
+                      </th>
+                      {archiveOptions.created_at && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Data</th>}
+                      {archiveOptions.updated_at && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Modifica</th>}
+                      {archiveOptions.business_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Ragione Sociale</th>}
+                      {archiveOptions.full_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Contatto</th>}
+                      {archiveOptions.piva && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">P.IVA</th>}
+                      {archiveOptions.address && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Indirizzo</th>}
+                      {archiveOptions.city && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Comune</th>}
+                      {archiveOptions.province && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Pr</th>}
+                      {archiveOptions.phone && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Telefono</th>}
+                      {archiveOptions.email && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Email</th>}
+                      {archiveOptions.main_interest && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Interesse</th>}
+                      {archiveOptions.availability && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Disp.</th>}
+                      {archiveOptions.assigned_consultant && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Consulente</th>}
+                      {archiveOptions.operator_name && <th scope="col" className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">Operatore</th>}
+                      <th scope="col" className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest w-[120px] sticky right-0 z-30 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-[-5px_0_15px_-5px_rgba(0,0,0,0.1)]">Azioni</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                    {currentItems.map((card) => {
+                      const isSelected = selectedCards.includes(card.id);
+                      const isInCrm = crmCardIds.has(card.id);
+                      return (
+                      <tr key={card.id} className={`group transition-all cursor-pointer ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10' : ''} ${isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`} onClick={() => handleEditCard(card)}>
+                        <td className="px-6 py-5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelectCard(card.id)}
+                            className="rounded-md border-gray-300 text-blue-600 focus:ring-blue-500 h-5 w-5 transition-transform group-hover:scale-110"
+                          />
+                        </td>
+                        {archiveOptions.created_at && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{new Date(card.created_at).toLocaleDateString()}</td>}
+                        {archiveOptions.updated_at && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{card.updated_at ? new Date(card.updated_at).toLocaleDateString() : '-'}</td>}
+                        {archiveOptions.business_name && (
+                          <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-900 dark:text-white">
+                            <div className="flex items-center gap-2">
+                              <span className="group-hover:text-blue-600 transition-colors">{card.business_name}</span>
+                              {isInCrm && (
+                                <span className="px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest rounded-xl bg-yellow-300 text-yellow-900 shadow-sm">
+                                  In CRM
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                        {archiveOptions.full_name && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300">{card.full_name}</td>}
+                        {archiveOptions.piva && <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tighter">{card.piva}</td>}
+                        {archiveOptions.address && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400 italic">{card.address}</td>}
+                        {archiveOptions.city && <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-700 dark:text-gray-200">{card.city}</td>}
+                        {archiveOptions.province && <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-400 dark:text-gray-500">{card.province}</td>}
+                        {archiveOptions.phone && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-600 dark:text-gray-300 font-mono tracking-tight">{card.phone}</td>}
+                        {archiveOptions.email && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400 underline decoration-blue-500/30 underline-offset-4">{card.email}</td>}
+                        {archiveOptions.main_interest && (
+                          <td className="px-6 py-5 whitespace-nowrap">
+                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold uppercase tracking-tighter">
+                              {card.main_interest}
+                            </span>
+                          </td>
+                        )}
+                        {archiveOptions.availability && <td className="px-6 py-5 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">{card.availability}</td>}
+                        {archiveOptions.assigned_consultant && (
+                          <td className={`px-6 py-5 whitespace-nowrap text-sm font-bold ${!card.assigned_consultant ? 'text-green-600 dark:text-green-400' : 'text-gray-700 dark:text-gray-200'}`}>
+                            {card.assigned_consultant || 'DA ASSEGNARE'}
+                          </td>
+                        )}
+                        {archiveOptions.operator_name && <td className="px-6 py-5 whitespace-nowrap text-xs font-bold text-gray-400 dark:text-gray-500 uppercase">{card.operator_name}</td>}
+                        <td className={`px-6 py-5 whitespace-nowrap text-right text-sm font-medium w-[120px] sticky right-0 z-10 shadow-[-5px_0_15px_-5px_rgba(0,0,0,0.1)] transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/10' : isInCrm ? 'bg-yellow-100 dark:bg-yellow-900/40' : 'bg-white dark:bg-gray-800'} group-hover:bg-gray-50 dark:group-hover:bg-gray-700`}>
+                          <div className="flex justify-end gap-3">
+                            {card.has_external_image && (
+                              <button 
+                                onClick={(e) => handleViewImage(card, e)}
+                                className="p-1.5 rounded-xl bg-green-50 dark:bg-green-900/20 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                                title="Vedi Foto"
+                              >
+                                <Image className="h-4 w-4" />
+                              </button>
+                            )}
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleEditCard(card); }}
+                              className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                              title="Modifica"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button 
+                              onClick={(e) => deleteCard(card.id, e)}
+                              className="p-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                              title="Elimina"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );})}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border border-gray-200 dark:border-gray-700 sm:px-6 mt-6 rounded-2xl shadow-lg">
+              <div className="flex-1 flex justify-between sm:hidden">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
                 >
-                  <span className="sr-only">Precedente</span>
-                  &larr;
+                  Precedente
                 </button>
-                {/* Page Numbers */}
-                {[...Array(totalPages)].map((_, i) => {
-                    if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
-                      if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
-                      return null;
-                    }
-                    return (
-                      <button
-                          key={i}
-                          onClick={() => setCurrentPage(i + 1)}
-                          aria-current={currentPage === i + 1 ? 'page' : undefined}
-                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold transition-all ${
-                              currentPage === i + 1
-                                  ? 'z-10 bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                  : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
-                          }`}
-                      >
-                          {i + 1}
-                      </button>
-                    );
-                })}
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-bold rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-all"
                 >
-                  <span className="sr-only">Successivo</span>
-                  &rarr;
+                  Successivo
                 </button>
-              </nav>
+              </div>
+              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Mostrando <span className="font-bold">{indexOfFirstItem + 1}</span> a <span className="font-bold">{Math.min(indexOfLastItem, filteredCards.length)}</span> di <span className="font-bold">{filteredCards.length}</span> risultati
+                  </p>
+                </div>
+                <div>
+                  <nav className="relative z-0 inline-flex rounded-xl shadow-sm -space-x-px" aria-label="Pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="relative inline-flex items-center px-2 py-2 rounded-l-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
+                    >
+                      <span className="sr-only">Precedente</span>
+                      &larr;
+                    </button>
+                    {/* Page Numbers */}
+                    {[...Array(totalPages)].map((_, i) => {
+                        if (totalPages > 7 && (i + 1 !== 1 && i + 1 !== totalPages && Math.abs(currentPage - (i + 1)) > 1)) {
+                          if (i + 1 === 2 || i + 1 === totalPages - 1) return <span key={i} className="px-2 py-2 bg-white dark:bg-gray-700 border-gray-300 text-gray-500">...</span>;
+                          return null;
+                        }
+                        return (
+                          <button
+                              key={i}
+                              onClick={() => setCurrentPage(i + 1)}
+                              aria-current={currentPage === i + 1 ? 'page' : undefined}
+                              className={`relative inline-flex items-center px-4 py-2 border text-sm font-bold transition-all ${
+                                  currentPage === i + 1
+                                      ? 'z-10 bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600'
+                              }`}
+                          >
+                              {i + 1}
+                          </button>
+                        );
+                    })}
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="relative inline-flex items-center px-2 py-2 rounded-r-xl border border-gray-300 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 transition-all"
+                    >
+                      <span className="sr-only">Successivo</span>
+                      &rarr;
+                    </button>
+                  </nav>
+                </div>
+              </div>
             </div>
+          )}
+        </>
+      ) : (
+        /* IMPORT EXCEL TAB */
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="bg-white dark:bg-gray-800 shadow-xl rounded-2xl p-8 border border-gray-200 dark:border-gray-700">
+            <div className="mb-8 text-center border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl p-12 hover:border-blue-500 transition-colors bg-gray-50 dark:bg-gray-900/50">
+                <input
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="excel-upload"
+                />
+                <label htmlFor="excel-upload" className="cursor-pointer group block">
+                    <Upload className="mx-auto h-16 w-16 text-gray-400 group-hover:text-blue-500 transition-colors mb-4" />
+                    <span className="text-xl font-bold text-gray-900 dark:text-white">
+                        Trascina o clicca per caricare il file Excel
+                    </span>
+                    <p className="mt-2 text-sm text-gray-500 uppercase tracking-widest font-medium">
+                        Supporta formati .xlsx e .xls
+                    </p>
+                </label>
+            </div>
+
+            {/* Field Layout Guide - Disposizione Campi */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl p-6 mb-8">
+              <h4 className="text-blue-800 dark:text-blue-300 font-bold text-sm uppercase tracking-widest mb-4 flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4" />
+                Disposizione dei Campi (Intestazioni Excel)
+              </h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { name: 'Ragione Sociale', req: true },
+                  { name: 'Referente', req: false },
+                  { name: 'Email', req: false },
+                  { name: 'Telefono', req: false },
+                  { name: 'P.IVA', req: false },
+                  { name: 'Indirizzo', req: false },
+                  { name: 'Città', req: false },
+                  { name: 'Provincia', req: false },
+                  { name: 'Disponibilità', req: false, desc: 'ALTA, MEDIA, BASSA' },
+                  { name: 'Interesse', req: false, desc: 'SCOMMESSE, UTENZE, ENTRAMBI' },
+                  { name: 'Consulente', req: false },
+                  { name: 'Operatore', req: false },
+                  { name: 'Note', req: false },
+                  { name: 'Fonte', req: false },
+                  { name: 'PVR Attivo', req: false, desc: 'SI/NO' },
+                  { name: 'Utenze Attive', req: false, desc: 'SI/NO' }
+                ].map((field, idx) => (
+                  <div key={idx} className="flex flex-col">
+                    <span className={`text-xs font-bold ${field.req ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {field.name} {field.req && '*'}
+                    </span>
+                    {field.desc && <span className="text-[10px] text-gray-500 italic">{field.desc}</span>}
+                  </div>
+                ))}
+              </div>
+              <p className="mt-4 text-[10px] text-blue-600 dark:text-blue-400 font-medium italic">
+                * Campi obbligatori. Se un campo non è presente nell'Excel, verrà usato un valore predefinito.
+              </p>
+            </div>
+
+            {excelData.length > 0 && (
+                <div className="animate-in fade-in zoom-in-95 duration-300">
+                    <div className="flex justify-between items-center mb-4">
+                      <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
+                        <CheckSquare className="h-4 w-4 text-green-500" />
+                        Anteprima Dati ({excelData.length} righe)
+                      </h4>
+                      <button 
+                        onClick={() => setExcelData([])}
+                        className="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-tighter"
+                      >
+                        Rimuovi File
+                      </button>
+                    </div>
+                    <div className="max-h-80 overflow-auto border border-gray-200 dark:border-gray-700 rounded-2xl text-xs shadow-inner bg-white dark:bg-gray-900">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
+                                <tr>
+                                    {Object.keys(excelData[0] || {}).map(key => (
+                                        <th key={key} className="px-4 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-200 dark:border-gray-700">{key}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
+                                {excelData.slice(0, 10).map((row, idx) => (
+                                    <tr key={idx} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                        {Object.values(row).map((val, vIdx) => (
+                                            <td key={vIdx} className="px-4 py-3 whitespace-nowrap text-gray-600 dark:text-gray-300">{String(val)}</td>
+                                        ))}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        {excelData.length > 10 && (
+                          <div className="p-4 text-center text-gray-400 font-bold uppercase tracking-widest text-[10px] bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
+                            ...e altre {excelData.length - 10} righe
+                          </div>
+                        )}
+                    </div>
+                    
+                    <button
+                        onClick={handleImportExcel}
+                        disabled={loading}
+                        className="mt-8 w-full flex justify-center items-center gap-3 py-5 px-6 border border-transparent rounded-2xl shadow-2xl text-xl font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:opacity-50 transition-all transform active:scale-95 shadow-green-500/20"
+                    >
+                        {loading ? (
+                          <>
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                            Importazione in corso...
+                          </>
+                        ) : (
+                          <>
+                            <CheckSquare className="h-6 w-6" />
+                            CONFERMA IMPORTAZIONE SCHEDE
+                          </>
+                        )}
+                    </button>
+                </div>
+            )}
           </div>
         </div>
       )}
