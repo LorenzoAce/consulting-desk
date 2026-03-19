@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const { pool } = require('./db');
 
+const nodemailer = require('nodemailer');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -756,45 +758,86 @@ app.post('/api/crm/leads', async (req, res) => {
 // Marketing Endpoints
 app.post('/api/marketing/send', async (req, res) => {
   const { type, recipients, subject, message } = req.body;
-  
-  if (!recipients || !Array.isArray(recipients)) {
-    return res.status(400).json({ error: 'No recipients provided' });
+
+  if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
+    return res.status(400).json({ error: 'Nessun destinatario fornito' });
   }
 
   try {
-    // In a real application, you would integrate with an Email service (like SendGrid, Mailgun)
-    // or an SMS service (like Twilio, Vonage).
-    // For now, we'll simulate the sending process and log it.
-    
-    console.log(`[MARKETING] Sending ${type.toUpperCase()} campaign:`);
-    if (type === 'email') console.log(`Subject: ${subject}`);
-    console.log(`Message: ${message}`);
-    console.log(`To ${recipients.length} recipients.`);
+    // 1. Recupera le impostazioni dal DB
+    const settingsRes = await pool.query('SELECT marketing_settings FROM app_settings WHERE id = 1');
+    const settings = settingsRes.rows[0]?.marketing_settings;
 
-    // Simulate some success and potential failures
-    let sent = 0;
-    let failed = 0;
+    if (!settings || !settings.smtp_host || !settings.smtp_user || !settings.smtp_pass) {
+      return res.status(500).json({ error: 'Configurazione SMTP mancante o incompleta nelle impostazioni.' });
+    }
 
-    recipients.forEach(recipient => {
-      const contactInfo = type === 'email' ? recipient.email : recipient.phone;
-      if (contactInfo) {
-        sent++;
-        // console.log(`- Sent to: ${recipient.name} (${contactInfo})`);
-      } else {
-        failed++;
-        // console.log(`- Failed (No ${type} info): ${recipient.name}`);
+    // 2. Configura il transporter di Nodemailer
+    const transporter = nodemailer.createTransport({
+      host: settings.smtp_host,
+      port: settings.smtp_port || 587,
+      secure: (settings.smtp_port || 587) === 465, // true for 465, false for other ports
+      auth: {
+        user: settings.smtp_user,
+        pass: settings.smtp_pass,
+      },
+      // Aggiungi opzioni per gestire certificati self-signed se necessario (per test in locale)
+      tls: {
+        rejectUnauthorized: process.env.NODE_ENV === 'production'
       }
     });
+
+    let sent = 0;
+    let failed = 0;
+    const errors = [];
+
+    // 3. Itera e invia email
+    for (const recipient of recipients) {
+      if (type === 'email' && recipient.email) {
+        try {
+          await transporter.sendMail({
+            from: `"Consulting Desk" <${settings.smtp_user}>`,
+            to: recipient.email.toLowerCase(),
+            subject: subject,
+            html: message.replace(/\n/g, '<br>'), // Sostituisce newline con <br> per l'HTML
+          });
+          sent++;
+        } catch (emailError) {
+          console.error(`[EMAIL_ERROR] Failed to send to ${recipient.email}:`, emailError);
+          failed++;
+          errors.push(`Destinatario: ${recipient.email}, Errore: ${emailError.message}`);
+        }
+      } else if (type === 'sms' && recipient.phone) {
+        // Logica SMS (attualmente simulata)
+        console.log(`Simulating SMS to ${recipient.phone}`);
+        sent++;
+      } else {
+        failed++;
+        errors.push(`Destinatario: ${recipient.name}, Informazioni di contatto mancanti per ${type}`);
+      }
+    }
+
+    // 4. Invia una risposta dettagliata
+    if (failed > 0) {
+      return res.status(207).json({ // 207 Multi-Status
+        success: false,
+        message: `Invio completato con ${failed} errori.`,
+        sent,
+        failed,
+        errors,
+      });
+    }
 
     res.json({ 
       success: true, 
       sent, 
       failed,
-      message: `Simulated sending to ${sent} recipients, ${failed} failed.`
+      message: `Campagna inviata con successo a ${sent} destinatari.`
     });
+
   } catch (err) {
-    console.error('Error in marketing send:', err);
-    res.status(500).json({ error: 'Failed to send marketing campaign' });
+    console.error('[MARKETING_ERROR] General error:', err);
+    res.status(500).json({ error: 'Errore generale del server durante l\'invio della campagna.', details: err.message });
   }
 });
 

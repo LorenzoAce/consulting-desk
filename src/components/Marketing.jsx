@@ -151,7 +151,7 @@ const Marketing = () => {
         type: activeTab,
         recipients: selectedData.map(l => ({
           id: l.id,
-          email: l.email,
+          email: l.email ? l.email.toLowerCase() : '',
           phone: l.phone,
           name: l.contact_name || l.business_name
         })),
@@ -165,19 +165,23 @@ const Marketing = () => {
         body: JSON.stringify(payload)
       });
 
-      if (res.ok) {
-        const result = await res.json();
-        alert(`Invio completato! Inviati: ${result.sent}, Falliti: ${result.failed}`);
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        alert(result.message || `Invio completato! Inviati: ${result.sent}, Falliti: ${result.failed}`);
         setStats({ sent: result.sent, failed: result.failed });
-        // Clear message after success
         setMessage('');
         setSubject('');
         setSelectedLeads(new Set());
       } else {
-        throw new Error('Errore durante l\'invio');
+        // Gestisce sia errori di rete/server che errori di invio parziali
+        const errorDetail = result.errors ? result.errors.join('\n') : (result.error || 'Dettagli non disponibili');
+        const errorMessage = `Si sono verificati degli errori durante l'invio.\n\n${result.message || ''}\n\nDettagli:\n${errorDetail}`;
+        alert(errorMessage);
+        setStats({ sent: result.sent || 0, failed: result.failed || selectedLeads.size });
       }
     } catch (err) {
-      alert('Errore: ' + err.message);
+      alert('Errore di connessione: ' + err.message);
     } finally {
       setSending(false);
     }
