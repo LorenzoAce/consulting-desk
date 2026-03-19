@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Send,import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building } from 'lucide-react';
+import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building } from 'lucide-react';
+import { getApiUrl } from '../utils/api';
 
 const Marketing = () => {
   const [leads, setLeads] = useState([]);
