@@ -171,6 +171,13 @@ const Marketing = () => {
   };
 
   const handleSend = async () => {
+    // Check if we are trying to re-send an already sent campaign
+    const existingCampaign = campaigns.find(c => c.id === editingId);
+    if (existingCampaign && existingCampaign.status === 'Inviata') {
+      alert('Questa campagna è già stata inviata.');
+      return;
+    }
+
     if (selectedLeads.size === 0) {
       alert('Seleziona almeno un destinatario');
       return;
@@ -224,7 +231,14 @@ const Marketing = () => {
             recipients: Array.from(selectedLeads),
             subject: subject,
             message: message,
-            status: 'Inviata'
+            status: 'Inviata',
+            stats: {
+              recipients: { count: selectedLeads.size, percentage: 100 },
+              opens: { count: 0, percentage: 0 },
+              clicks: { count: 0, percentage: 0 },
+              unsubscribes: { count: 0, percentage: 0 },
+              conversions: { count: 0, percentage: 0 }
+            }
           };
 
           const endpoint = editingId 
@@ -259,6 +273,10 @@ const Marketing = () => {
   };
 
   const handleDirectSend = async (campaign) => {
+    if (campaign.status === 'Inviata') {
+      alert('Questa campagna è già stata inviata.');
+      return;
+    }
     if (!campaign.recipients || campaign.recipients.length === 0) {
       alert('Questa campagna non ha destinatari.');
       return;
@@ -305,11 +323,21 @@ const Marketing = () => {
 
       if (res.ok && result.success) {
         alert(result.message || 'Invio completato con successo!');
-        // Update campaign status to 'Inviata' in DB
+        // Update campaign status to 'Inviata' in DB and set initial stats
         await fetch(`${apiUrl}/api/marketing/campaigns/${campaign.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...campaign, status: 'Inviata' })
+          body: JSON.stringify({ 
+            ...campaign, 
+            status: 'Inviata',
+            stats: {
+              recipients: { count: selectedData.length, percentage: 100 },
+              opens: { count: 0, percentage: 0 },
+              clicks: { count: 0, percentage: 0 },
+              unsubscribes: { count: 0, percentage: 0 },
+              conversions: { count: 0, percentage: 0 }
+            }
+          })
         });
         fetchCampaigns();
       } else {
@@ -327,6 +355,14 @@ const Marketing = () => {
   const handleSaveDraft = async () => {
     try {
       const apiUrl = getApiUrl();
+      
+      // Se stiamo modificando una campagna già inviata, non permettiamo di salvarla come bozza
+      const existingCampaign = campaigns.find(c => c.id === editingId);
+      if (existingCampaign && existingCampaign.status === 'Inviata') {
+        alert('Questa campagna è già stata inviata e non può essere riportata in bozza.');
+        return;
+      }
+
       const payload = {
         name: campaignName,
         folder: campaignFolder,
@@ -657,8 +693,13 @@ const Marketing = () => {
                         </button>
                         <button 
                           onClick={() => handleDirectSend(campaign)}
-                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-xl transition-all" 
-                          title="Invia Campagna"
+                          disabled={campaign.status === 'Inviata'}
+                          className={`p-2 rounded-xl transition-all ${
+                            campaign.status === 'Inviata' 
+                              ? 'text-gray-200 cursor-not-allowed' 
+                              : 'text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30'
+                          }`}
+                          title={campaign.status === 'Inviata' ? 'Campagna già inviata' : 'Invia Campagna'}
                         >
                           <Send className="h-5 w-5" />
                         </button>
@@ -844,20 +885,30 @@ const Marketing = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <button
-                            onClick={handleSaveDraft}
-                            className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-bold uppercase tracking-tight hover:bg-gray-50 transition-all"
-                          >
-                            Salva Bozza
-                          </button>
-                          <button
-                            onClick={handleSend}
-                            disabled={sending || selectedLeads.size === 0 || !message.trim()}
-                            className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-tight hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all flex items-center gap-2"
-                          >
-                            {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                            Invia Campagna
-                          </button>
+                          {(!editingId || campaigns.find(c => c.id === editingId)?.status !== 'Inviata') && (
+                            <>
+                              <button
+                                onClick={handleSaveDraft}
+                                className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-2xl font-bold uppercase tracking-tight hover:bg-gray-50 transition-all"
+                              >
+                                Salva Bozza
+                              </button>
+                              <button
+                                onClick={handleSend}
+                                disabled={sending || selectedLeads.size === 0 || !message.trim()}
+                                className="px-8 py-3 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-tight hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all flex items-center gap-2"
+                              >
+                                {sending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                                Invia Campagna
+                              </button>
+                            </>
+                          )}
+                          {editingId && campaigns.find(c => c.id === editingId)?.status === 'Inviata' && (
+                            <div className="px-6 py-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-2xl font-bold uppercase tracking-tight border border-green-100 dark:border-green-800 flex items-center gap-2">
+                              <CheckCircle className="h-5 w-5" />
+                              Campagna Inviata
+                            </div>
+                          )}
                         </div>
                       </div>
 
