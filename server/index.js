@@ -775,17 +775,36 @@ app.post('/api/marketing/send', async (req, res) => {
     // 2. Configura il transporter di Nodemailer
     const transporter = nodemailer.createTransport({
       host: settings.smtp_host,
-      port: settings.smtp_port || 587,
-      secure: (settings.smtp_port || 587) === 465, // true for 465, false for other ports
+      port: parseInt(settings.smtp_port) || 587,
+      secure: (parseInt(settings.smtp_port) || 587) === 465, // true per 465 (SSL/TLS), false per altri (STARTTLS)
       auth: {
         user: settings.smtp_user,
         pass: settings.smtp_pass,
       },
-      // Aggiungi opzioni per gestire certificati self-signed se necessario (per test in locale)
+      // Ottimizzazioni per serverless (Vercel)
+      pool: false, // Meglio false per serverless per evitare problemi di connessioni appese
+      connectionTimeout: 10000, // 10 secondi per la connessione
+      greetingTimeout: 10000,   // 10 secondi per il saluto iniziale
+      socketTimeout: 30000,     // 30 secondi per il trasferimento dati
       tls: {
-        rejectUnauthorized: process.env.NODE_ENV === 'production'
+        // Spesso necessario per provider come Aruba/Gmail in ambienti cloud
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
       }
     });
+
+    // Verifica la connessione prima di procedere (solo in debug o per test)
+    try {
+      await transporter.verify();
+      console.log('[SMTP] Connection verified successfully');
+    } catch (verifyError) {
+      console.error('[SMTP_VERIFY_ERROR]', verifyError);
+      return res.status(500).json({ 
+        error: 'Errore di connessione al server SMTP.', 
+        details: verifyError.message,
+        hint: 'Verifica che l\'host e la porta siano corretti e che il server non blocchi connessioni esterne.'
+      });
+    }
 
     let sent = 0;
     let failed = 0;
