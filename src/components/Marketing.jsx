@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building } from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
+const COLOR_OPTIONS = [
+  { value: 'green', label: 'Verde', classes: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 border-green-200 dark:border-green-800' },
+  { value: 'blue', label: 'Blu', classes: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+  { value: 'yellow', label: 'Giallo', classes: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800' },
+  { value: 'purple', label: 'Viola', classes: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 border-purple-200 dark:border-purple-800' },
+  { value: 'red', label: 'Rosso', classes: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 border-red-200 dark:border-red-800' },
+  { value: 'indigo', label: 'Indaco', classes: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' },
+  { value: 'pink', label: 'Rosa', classes: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300 border-pink-200 dark:border-pink-800' },
+  { value: 'gray', label: 'Grigio', classes: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600' },
+];
+
 const Marketing = () => {
   const [leads, setLeads] = useState([]);
   const [dataSource, setDataSource] = useState('crm'); // 'crm' | 'archive'
@@ -11,6 +22,7 @@ const Marketing = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('email'); // 'email', 'sms'
   const [filterStatus, setFilterStatus] = useState('');
+  const [crmStatuses, setCrmStatuses] = useState([]);
   
   // Message content
   const [subject, setSubject] = useState('');
@@ -28,12 +40,28 @@ const Marketing = () => {
 
   useEffect(() => {
     fetchLeads();
+    fetchSettings();
     setCurrentPage(1); // Reset page on data source change
   }, [dataSource]);
 
   useEffect(() => {
     setCurrentPage(1); // Reset page on filter/tab change
   }, [searchTerm, filterStatus, activeTab]);
+
+  const fetchSettings = async () => {
+    try {
+      const apiUrl = getApiUrl();
+      const response = await fetch(`${apiUrl}/api/settings`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.crm_statuses) {
+          setCrmStatuses(data.crm_statuses);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
 
   const fetchLeads = async () => {
     setLoading(true);
@@ -308,11 +336,11 @@ const Marketing = () => {
                     onChange={(e) => setFilterStatus(e.target.value)}
                   >
                     <option value="">Tutti gli stati</option>
-                    <option value="new">Nuovo</option>
-                    <option value="contacted">Contattato</option>
-                    <option value="interested">Interessato</option>
-                    <option value="client">Cliente</option>
-                    <option value="closed">Chiuso</option>
+                    {crmStatuses.map(status => (
+                      <option key={status.id} value={status.id}>
+                        {status.label}
+                      </option>
+                    ))}
                   </select>
                 )}
               </div>
@@ -418,11 +446,9 @@ const Marketing = () => {
                       {dataSource === 'crm' && (
                         <td className="px-6 py-5 whitespace-nowrap">
                           <span className={`px-3 py-1 inline-flex text-[10px] leading-5 font-bold uppercase tracking-wider rounded-xl border ${
-                            lead.status === 'client' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800' :
-                            lead.status === 'interested' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800' :
-                            'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600'
+                            COLOR_OPTIONS.find(c => c.value === crmStatuses.find(s => s.id === lead.status)?.color)?.classes || 'bg-gray-100 text-gray-800 border-gray-200'
                           }`}>
-                            {lead.status}
+                            {crmStatuses.find(s => s.id === lead.status)?.label || lead.status}
                           </span>
                         </td>
                       )}
