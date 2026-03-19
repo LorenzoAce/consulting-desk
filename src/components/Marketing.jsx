@@ -822,7 +822,16 @@ const Marketing = () => {
                       {/* Config Header */}
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{campaignName}</h2>
+                          <div className="flex items-center gap-3">
+                            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{campaignName}</h2>
+                            <button 
+                              onClick={() => setCreationStep('details')}
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+                              title="Modifica nome e cartella"
+                            >
+                              <Pencil className="h-5 w-5" />
+                            </button>
+                          </div>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
                               <FolderArchive className="h-3 w-3" />
