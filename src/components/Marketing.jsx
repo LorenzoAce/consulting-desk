@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building, FileText, Layout, Plus, FolderPlus, Calendar, Hash, BarChart2, MousePointer2, UserMinus, RefreshCw, ChevronLeft, ChevronRight, MoreVertical, Pencil, Image as ImageIcon, Type, Columns, Footprints, Save, Eye, Palette, Trash } from 'lucide-react';
+import { Send, Mail, MessageSquare, Users, Search, CheckCircle, AlertCircle, Loader2, Filter, Trash2, FolderArchive, Building, FileText, Layout, Plus, FolderPlus, Calendar, Hash, BarChart2, MousePointer2, UserMinus, RefreshCw, ChevronLeft, ChevronRight, MoreVertical, Pencil, Image as ImageIcon, Type, Columns, Footprints, Save, Eye, Palette, Trash, Copy } from 'lucide-react';
 import { getApiUrl } from '../utils/api';
 
 const COLOR_OPTIONS = [
@@ -100,6 +100,20 @@ const Marketing = () => {
       ...prev,
       blocks: [...prev.blocks, newBlock]
     }));
+    setEditingBlockId(newBlock.id); // Auto-select new block
+  };
+
+  const handleDuplicateBlock = (e, block) => {
+    e.stopPropagation();
+    const newBlock = {
+      ...JSON.parse(JSON.stringify(block)),
+      id: `block_${Date.now()}`
+    };
+    const index = currentTemplate.blocks.findIndex(b => b.id === block.id);
+    const newBlocks = [...currentTemplate.blocks];
+    newBlocks.splice(index + 1, 0, newBlock);
+    setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+    setEditingBlockId(newBlock.id);
   };
 
   const handleDrop = (e, index) => {
@@ -1410,65 +1424,191 @@ const Marketing = () => {
             <div className="h-[calc(100vh-12rem)] flex gap-6 animate-in fade-in slide-in-from-right-4 duration-500">
               {/* Sidebar: Blocks & Settings */}
               <div className="w-80 flex flex-col gap-6 overflow-auto pr-2">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Blocchi</h3>
-                    <Palette className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { type: 'header', icon: Layout, label: 'Header' },
-                      { type: 'text', icon: Type, label: 'Testo' },
-                      { type: 'image', icon: ImageIcon, label: 'Immagine' },
-                      { type: 'columns', icon: Columns, label: 'Colonne' },
-                      { type: 'footer', icon: Footprints, label: 'Footer' }
-                    ].map(b => (
-                      <button
-                        key={b.type}
-                        draggable
-                        onDragStart={(e) => {
-                          setDraggedBlockType(b.type);
-                          setDraggedBlockId(null);
-                          e.dataTransfer.setData('blockType', b.type);
-                        }}
-                        onClick={() => handleAddBlock(b.type)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-transparent hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group cursor-grab active:cursor-grabbing"
-                      >
-                        <b.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
-                        <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-blue-600">{b.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                {editingBlockId ? (
+                  /* BLOCK PROPERTIES SIDEBAR */
+                  <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => setEditingBlockId(null)}
+                          className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </button>
+                        <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Proprietà</h3>
+                      </div>
+                      <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-lg">
+                        {currentTemplate.blocks.find(b => b.id === editingBlockId)?.type}
+                      </span>
+                    </div>
 
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
-                  <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Impostazioni</h3>
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Nome Modello</label>
-                      <input 
-                        type="text"
-                        value={currentTemplate.name}
-                        onChange={(e) => setCurrentTemplate(prev => ({ ...prev, name: e.target.value }))}
-                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                        placeholder="Nome modello..."
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Font Family</label>
-                      <select 
-                        value={currentTemplate.settings.fontFamily}
-                        onChange={(e) => setCurrentTemplate(prev => ({ ...prev, settings: { ...prev.settings, fontFamily: e.target.value } }))}
-                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                      >
-                        <option value="Inter, sans-serif" className="dark:bg-gray-800">Inter</option>
-                        <option value="Arial, sans-serif" className="dark:bg-gray-800">Arial</option>
-                        <option value="'Times New Roman', serif" className="dark:bg-gray-800">Times New Roman</option>
-                        <option value="'Courier New', monospace" className="dark:bg-gray-800">Courier New</option>
-                      </select>
+                    <div className="space-y-6">
+                      {currentTemplate.blocks.find(b => b.id === editingBlockId)?.type === 'header' && (
+                        <>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Logo</label>
+                            <input 
+                              type="text" 
+                              value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.logoUrl} 
+                              onChange={(e) => {
+                                const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, logoUrl: e.target.value } } : b);
+                                setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                              placeholder="https://..."
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Titolo Intestazione</label>
+                            <input 
+                              type="text" 
+                              value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.title} 
+                              onChange={(e) => {
+                                const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, title: e.target.value } } : b);
+                                setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                            />
+                          </div>
+                        </>
+                      )}
+                      {currentTemplate.blocks.find(b => b.id === editingBlockId)?.type === 'text' && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Contenuto Testo</label>
+                          <textarea 
+                            rows={12}
+                            value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.text}
+                            onChange={(e) => {
+                              const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, text: e.target.value } } : b);
+                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                            }}
+                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      )}
+                      {currentTemplate.blocks.find(b => b.id === editingBlockId)?.type === 'image' && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Immagine</label>
+                          <input 
+                            type="text" 
+                            value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.imageUrl} 
+                            onChange={(e) => {
+                              const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, imageUrl: e.target.value } } : b);
+                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                            }}
+                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      )}
+                      {currentTemplate.blocks.find(b => b.id === editingBlockId)?.type === 'columns' && (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Colonna Sinistra</label>
+                            <textarea 
+                              rows={6}
+                              value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.left}
+                              onChange={(e) => {
+                                const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, left: e.target.value } } : b);
+                                setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Colonna Destra</label>
+                            <textarea 
+                              rows={6}
+                              value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.right}
+                              onChange={(e) => {
+                                const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, right: e.target.value } } : b);
+                                setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                            />
+                          </div>
+                        </div>
+                      )}
+                      {currentTemplate.blocks.find(b => b.id === editingBlockId)?.type === 'footer' && (
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Info Azienda</label>
+                          <textarea 
+                            rows={4}
+                            value={currentTemplate.blocks.find(b => b.id === editingBlockId).content.companyInfo}
+                            onChange={(e) => {
+                              const newBlocks = currentTemplate.blocks.map(b => b.id === editingBlockId ? { ...b, content: { ...b.content, companyInfo: e.target.value } } : b);
+                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                            }}
+                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* BLOCK PALETTE & SETTINGS SIDEBAR */
+                  <>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Blocchi</h3>
+                        <Palette className="h-4 w-4 text-gray-400" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { type: 'header', icon: Layout, label: 'Header' },
+                          { type: 'text', icon: Type, label: 'Testo' },
+                          { type: 'image', icon: ImageIcon, label: 'Immagine' },
+                          { type: 'columns', icon: Columns, label: 'Colonne' },
+                          { type: 'footer', icon: Footprints, label: 'Footer' }
+                        ].map(b => (
+                          <button
+                            key={b.type}
+                            draggable
+                            onDragStart={(e) => {
+                              setDraggedBlockType(b.type);
+                              setDraggedBlockId(null);
+                              e.dataTransfer.setData('blockType', b.type);
+                            }}
+                            onClick={() => handleAddBlock(b.type)}
+                            className="flex flex-col items-center justify-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-transparent hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group cursor-grab active:cursor-grabbing"
+                          >
+                            <b.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
+                            <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-blue-600">{b.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-xl border border-gray-200 dark:border-gray-700 space-y-6">
+                      <h3 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Impostazioni</h3>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Nome Modello</label>
+                          <input 
+                            type="text"
+                            value={currentTemplate.name}
+                            onChange={(e) => setCurrentTemplate(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                            placeholder="Nome modello..."
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Font Family</label>
+                          <select 
+                            value={currentTemplate.settings.fontFamily}
+                            onChange={(e) => setCurrentTemplate(prev => ({ ...prev, settings: { ...prev.settings, fontFamily: e.target.value } }))}
+                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                          >
+                            <option value="Inter, sans-serif" className="dark:bg-gray-800">Inter</option>
+                            <option value="Arial, sans-serif" className="dark:bg-gray-800">Arial</option>
+                            <option value="'Times New Roman', serif" className="dark:bg-gray-800">Times New Roman</option>
+                            <option value="'Courier New', monospace" className="dark:bg-gray-800">Courier New</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Main Area: Preview / Editor Canvas */}
@@ -1494,9 +1634,13 @@ const Marketing = () => {
                 </div>
 
                 {/* Canvas Area */}
-                <div className="flex-1 bg-gray-100 dark:bg-gray-900 rounded-3xl overflow-auto p-12 flex flex-col items-center border border-gray-200 dark:border-gray-700 shadow-inner">
+                <div 
+                  className="flex-1 bg-gray-100 dark:bg-gray-900 rounded-3xl overflow-auto p-12 flex flex-col items-center border border-gray-200 dark:border-gray-700 shadow-inner"
+                  onClick={() => setEditingBlockId(null)}
+                >
                   <div 
                     className="bg-white shadow-2xl min-h-full transition-all duration-500 overflow-hidden text-gray-900"
+                    onClick={(e) => e.stopPropagation()}
                     style={{ 
                       width: currentTemplate.settings.contentWidth,
                       fontFamily: currentTemplate.settings.fontFamily,
@@ -1541,7 +1685,11 @@ const Marketing = () => {
                                 setDraggedBlockId(block.id);
                                 e.dataTransfer.setData('blockId', block.id);
                               }}
-                              className={`group relative border-2 border-transparent hover:border-blue-400 transition-all cursor-pointer ${
+                              className={`group relative border-2 transition-all cursor-pointer ${
+                                editingBlockId === block.id 
+                                  ? 'border-blue-500 shadow-lg ring-2 ring-blue-500/20 z-10' 
+                                  : 'border-transparent hover:border-blue-300'
+                              } ${
                                 draggedBlockId === block.id ? 'opacity-50 grayscale' : ''
                               }`}
                               onClick={() => setEditingBlockId(block.id)}
@@ -1554,12 +1702,21 @@ const Marketing = () => {
                               {/* Block Actions */}
                               <div className="absolute -right-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
                                 <button 
+                                  onClick={(e) => handleDuplicateBlock(e, block)}
+                                  className="p-2 bg-blue-500 text-white rounded-lg shadow-lg hover:bg-blue-600"
+                                  title="Duplica"
+                                >
+                                  <Copy className="h-4 w-4" />
+                                </button>
+                                <button 
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     const newBlocks = currentTemplate.blocks.filter(b => b.id !== block.id);
                                     setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                    if (editingBlockId === block.id) setEditingBlockId(null);
                                   }}
                                   className="p-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600"
+                                  title="Elimina"
                                 >
                                   <Trash className="h-4 w-4" />
                                 </button>
@@ -1617,114 +1774,6 @@ const Marketing = () => {
                                   </div>
                                 )}
                               </div>
-
-                              {/* Block Editor Overlay (Inline-ish) */}
-                              {editingBlockId === block.id && (
-                                <div className="absolute inset-0 bg-white dark:bg-gray-800 z-10 flex flex-col p-6 animate-in zoom-in-95 duration-200 shadow-2xl overflow-auto">
-                                  <div className="flex items-center justify-between mb-6">
-                                    <h4 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Modifica Blocco {block.type}</h4>
-                                    <button onClick={() => setEditingBlockId(null)} className="px-4 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase tracking-tight hover:bg-blue-700 transition-all">Chiudi</button>
-                                  </div>
-                                  <div className="flex-1 space-y-4">
-                                    {block.type === 'header' && (
-                                      <>
-                                        <div className="space-y-2">
-                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Logo</label>
-                                          <input 
-                                            type="text" 
-                                            value={block.content.logoUrl} 
-                                            onChange={(e) => {
-                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, logoUrl: e.target.value } } : b);
-                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                            }}
-                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                            placeholder="https://..."
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Titolo Intestazione</label>
-                                          <input 
-                                            type="text" 
-                                            value={block.content.title} 
-                                            onChange={(e) => {
-                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, title: e.target.value } } : b);
-                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                            }}
-                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                          />
-                                        </div>
-                                      </>
-                                    )}
-                                    {block.type === 'text' && (
-                                      <textarea 
-                                        rows={8}
-                                        value={block.content.text}
-                                        onChange={(e) => {
-                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, text: e.target.value } } : b);
-                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                      />
-                                    )}
-                                    {block.type === 'image' && (
-                                      <>
-                                        <div className="space-y-2">
-                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Immagine</label>
-                                          <input 
-                                            type="text" 
-                                            value={block.content.imageUrl} 
-                                            onChange={(e) => {
-                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, imageUrl: e.target.value } } : b);
-                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                            }}
-                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                            placeholder="https://..."
-                                          />
-                                        </div>
-                                      </>
-                                    )}
-                                    {block.type === 'columns' && (
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Sinistra</label>
-                                          <textarea 
-                                            value={block.content.left}
-                                            onChange={(e) => {
-                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, left: e.target.value } } : b);
-                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                            }}
-                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                          />
-                                        </div>
-                                        <div className="space-y-2">
-                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Destra</label>
-                                          <textarea 
-                                            value={block.content.right}
-                                            onChange={(e) => {
-                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, right: e.target.value } } : b);
-                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                            }}
-                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                          />
-                                        </div>
-                                      </div>
-                                    )}
-                                    {block.type === 'footer' && (
-                                      <div className="space-y-2">
-                                        <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Info Azienda</label>
-                                        <textarea 
-                                          value={block.content.companyInfo}
-                                          onChange={(e) => {
-                                            const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, companyInfo: e.target.value } } : b);
-                                            setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                          }}
-                                          className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              )}
                             </div>
 
                             {/* Bottom Drop Zone (only for the last block) */}
