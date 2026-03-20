@@ -618,7 +618,17 @@ const Marketing = () => {
 
         {activeTab === 'templates' && (
           <button
-            className="ml-auto px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-green-700 shadow-lg shadow-green-500/20 transition-all flex items-center gap-2"
+            onClick={() => {
+              setCurrentTemplate({
+                id: null,
+                name: '',
+                type: 'email',
+                blocks: [],
+                settings: { fontFamily: 'Inter, sans-serif', backgroundColor: '#f9fafb', contentWidth: '600px' }
+              });
+              setTemplateView('editor');
+            }}
+            className="ml-auto px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
             Nuovo Modello
@@ -1270,22 +1280,6 @@ const Marketing = () => {
             <div className="space-y-6">
               {/* Toolbar Modelli */}
               <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700">
-                <button 
-                  onClick={() => {
-                    setCurrentTemplate({
-                      id: null,
-                      name: '',
-                      type: 'email',
-                      blocks: [],
-                      settings: { fontFamily: 'Inter, sans-serif', backgroundColor: '#f9fafb', contentWidth: '600px' }
-                    });
-                    setTemplateView('editor');
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold uppercase tracking-tight hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
-                >
-                  <Plus className="h-4 w-4" />
-                  Nuovo Modello
-                </button>
               </div>
 
               {/* Grid Modelli */}
