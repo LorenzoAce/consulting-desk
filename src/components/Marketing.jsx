@@ -48,6 +48,11 @@ const Marketing = () => {
   const [editingId, setEditingId] = useState(null);
   const [editingBlockId, setEditingBlockId] = useState(null);
   
+  // Drag and Drop state
+  const [draggedBlockType, setDraggedBlockType] = useState(null);
+  const [draggedBlockId, setDraggedBlockId] = useState(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState(null);
+  
   // Message content
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -95,6 +100,41 @@ const Marketing = () => {
       ...prev,
       blocks: [...prev.blocks, newBlock]
     }));
+  };
+
+  const handleDrop = (e, index) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('blockType');
+    const blockId = e.dataTransfer.getData('blockId');
+
+    if (blockId) {
+      // Reorder existing block
+      const oldIndex = currentTemplate.blocks.findIndex(b => b.id === blockId);
+      if (oldIndex === -1 || oldIndex === index) return;
+
+      const newBlocks = [...currentTemplate.blocks];
+      const [movedBlock] = newBlocks.splice(oldIndex, 1);
+      
+      // Calculate insertion index
+      const adjustedIndex = index > oldIndex ? index - 1 : index;
+      newBlocks.splice(adjustedIndex, 0, movedBlock);
+
+      setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+    } else if (type) {
+      // Insert new block
+      const newBlock = {
+        id: `block_${Date.now()}`,
+        type: type,
+        content: getDefaultContent(type)
+      };
+      const newBlocks = [...currentTemplate.blocks];
+      newBlocks.splice(index, 0, newBlock);
+      setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+    }
+    
+    setDraggedBlockType(null);
+    setDraggedBlockId(null);
+    setDropTargetIndex(null);
   };
 
   const getDefaultContent = (type) => {
@@ -1385,8 +1425,14 @@ const Marketing = () => {
                     ].map(b => (
                       <button
                         key={b.type}
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedBlockType(b.type);
+                          setDraggedBlockId(null);
+                          e.dataTransfer.setData('blockType', b.type);
+                        }}
                         onClick={() => handleAddBlock(b.type)}
-                        className="flex flex-col items-center justify-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-transparent hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group"
+                        className="flex flex-col items-center justify-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl border border-transparent hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all group cursor-grab active:cursor-grabbing"
                       >
                         <b.icon className="h-5 w-5 text-gray-400 group-hover:text-blue-600" />
                         <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 group-hover:text-blue-600">{b.label}</span>
@@ -1458,193 +1504,246 @@ const Marketing = () => {
                     }}
                   >
                     {currentTemplate.blocks.length === 0 ? (
-                      <div className="h-60 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 m-8 rounded-2xl">
+                      <div 
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          setDropTargetIndex(0);
+                        }}
+                        onDragLeave={() => setDropTargetIndex(null)}
+                        onDrop={(e) => handleDrop(e, 0)}
+                        className={`h-60 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed m-8 rounded-2xl transition-all ${
+                          dropTargetIndex === 0 ? 'border-blue-500 bg-blue-50/50 scale-95' : 'border-gray-200'
+                        }`}
+                      >
                         <Plus className="h-8 w-8 mb-2" />
-                        <p className="text-sm font-bold uppercase tracking-widest">Aggiungi blocchi dalla sidebar</p>
+                        <p className="text-sm font-bold uppercase tracking-widest">Trascina blocchi qui per iniziare</p>
                       </div>
                     ) : (
-                      currentTemplate.blocks.map((block, index) => (
-                        <div 
-                          key={block.id} 
-                          className={`group relative border-2 border-transparent hover:border-blue-400 transition-all cursor-pointer`}
-                          onClick={() => setEditingBlockId(block.id)}
-                        >
-                          {/* Block Actions */}
-                          <div className="absolute -right-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <button 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const newBlocks = currentTemplate.blocks.filter(b => b.id !== block.id);
-                                setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                      <div className="relative">
+                        {currentTemplate.blocks.map((block, index) => (
+                          <React.Fragment key={block.id}>
+                            {/* Top Drop Zone for each block */}
+                            <div 
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                setDropTargetIndex(index);
                               }}
-                              className="p-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600"
+                              onDragLeave={() => setDropTargetIndex(null)}
+                              onDrop={(e) => handleDrop(e, index)}
+                              className={`h-1 transition-all duration-200 ${
+                                dropTargetIndex === index ? 'bg-blue-500 h-8 opacity-100 mb-2 mt-2 rounded-lg' : 'bg-transparent opacity-0'
+                              }`}
+                            />
+
+                            <div 
+                              draggable
+                              onDragStart={(e) => {
+                                setDraggedBlockId(block.id);
+                                e.dataTransfer.setData('blockId', block.id);
+                              }}
+                              className={`group relative border-2 border-transparent hover:border-blue-400 transition-all cursor-pointer ${
+                                draggedBlockId === block.id ? 'opacity-50 grayscale' : ''
+                              }`}
+                              onClick={() => setEditingBlockId(block.id)}
                             >
-                              <Trash className="h-4 w-4" />
-                            </button>
-                          </div>
-
-                          {/* Block Content Rendering */}
-                          <div className="p-4">
-                            {block.type === 'header' && (
-                              <div className="text-center space-y-4 py-8 border-b border-gray-100">
-                                {block.content.logoUrl ? (
-                                  <img src={block.content.logoUrl} alt="Logo" className="h-12 mx-auto" />
-                                ) : (
-                                  <div className="w-16 h-16 bg-gray-50 mx-auto rounded-full flex items-center justify-center">
-                                    <ImageIcon className="h-6 w-6 text-gray-300" />
-                                  </div>
-                                )}
-                                <h1 className="text-2xl font-bold text-gray-900">{block.content.title}</h1>
+                              {/* Drag Handle */}
+                              <div className="absolute -left-10 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all cursor-grab active:cursor-grabbing p-2 hover:bg-gray-100 rounded-lg">
+                                <MoreVertical className="h-5 w-5 text-gray-400" />
                               </div>
-                            )}
 
-                            {block.type === 'text' && (
-                              <div className="py-4 px-4 text-gray-800 leading-relaxed whitespace-pre-wrap">
-                                {block.content.text}
+                              {/* Block Actions */}
+                              <div className="absolute -right-12 top-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                                <button 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newBlocks = currentTemplate.blocks.filter(b => b.id !== block.id);
+                                    setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                  }}
+                                  className="p-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600"
+                                >
+                                  <Trash className="h-4 w-4" />
+                                </button>
                               </div>
-                            )}
 
-                            {block.type === 'image' && (
-                              <div className="py-4">
-                                {block.content.imageUrl ? (
-                                  <img src={block.content.imageUrl} alt={block.content.altText} className="w-full rounded-xl" />
-                                ) : (
-                                  <div className="w-full h-40 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
-                                    <ImageIcon className="h-8 w-8 mr-2" />
-                                    <span>Seleziona Immagine</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-
-                            {block.type === 'columns' && (
-                              <div className="grid grid-cols-2 gap-8 py-8 border-y border-gray-100">
-                                <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 whitespace-pre-wrap text-gray-800">{block.content.left}</div>
-                                <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 whitespace-pre-wrap text-gray-800">{block.content.right}</div>
-                              </div>
-                            )}
-
-                            {block.type === 'footer' && (
-                              <div className="py-8 border-t border-gray-100 mt-8 text-center text-gray-400 text-xs space-y-4">
-                                <p className="whitespace-pre-wrap">{block.content.companyInfo}</p>
-                                <div className="flex justify-center gap-4">
-                                  <div className="w-6 h-6 rounded-full bg-gray-50"></div>
-                                  <div className="w-6 h-6 rounded-full bg-gray-50"></div>
-                                  <div className="w-6 h-6 rounded-full bg-gray-50"></div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Block Editor Overlay (Inline-ish) */}
-                          {editingBlockId === block.id && (
-                            <div className="absolute inset-0 bg-white dark:bg-gray-800 z-10 flex flex-col p-6 animate-in zoom-in-95 duration-200 shadow-2xl overflow-auto">
-                              <div className="flex items-center justify-between mb-6">
-                                <h4 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Modifica Blocco {block.type}</h4>
-                                <button onClick={() => setEditingBlockId(null)} className="px-4 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase tracking-tight hover:bg-blue-700 transition-all">Chiudi</button>
-                              </div>
-                              <div className="flex-1 space-y-4">
+                              {/* Block Content Rendering */}
+                              <div className="p-4">
                                 {block.type === 'header' && (
-                                  <>
-                                    <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Logo</label>
-                                      <input 
-                                        type="text" 
-                                        value={block.content.logoUrl} 
-                                        onChange={(e) => {
-                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, logoUrl: e.target.value } } : b);
-                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                        placeholder="https://..."
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Titolo Intestazione</label>
-                                      <input 
-                                        type="text" 
-                                        value={block.content.title} 
-                                        onChange={(e) => {
-                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, title: e.target.value } } : b);
-                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                      />
-                                    </div>
-                                  </>
-                                )}
-                                {block.type === 'text' && (
-                                  <textarea 
-                                    rows={8}
-                                    value={block.content.text}
-                                    onChange={(e) => {
-                                      const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, text: e.target.value } } : b);
-                                      setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                    }}
-                                    className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                  />
-                                )}
-                                {block.type === 'image' && (
-                                  <>
-                                    <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Immagine</label>
-                                      <input 
-                                        type="text" 
-                                        value={block.content.imageUrl} 
-                                        onChange={(e) => {
-                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, imageUrl: e.target.value } } : b);
-                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                        placeholder="https://..."
-                                      />
-                                    </div>
-                                  </>
-                                )}
-                                {block.type === 'columns' && (
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Sinistra</label>
-                                      <textarea 
-                                        value={block.content.left}
-                                        onChange={(e) => {
-                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, left: e.target.value } } : b);
-                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Destra</label>
-                                      <textarea 
-                                        value={block.content.right}
-                                        onChange={(e) => {
-                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, right: e.target.value } } : b);
-                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                        }}
-                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                      />
-                                    </div>
+                                  <div className="text-center space-y-4 py-8 border-b border-gray-100">
+                                    {block.content.logoUrl ? (
+                                      <img src={block.content.logoUrl} alt="Logo" className="h-12 mx-auto" />
+                                    ) : (
+                                      <div className="w-16 h-16 bg-gray-50 mx-auto rounded-full flex items-center justify-center">
+                                        <ImageIcon className="h-6 w-6 text-gray-300" />
+                                      </div>
+                                    )}
+                                    <h1 className="text-2xl font-bold text-gray-900">{block.content.title}</h1>
                                   </div>
                                 )}
+
+                                {block.type === 'text' && (
+                                  <div className="py-4 px-4 text-gray-800 leading-relaxed whitespace-pre-wrap">
+                                    {block.content.text}
+                                  </div>
+                                )}
+
+                                {block.type === 'image' && (
+                                  <div className="py-4">
+                                    {block.content.imageUrl ? (
+                                      <img src={block.content.imageUrl} alt={block.content.altText} className="w-full rounded-xl" />
+                                    ) : (
+                                      <div className="w-full h-40 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 border-2 border-dashed border-gray-200">
+                                        <ImageIcon className="h-8 w-8 mr-2" />
+                                        <span>Seleziona Immagine</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {block.type === 'columns' && (
+                                  <div className="grid grid-cols-2 gap-8 py-8 border-y border-gray-100">
+                                    <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 whitespace-pre-wrap text-gray-800">{block.content.left}</div>
+                                    <div className="p-4 bg-gray-50/50 rounded-xl border border-gray-100 whitespace-pre-wrap text-gray-800">{block.content.right}</div>
+                                  </div>
+                                )}
+
                                 {block.type === 'footer' && (
-                                  <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Info Azienda</label>
-                                    <textarea 
-                                      value={block.content.companyInfo}
-                                      onChange={(e) => {
-                                        const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, companyInfo: e.target.value } } : b);
-                                        setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
-                                      }}
-                                      className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                                    />
+                                  <div className="py-8 border-t border-gray-100 mt-8 text-center text-gray-400 text-xs space-y-4">
+                                    <p className="whitespace-pre-wrap">{block.content.companyInfo}</p>
+                                    <div className="flex justify-center gap-4">
+                                      <div className="w-6 h-6 rounded-full bg-gray-50"></div>
+                                      <div className="w-6 h-6 rounded-full bg-gray-50"></div>
+                                      <div className="w-6 h-6 rounded-full bg-gray-50"></div>
+                                    </div>
                                   </div>
                                 )}
                               </div>
+
+                              {/* Block Editor Overlay (Inline-ish) */}
+                              {editingBlockId === block.id && (
+                                <div className="absolute inset-0 bg-white dark:bg-gray-800 z-10 flex flex-col p-6 animate-in zoom-in-95 duration-200 shadow-2xl overflow-auto">
+                                  <div className="flex items-center justify-between mb-6">
+                                    <h4 className="font-bold text-gray-900 dark:text-white uppercase tracking-widest text-xs">Modifica Blocco {block.type}</h4>
+                                    <button onClick={() => setEditingBlockId(null)} className="px-4 py-1 bg-blue-600 text-white rounded-lg font-bold text-xs uppercase tracking-tight hover:bg-blue-700 transition-all">Chiudi</button>
+                                  </div>
+                                  <div className="flex-1 space-y-4">
+                                    {block.type === 'header' && (
+                                      <>
+                                        <div className="space-y-2">
+                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Logo</label>
+                                          <input 
+                                            type="text" 
+                                            value={block.content.logoUrl} 
+                                            onChange={(e) => {
+                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, logoUrl: e.target.value } } : b);
+                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                            }}
+                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                            placeholder="https://..."
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Titolo Intestazione</label>
+                                          <input 
+                                            type="text" 
+                                            value={block.content.title} 
+                                            onChange={(e) => {
+                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, title: e.target.value } } : b);
+                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                            }}
+                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                          />
+                                        </div>
+                                      </>
+                                    )}
+                                    {block.type === 'text' && (
+                                      <textarea 
+                                        rows={8}
+                                        value={block.content.text}
+                                        onChange={(e) => {
+                                          const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, text: e.target.value } } : b);
+                                          setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                        }}
+                                        className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                      />
+                                    )}
+                                    {block.type === 'image' && (
+                                      <>
+                                        <div className="space-y-2">
+                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">URL Immagine</label>
+                                          <input 
+                                            type="text" 
+                                            value={block.content.imageUrl} 
+                                            onChange={(e) => {
+                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, imageUrl: e.target.value } } : b);
+                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                            }}
+                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                            placeholder="https://..."
+                                          />
+                                        </div>
+                                      </>
+                                    )}
+                                    {block.type === 'columns' && (
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Sinistra</label>
+                                          <textarea 
+                                            value={block.content.left}
+                                            onChange={(e) => {
+                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, left: e.target.value } } : b);
+                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                            }}
+                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                          />
+                                        </div>
+                                        <div className="space-y-2">
+                                          <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Destra</label>
+                                          <textarea 
+                                            value={block.content.right}
+                                            onChange={(e) => {
+                                              const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, right: e.target.value } } : b);
+                                              setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                            }}
+                                            className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                    {block.type === 'footer' && (
+                                      <div className="space-y-2">
+                                        <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Info Azienda</label>
+                                        <textarea 
+                                          value={block.content.companyInfo}
+                                          onChange={(e) => {
+                                            const newBlocks = currentTemplate.blocks.map(b => b.id === block.id ? { ...b, content: { ...b.content, companyInfo: e.target.value } } : b);
+                                            setCurrentTemplate(prev => ({ ...prev, blocks: newBlocks }));
+                                          }}
+                                          className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))
+
+                            {/* Bottom Drop Zone (only for the last block) */}
+                            {index === currentTemplate.blocks.length - 1 && (
+                              <div 
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  setDropTargetIndex(index + 1);
+                                }}
+                                onDragLeave={() => setDropTargetIndex(null)}
+                                onDrop={(e) => handleDrop(e, index + 1)}
+                                className={`h-1 transition-all duration-200 ${
+                                  dropTargetIndex === index + 1 ? 'bg-blue-500 h-8 opacity-100 mb-2 mt-2 rounded-lg' : 'bg-transparent opacity-0'
+                                }`}
+                              />
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </div>
